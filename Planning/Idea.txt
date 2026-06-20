@@ -1,0 +1,804 @@
+# Phase 1 — CurateMyStay Website Product Blueprint
+
+## 1. Project overview
+
+CurateMyStay is a property management website with two main parts:
+
+1. Public landing page
+2. Private dashboard
+
+The landing page is already designed. No major design or content changes are required in Phase 1. The only required changes are:
+
+1. Convert the existing landing page into Next.js.
+2. Add login/signup or dashboard access option in the navbar.
+3. Make the enquiry/contact form functional.
+4. Send form submissions directly to the admin email.
+
+The main focus of the project is the dashboard.
+
+The dashboard will be used by two types of logged-in users:
+
+1. Company Admin
+2. Property Owner
+
+The dashboard should help the company manage properties, users, bookings, income, expenses, owner statements, owner approvals, and basic operations.
+
+The main goal is not to create an overly complex system. The goal is to build a clean, simple, easy-to-edit dashboard that works well for the current scale of around 6 users and 8 properties, while still being able to handle around 60 users and 80 properties later.
+
+---
+
+## 2. Main purpose of the website
+
+The website should help CurateMyStay do three things:
+
+1. Present the company professionally to property owners.
+2. Manage property operations internally.
+3. Give owners transparent access to their property data.
+
+The core value of the dashboard is transparency.
+
+Owners should be able to log in and clearly see:
+
+1. Their property details
+2. Their bookings
+3. Their guest details
+4. Their income
+5. Their expenses
+6. Their monthly payout calculation
+7. Their payout approval status
+
+Admins should be able to manage all operational and financial data from one place.
+
+---
+
+## 3. User types
+
+There are three user types in the website flow.
+
+### 3.1 Visitor
+
+A visitor is someone who has not logged in.
+
+Visitor can:
+
+1. View the landing page
+2. Read about CurateMyStay
+3. Submit the contact/enquiry form
+4. Go to login/signup
+
+Visitor cannot:
+
+1. Access dashboard
+2. View property data
+3. View owner reports
+4. View admin data
+
+---
+
+### 3.2 Company Admin
+
+Company Admin is the internal CurateMyStay team.
+
+Company Admin can:
+
+1. View dashboard overview
+2. View, add, edit, and delete users
+3. Add property owners
+4. Add company admins
+5. Add, edit, and delete properties
+6. Add, edit, and delete bookings
+7. Add, edit, and delete expenses
+8. Add expenses for a specific property
+9. Add CMS/company expenses from the same expense module
+10. View P&L
+11. View owner dashboard/owner portal data
+12. Create or review owner payout information
+13. View owner queries if query feature is added
+14. Mark owner queries as resolved using a simple check mark
+15. Manage settings and configurable lists
+16. Edit their own profile
+
+Company Admin should have full control over the dashboard.
+
+Important rule:
+
+Admins can only be added by another admin. Public signup should not directly create admin accounts.
+
+---
+
+### 3.3 Property Owner
+
+Property Owner is the external owner/client.
+
+Owner can:
+
+1. Log in to their dashboard
+2. View their own property
+3. View bookings for their property
+4. View guest names and guest phone numbers
+5. View income for their property
+6. View expenses for their property
+7. View all data related to their property
+8. View monthly payout details
+9. Approve monthly payout if approval feature is active
+10. Raise query if query feature is active later
+11. View query status if query feature is active later
+12. View and edit their own profile
+
+Owner cannot:
+
+1. View other owners
+2. View other properties
+3. Edit property details
+4. Edit bookings
+5. Edit expenses
+6. Add users
+7. Add admins
+8. View admin-only settings
+9. View CMS/company expenses that are not related to their property
+10. Delete anything from dashboard
+
+---
+
+## 4. Landing page
+
+The landing page is already made.
+
+No major changes are required to the landing page design or content.
+
+Required work:
+
+1. Convert existing landing page HTML/design to Next.js.
+2. Keep the existing look and feel.
+3. Add login/dashboard button in the navbar.
+4. Make contact/enquiry form functional.
+5. Form submissions should go directly to admin email.
+6. Form submission should also show a success message to the visitor.
+
+The landing page is not the priority for logic. It should mainly act as a marketing and enquiry page.
+
+Recommended navbar options:
+
+1. Home
+2. About / Services if already present
+3. Contact / Enquire
+4. Login
+
+If the user is already logged in, login button can become Dashboard.
+
+---
+
+## 5. Dashboard concept
+
+The dashboard is the most important part of the website.
+
+It should work like an operations console for CurateMyStay.
+
+It should help admins answer:
+
+1. How many bookings do we have?
+2. Which properties are active?
+3. How much revenue came in?
+4. What expenses were added?
+5. What is the owner payout?
+6. What is the company/CMS share?
+7. Which owner needs to approve payout?
+8. Are there any queries?
+9. What housekeeping/laundry work exists, if enabled later?
+
+The dashboard should be clean, simple, and easy to edit.
+
+The code and file structure should remain simple because the project will mostly be built and maintained with Codex.
+
+---
+
+## 6. Admin dashboard pages
+
+### 6.1 Overview
+
+Purpose:
+
+Give the company a quick summary of operations.
+
+Admin should see:
+
+1. Total revenue
+2. Total expenses
+3. Net profit
+4. Number of properties
+5. Number of bookings
+6. Upcoming check-ins
+7. Recent bookings
+8. Recent expenses
+9. Pending owner approvals, if approval is active
+10. Open owner queries, if query feature is active
+
+This page should mostly be read-only.
+
+Editing should happen inside specific modules like Users, Properties, Bookings, and Expenses.
+
+---
+
+### 6.2 Users
+
+Purpose:
+
+Manage people who can access the dashboard.
+
+Admin should be able to:
+
+1. View all users
+2. Add new owner
+3. Add new admin
+4. Edit user details
+5. Delete user
+6. Change user role
+7. Activate/deactivate user
+8. Assign owner to property
+9. View user email, phone, name, role, and status
+
+Owner should not access the Users page.
+
+Important rules:
+
+1. Admin can view and edit users.
+2. Admin can delete users.
+3. Admin can add other admins.
+4. Admin can add property owners.
+5. Public signup should not directly create admins.
+
+---
+
+### 6.3 Properties
+
+Purpose:
+
+Manage all properties.
+
+Admin should be able to add, edit, and delete properties.
+
+Property data should include:
+
+1. Property name
+2. City
+3. Address
+4. Bedrooms
+5. Owner
+6. Owner share percentage
+7. CMS/company share percentage
+8. Property image or image key, if needed
+9. Active/inactive status
+
+Important rule:
+
+One property can have only one owner.
+
+Owner can view their own property details, but cannot edit property details.
+
+---
+
+### 6.4 Bookings & Income
+
+Purpose:
+
+Track bookings and revenue.
+
+Admin should be able to add, edit, and delete bookings.
+
+Booking data should include:
+
+1. Property
+2. Guest name
+3. Guest phone number
+4. Booking source
+5. Check-in date
+6. Check-out date
+7. Number of nights
+8. Number of guests
+9. Nightly rate
+10. Total amount
+11. Booking status
+12. Cleaning schedule, if needed
+13. Concierge options, if needed
+14. Notes, if needed
+
+Booking statuses can include:
+
+1. Upcoming
+2. In-house
+3. Checked-out
+4. Cancelled
+5. Blocked
+
+Owner access:
+
+Owners can view all booking data related to their own property, including guest names and phone numbers.
+
+Owners cannot add, edit, or delete bookings.
+
+---
+
+### 6.5 Expenses
+
+Purpose:
+
+Track both property expenses and CMS/company expenses in one place.
+
+There should not be a separate Company Expenses module in the final structure unless required later.
+
+Instead, the Expenses module should have a Property field.
+
+In the Property field, admin can select:
+
+1. A specific property
+2. CMS
+
+If a specific property is selected, it becomes a property expense.
+
+If CMS is selected, it becomes a company/CMS expense.
+
+Admin should be able to add, edit, and delete expenses.
+
+Expense data should include:
+
+1. Date
+2. Property or CMS
+3. Category
+4. Amount
+5. Vendor
+6. Note
+
+No receipt/image upload is required in Phase 1.
+
+Owner access:
+
+Owners can view all expenses related to their property.
+
+Owners cannot see CMS/company expenses.
+
+Owners cannot add, edit, or delete expenses.
+
+---
+
+### 6.6 P&L
+
+Purpose:
+
+Show profit and loss.
+
+Admin should see:
+
+1. Revenue
+2. Property expenses
+3. CMS/company expenses
+4. Net profit
+5. Owner share
+6. CMS/company share
+7. TDS, if applicable
+8. Final payout
+
+Owner should see:
+
+1. Revenue from their property
+2. Expenses from their property
+3. Net property profit
+4. Owner share
+5. TDS, if applicable
+6. Final payout
+
+Important rule:
+
+Owner should only see P&L data related to their own property.
+
+---
+
+### 6.7 Owner Portal / Owner Statement Area
+
+Purpose:
+
+Allow admins to review owner-facing data and owners to view their property performance.
+
+Owner should see:
+
+1. Their property
+2. Monthly revenue
+3. Monthly expenses
+4. Net profit
+5. Owner share
+6. CMS/company share, if shown
+7. TDS, if applicable
+8. Final payout
+9. Approval status, if enabled
+
+Owner can:
+
+1. View data
+2. Approve payout, if approval feature is active
+3. Raise query, if query feature is active later
+
+Owner cannot:
+
+1. Edit statement values
+2. Edit bookings
+3. Edit expenses
+4. Delete anything
+
+---
+
+### 6.8 Owner Query / Dispute
+
+Current status:
+
+Keep this empty or very simple for now.
+
+The full query/dispute flow will be confirmed later.
+
+For Phase 1, if this module is included, it should be very basic.
+
+Admin should be able to:
+
+1. View owner query
+2. Read query details
+3. Mark query as resolved using a check mark
+
+No complex conversation system is required in Phase 1.
+
+No advanced dispute workflow is required in Phase 1.
+
+No notifications are required in Phase 1.
+
+---
+
+### 6.9 Booking Calendar
+
+Purpose:
+
+Show bookings visually by property and date.
+
+Admin should see:
+
+1. All properties
+2. All bookings
+3. Booking blocks by date
+4. Booking status
+5. Booking source
+6. Basic booking details on click
+
+Owner can optionally see calendar view for their own property only.
+
+Calendar is useful, but it should not delay core dashboard work.
+
+---
+
+### 6.10 Housekeeping & Laundry
+
+Purpose:
+
+Track cleaning and laundry operations.
+
+Current priority:
+
+Not a priority, but good to have.
+
+For Phase 1, this can be simple or partially prepared.
+
+Admin should eventually be able to see:
+
+1. Checkout cleaning
+2. Mid-stay cleaning
+3. Laundry count
+4. Pending/done status
+5. Notes
+
+Owner does not need housekeeping/laundry access unless specifically required later.
+
+Recommendation:
+
+Keep housekeeping/laundry as a basic module or placeholder in MVP. Do not spend too much time on advanced scheduling.
+
+---
+
+### 6.11 Forma Sheet
+
+Purpose:
+
+Admin-only reporting sheet for guest/statistical information.
+
+Admin should be able to track:
+
+1. Booking
+2. Guest origin
+3. Guest count
+4. Male/female count
+5. Age group count
+6. Purpose of visit
+7. Remarks
+
+This is useful but not the highest priority.
+
+Owner should not access Forma Sheet.
+
+---
+
+### 6.12 Budgeting
+
+Purpose:
+
+Internal planning for CurateMyStay.
+
+Admin can use it for:
+
+1. Monthly budget
+2. Operational cost planning
+3. Technology/tool cost planning
+4. Travel cost planning
+5. Legal/compliance planning
+6. Contingency planning
+
+Owner should not access budgeting.
+
+Budgeting is not critical for the main owner dashboard, so it can be built after the core modules.
+
+---
+
+### 6.13 Settings
+
+Purpose:
+
+Allow admin to edit common dropdowns and rules without changing code.
+
+Admin should be able to manage:
+
+1. Booking sources
+2. Expense categories
+3. Concierge options
+4. Cleaning options
+5. Laundry rules, if used
+6. Other configurable lists
+
+This is important because the project should be easy to manage later without editing code for every small change.
+
+Owner should not access settings.
+
+---
+
+## 7. Owner dashboard pages
+
+Owner dashboard should be much simpler than admin dashboard.
+
+Recommended owner pages:
+
+1. My Property
+2. Bookings
+3. Expenses
+4. P&L / Monthly Statement
+5. Profile
+6. Queries, later if required
+
+Owner dashboard homepage should show:
+
+1. Property name
+2. Current month revenue
+3. Current month expenses
+4. Estimated payout
+5. Recent bookings
+6. Recent expenses
+7. Approval status, if approval is active
+
+Owner should be able to edit only their own profile.
+
+Owner profile fields can include:
+
+1. Name
+2. Phone number
+3. Email, read-only or editable depending on auth rules
+4. Profile image, optional
+5. Basic account details
+
+---
+
+## 8. Monthly payout flow
+
+Purpose:
+
+Calculate and show how much needs to be paid to the owner.
+
+Basic flow:
+
+1. Admin adds bookings.
+2. Admin adds expenses.
+3. System calculates revenue and expenses.
+4. System calculates owner share and CMS/company share.
+5. System calculates TDS if applicable.
+6. Owner views monthly payout.
+7. Owner approves payout, if approval feature is active.
+8. Admin marks payout as paid, if payment tracking is added.
+
+Possible payout statuses:
+
+1. Draft
+2. Sent / Ready for Review
+3. Approved
+4. Query Raised
+5. Resolved
+6. Paid
+
+For now, keep this simple.
+
+Important:
+
+The approval and query flow can be finalized later.
+
+---
+
+## 9. Login/signup flow
+
+Users can sign up from the login/signup page.
+
+However, public signup should be controlled.
+
+Recommended flow:
+
+1. User signs up.
+2. User is created as pending owner or general pending user.
+3. Admin reviews user.
+4. Admin assigns role.
+5. Admin assigns property if the user is an owner.
+6. User gets access after approval.
+
+Admin creation rule:
+
+Admin can only be added by another admin.
+
+---
+
+## 10. Permissions summary
+
+### Admin permissions
+
+Admin can:
+
+1. View everything
+2. Add, edit, and delete users
+3. Add, edit, and delete properties
+4. Add, edit, and delete bookings
+5. Add, edit, and delete expenses
+6. Add CMS expenses from the same Expenses module
+7. View all P&L data
+8. View all owner data
+9. View queries
+10. Mark queries as resolved
+11. Manage settings
+12. Edit own profile
+
+### Owner permissions
+
+Owner can:
+
+1. View own property
+2. View own bookings
+3. View guest names and phone numbers for own property bookings
+4. View own property expenses
+5. View own property P&L
+6. View payout details
+7. Approve payout, if enabled
+8. Raise query, if enabled later
+9. Edit own profile
+
+Owner cannot:
+
+1. View other properties
+2. View other owners
+3. View CMS expenses
+4. Edit bookings
+5. Edit expenses
+6. Edit property details
+7. Add users
+8. Add admins
+9. Delete anything
+10. Access admin settings
+
+---
+
+## 11. MVP scope
+
+The first working version should include:
+
+1. Existing landing page converted to Next.js
+2. Login/signup
+3. Functional landing page enquiry form that emails admin
+4. Admin dashboard shell
+5. Owner dashboard shell
+6. Users management
+7. Properties management
+8. Bookings management
+9. Expenses management with Property/CMS option
+10. P&L summary
+11. Owner property view
+12. Owner booking view
+13. Owner expense view
+14. Owner profile edit
+15. Basic owner payout view
+16. Settings
+17. Basic calendar, if easy
+18. Housekeeping/laundry placeholder or simple module
+
+---
+
+## 12. Not priority for Phase 1
+
+These should not be prioritized now:
+
+1. Airbnb sync
+2. Booking.com sync
+3. Payment gateway
+4. WhatsApp automation
+5. Receipt upload
+6. Advanced dispute system
+7. Advanced housekeeping automation
+8. Staff assignment
+9. Mobile app
+10. Advanced analytics
+11. GST automation
+12. Advanced PDF generation
+13. Multi-owner property split
+14. Separate company expense module
+
+---
+
+## 13. Important product rules
+
+1. Admin has full control over dashboard data.
+2. Owner has read-only access to property data.
+3. Owner can edit only their own profile.
+4. One property can have only one owner.
+5. Owners can see guest names and guest phone numbers for their own property.
+6. Owners can see all bookings and expenses related to their property.
+7. Owners cannot see CMS/company expenses.
+8. No receipt upload is required in Phase 1.
+9. CMS/company expense should be added from Expenses module by selecting CMS instead of a property.
+10. Admin can edit and delete existing records.
+11. Query/dispute module should remain empty or very basic until confirmed.
+12. If query is included, admin only needs read option and resolved check mark.
+13. Housekeeping/laundry is not priority, but good to have.
+14. Landing page is already made and should only be converted to Next.js.
+15. Landing page form should send details to admin email.
+16. Dashboard should remain simple and easy to edit.
+17. Code structure should be simple enough for human editing and Codex maintenance.
+
+---
+
+## 14. Final Phase 1 summary
+
+CurateMyStay website will have a public landing page and a private dashboard.
+
+The landing page is already designed. It only needs to be converted to Next.js, connected to a working enquiry form, and updated with login/dashboard access in the navbar.
+
+The dashboard is the main product.
+
+Company Admins will manage users, properties, bookings, expenses, P&L, settings, and owner-related data. Admins can add, edit, and delete existing records.
+
+Property Owners will have a restricted dashboard where they can view all information related to their own property, including bookings, guest names, guest phone numbers, expenses, payout details, and their profile. Owners can edit only their own profile.
+
+Expenses will be managed from one module. Admin can either select a property or select CMS. If a property is selected, it is a property expense. If CMS is selected, it is a company/CMS expense.
+
+Query/dispute flow is not finalized yet. For now, it should remain empty or very basic, with only read and mark-as-resolved functionality.
+
+Housekeeping and laundry are not priority, but can be kept as a simple placeholder or basic module.
+
+The main goal is to create a clean, transparent, simple property management dashboard that is easy to maintain and easy to expand later.
+
+---
+
+## 15. Remaining confirmations before Phase 2
+
+Before moving to Supabase setup, these still need final confirmation:
+
+1. Should signup be open to anyone, or should owner accounts be created only by admin?
+2. What is the admin email where landing page form submissions should go?
+3. Should owner payout approval be included in Phase 1 or kept for Phase 2/later?
+4. Is TDS always 10%, or should admin enter it manually?
+5. Should admin deletion permanently delete data or just hide/archive it?
+6. Should calendar be included in MVP or kept for later?
+7. Should Forma Sheet be included in MVP or kept for later?
+8. Should budgeting be included in MVP or kept for later?

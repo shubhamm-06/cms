@@ -1,0 +1,9 @@
+db pass aravindshubham@0606
+
+project id = uhhgmdrmkpvyyjnhqzqt
+default api key  = sb_publishable_qcy0d-mmztN2ckGdaetGZw_9MelBGjT
+secret = sb_publishable_qcy0d-mmztN2ckGdaetGZw_9MelBGjT
+
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+resend api key = re_GmwmkTUU_53E7FPiyVhiZZWsv9pT5fFyL
+ADMIN_CONTACT_EMAIL=curatemystay@gmail.com

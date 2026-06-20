@@ -1,0 +1,2797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CurateMyStay : Operations Console</title>
+  <meta name="viewport" content="width=1320" />
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FONTS — Google Fonts CDN (Figtree 400-800)
+       Replace this link to change the primary typeface.
+       ═══════════════════════════════════════════════════════════ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STYLES — All dashboard CSS inlined
+       Edit color variables in :root to re-theme.
+       ═══════════════════════════════════════════════════════════ -->
+  <style>
+/* CurateMyStay dashboard styles */
+:root {
+  --bg: #FAFAF7;
+  --surface: #FFFFFF;
+  --surface-2: #F5F4EE;
+  --border: #E6E4DC;
+  --border-strong: #D6D3C7;
+  --ink: #1A1A1A;
+  --ink-2: #4A4A48;
+  --ink-3: #8A8A86;
+  --ink-4: #B8B6AF;
+  --brand: #E5484D;
+  --brand-ink: #C2363A;
+  --brand-soft: #FCEDEE;
+  --orange: #F4A258;
+  --orange-soft: #FDF0E0;
+  --teal: #3D8CA8;
+  --teal-soft: #E5F1F5;
+  --green: #2F8F4E;
+  --green-soft: #E6F4EA;
+  --amber: #C58A00;
+  --amber-soft: #FBF1D6;
+  --shadow-sm: 0 1px 2px rgba(20, 18, 14, 0.04);
+  --shadow-md: 0 4px 16px rgba(20, 18, 14, 0.06);
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --sidebar-w: 232px;
+  --topbar-h: 60px;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  font-family: 'Figtree', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+
+/* App shell */
+.app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 18px 12px;
+  position: sticky; top: 0; align-self: start;
+  height: 100vh;
+  display: flex; flex-direction: column;
+}
+.sidebar__logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; }
+.sidebar__logo img { width: 34px; height: 34px; object-fit: contain; border-radius: 8px; background: var(--surface-2); }
+.sidebar__logo .name { font-weight: 700; letter-spacing: -0.01em; font-size: 15px; }
+.sidebar__logo .sub { font-size: 11px; color: var(--ink-3); font-weight: 500; margin-top: 1px; }
+.sidebar__section { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-4); font-weight: 600; padding: 14px 10px 6px; }
+.nav { display: flex; flex-direction: column; gap: 1px; }
+.nav__item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px;
+  font-weight: 500; color: var(--ink-2);
+  background: transparent; border: none; text-align: left; width: 100%;
+  font-size: 13.5px;
+}
+.nav__item:hover { background: var(--surface-2); color: var(--ink); }
+.nav__item--active { background: var(--brand-soft); color: var(--brand-ink); }
+.nav__item--active .nav__icon { color: var(--brand); }
+.nav__icon { width: 16px; height: 16px; flex: none; color: var(--ink-3); }
+.nav__item--active .nav__icon { color: var(--brand); }
+.nav__badge { margin-left: auto; font-size: 10.5px; background: var(--brand); color: white; padding: 1px 6px; border-radius: 999px; font-weight: 600; }
+.sidebar__footer { margin-top: auto; padding: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: white; display: grid; place-items: center; font-weight: 700; font-size: 12px; flex: none; }
+.sidebar__footer .who { font-size: 12.5px; font-weight: 600; line-height: 1.2; }
+.sidebar__footer .role { font-size: 11px; color: var(--ink-3); }
+
+/* Top bar */
+.topbar {
+  height: var(--topbar-h);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 28px;
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+.topbar .crumb { color: var(--ink-3); font-size: 13px; font-weight: 500; }
+.topbar .right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.persona {
+  display: inline-flex; padding: 3px; background: var(--surface-2);
+  border-radius: 8px; border: 1px solid var(--border);
+}
+.persona button {
+  border: none; background: transparent; padding: 5px 12px; border-radius: 6px;
+  font-size: 12.5px; font-weight: 600; color: var(--ink-3);
+}
+.persona button.active { background: white; color: var(--ink); box-shadow: var(--shadow-sm); }
+
+/* Page */
+.page { padding: 24px 28px 60px; }
+.page__head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.page__title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+.page__sub { color: var(--ink-3); font-size: 13.5px; margin-top: 4px; max-width: 680px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border-strong);
+  background: white; color: var(--ink);
+  transition: all 0.12s ease;
+}
+.btn:hover { background: var(--surface-2); }
+.btn--primary { background: var(--brand); color: white; border-color: var(--brand); }
+.btn--primary:hover { background: var(--brand-ink); border-color: var(--brand-ink); }
+.btn--ghost { border-color: transparent; background: transparent; }
+.btn--ghost:hover { background: var(--surface-2); }
+.btn--sm { padding: 5px 10px; font-size: 12px; }
+.btn--icon { padding: 7px; }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.card__head { padding: 16px 18px 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.card__title { font-size: 13.5px; font-weight: 600; color: var(--ink); margin: 0; }
+.card__sub { font-size: 12px; color: var(--ink-3); }
+.card__body { padding: 16px 18px 18px; }
+
+/* KPI tiles */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 18px; }
+.kpi__label { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+.kpi__value { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-top: 6px; }
+.kpi__delta { font-size: 12px; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; }
+.kpi__delta--up { color: var(--green); }
+.kpi__delta--down { color: var(--brand); }
+.kpi__delta--neutral { color: var(--ink-3); }
+
+/* Table */
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table thead th {
+  text-align: left; font-weight: 600; color: var(--ink-3);
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em;
+  background: var(--surface);
+}
+.table tbody td {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table tbody tr:hover td { background: #FBFAF5; }
+.table tbody tr:last-child td { border-bottom: none; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table td .muted { color: var(--ink-3); font-size: 12px; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Tags */
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 600;
+  background: var(--surface-2); color: var(--ink-2);
+  border: 1px solid var(--border);
+}
+.tag .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.tag--brand { background: var(--brand-soft); color: var(--brand-ink); border-color: #F5D7D9; }
+.tag--orange { background: var(--orange-soft); color: #B36A1E; border-color: #F4DBB7; }
+.tag--teal { background: var(--teal-soft); color: #266076; border-color: #CDE3EB; }
+.tag--green { background: var(--green-soft); color: #1E6A37; border-color: #C9E3D2; }
+.tag--amber { background: var(--amber-soft); color: #8B6300; border-color: #EDDFB1; }
+.tag--neutral { background: var(--surface-2); color: var(--ink-2); border-color: var(--border); }
+
+/* Form */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field > label { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.field input, .field select, .field textarea {
+  background: white; border: 1px solid var(--border-strong);
+  border-radius: 8px; padding: 8px 11px; font-size: 13px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.12);
+}
+.field .hint { font-size: 11.5px; color: var(--ink-3); }
+
+/* Segmented */
+.seg { display: inline-flex; background: var(--surface-2); padding: 3px; border-radius: 8px; border: 1px solid var(--border); gap: 2px; }
+.seg button { border: none; background: transparent; padding: 5px 11px; border-radius: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-3); }
+.seg button.active { background: white; color: var(--ink); box-shadow: var(--shadow-sm); }
+
+/* Modal */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(20, 18, 14, 0.36); display: grid; place-items: center; z-index: 100; padding: 20px; }
+.modal { background: white; border-radius: 14px; width: 100%; max-width: 540px; box-shadow: 0 24px 60px rgba(0,0,0,0.2); overflow: hidden; max-height: 92vh; display: flex; flex-direction: column; }
+.modal__head { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal__title { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+.modal__body { padding: 18px 20px; overflow: auto; }
+.modal__foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; background: var(--surface-2); }
+
+/* Layout helpers */
+.row { display: flex; gap: 14px; }
+.col { display: flex; flex-direction: column; gap: 14px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+.span-8 { grid-column: span 8; }
+.span-4 { grid-column: span 4; }
+.span-6 { grid-column: span 6; }
+.span-7 { grid-column: span 7; }
+.span-5 { grid-column: span 5; }
+
+.divider { border-top: 1px solid var(--border); margin: 14px 0; }
+
+/* Bar / chart */
+.bar-track { background: var(--surface-2); border-radius: 999px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--brand); border-radius: 999px; }
+
+/* Calendar */
+.cal { display: grid; grid-template-columns: 200px repeat(31, minmax(28px, 1fr)); gap: 0; font-size: 12px; }
+.cal__cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); min-height: 38px; position: relative; }
+.cal__head { background: var(--surface-2); padding: 6px 8px; font-weight: 600; color: var(--ink-3); border-bottom: 1px solid var(--border-strong); font-size: 11px; text-align: center; }
+.cal__rowhead { padding: 10px 12px; font-weight: 600; background: var(--surface); border-right: 1px solid var(--border-strong); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.cal__bar { position: absolute; top: 6px; bottom: 6px; left: 2px; right: 2px; background: var(--brand-soft); border: 1px solid var(--brand); border-radius: 6px; padding: 0 8px; display: flex; align-items: center; font-size: 11.5px; font-weight: 600; color: var(--brand-ink); white-space: nowrap; overflow: hidden; cursor: pointer; }
+.cal__bar--airbnb { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-ink); }
+.cal__bar--booking { background: var(--teal-soft); border-color: var(--teal); color: #266076; }
+.cal__bar--direct { background: var(--green-soft); border-color: var(--green); color: #1E6A37; }
+.cal__bar--block { background: repeating-linear-gradient(45deg, #ECEAE2, #ECEAE2 6px, #F5F4EE 6px, #F5F4EE 12px); border-color: var(--border-strong); color: var(--ink-3); }
+.cal__weekend { background: #FBF9F0; }
+.cal__today { background: #FFF6E0; }
+
+/* Empty */
+.empty { padding: 36px; text-align: center; color: var(--ink-3); }
+
+/* Misc */
+.searchbar { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; min-width: 220px; }
+.searchbar input { background: transparent; border: none; outline: none; flex: 1; font-size: 13px; }
+.searchbar svg { color: var(--ink-3); }
+
+.checkbox { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; }
+.checkbox input { accent-color: var(--brand); width: 15px; height: 15px; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: white; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 200; animation: toast-in 0.2s ease; }
+@keyframes toast-in { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.progress-ring { transform: rotate(-90deg); }
+.progress-ring circle { fill: none; stroke-width: 8; }
+.progress-ring .bg { stroke: var(--surface-2); }
+.progress-ring .fg { stroke: var(--brand); stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
+
+.list { display: flex; flex-direction: column; }
+.list__item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.list__item:last-child { border-bottom: none; }
+
+.dispute-banner { background: var(--amber-soft); border: 1px solid #EDDFB1; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #6B4F00; display: flex; gap: 10px; align-items: start; }
+
+@media (max-width: 1100px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .grid-12 { grid-template-columns: 1fr; }
+  .span-5, .span-7, .span-8, .span-4, .span-6 { grid-column: span 1; }
+  .page { padding: 16px 14px 40px; }
+  main { min-width: 0; overflow-x: hidden; }
+}
+@media (max-width: 800px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .topbar { padding: 0 14px; }
+  .kpis { grid-template-columns: 1fr; }
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- React mount point -->
+  <div id="root"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DEPENDENCIES — React 18 + ReactDOM + Babel (for JSX)
+       These load from unpkg CDN. For production, swap to a
+       build step (Vite, webpack, etc.) and remove Babel.
+       ═══════════════════════════════════════════════════════════ -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODULE 1 : DATA LAYER
+       Seed data, property definitions, helper functions,
+       localStorage persistence, message generators.
+       ═══════════════════════════════════════════════════════════ -->
+  <script type="text/babel">
+/* CurateMyStay v2 — Data layer with real properties, localStorage persistence, configurable categories */
+const TODAY = new Date(2026, 4, 23); // May 23, 2026
+const MONTH_LABEL = "May 2026";
+
+/* ─── Real Properties ─── */
+const PROPERTIES = [
+  { id: "C1",  name: "Costa Vista Verde",          sub: "3 BHK Varca Villa",          city: "Varca, Goa",   bedrooms: 3, owner: "Ayushi Chand",        color: "#E5484D", img: "CV" },
+  { id: "C4",  name: "Saudaudes",                  sub: "3 BHK Majorada Villa",       city: "Majorda, Goa", bedrooms: 3, owner: "Sadha Shrivastava",   color: "#F4A258", img: "SD" },
+  { id: "202", name: "Risara Southern Creek 202",  sub: "2 BHK Panjim Apartment",     city: "Panjim, Goa",  bedrooms: 2, owner: "Ayushi Chand",        color: "#3D8CA8", img: "R2" },
+  { id: "203", name: "Risara Southern Creek 203",  sub: "2 BHK Panjim Apartment",     city: "Panjim, Goa",  bedrooms: 2, owner: "Venu Chand",          color: "#2F8F4E", img: "R3" },
+  { id: "B1",  name: "Ratan Exotica",              sub: "2 BHK Varca Apartment",      city: "Varca, Goa",   bedrooms: 2, owner: "Ms Shipra",           color: "#9B59B6", img: "RE" },
+];
+
+const OWNERS = [...new Set(PROPERTIES.map(p => p.owner))]; // unique owners
+
+/* ─── Default configurable lists (admin can edit in Settings) ─── */
+const DEFAULT_SETTINGS = {
+  bookingSources:    ["Airbnb", "Social Media", "Third Party", "Self", "Past Tenant"],
+  expenseCategories: ["Consumables", "Utility", "Housekeeping", "Laundry", "Asset Purchase", "Servicing / Major Repair", "Minor Repair / Change", "Guest Reimbursement", "Item Purchase"],
+  companyExpenseCategories: ["Travel", "Work Setup", "TDS", "Hosting", "Utility"],
+  conciergeOptions:  ["Scooter Rental", "Tourism Package", "Private Chef", "Airport Transfer", "Grocery Stocking"],
+  cleaningFrequencies: ["Daily", "Alternate", "None"],
+  // Laundry items per room at checkout (configurable)
+  laundryPerRoom: { towels: 2, pillowCovers: 1, bedSheets: 1 },
+  duvetFrequencyNights: 7, // duvet cover wash every N nights
+  // Housekeeping rules
+  hkCheckoutTime: "11:00",
+  hkMidStayStartNight: 3, // start alternate-day cleaning from 3rd night
+};
+
+/* Category tones for visual tags */
+const CAT_TONES = {
+  "Consumables": "teal", "Utility": "amber", "Housekeeping": "orange", "Laundry": "brand",
+  "Asset Purchase": "neutral", "Servicing / Major Repair": "brand", "Minor Repair / Change": "neutral",
+  "Guest Reimbursement": "green", "Item Purchase": "teal",
+  "Travel": "orange", "Work Setup": "neutral", "TDS": "brand", "Hosting": "teal",
+  "Airbnb": "brand", "Social Media": "teal", "Third Party": "orange", "Self": "green", "Past Tenant": "amber",
+};
+const catTone = (cat) => CAT_TONES[cat] || "neutral";
+
+/* ─── Sample seed data (deletable) ─── */
+const SEED_BOOKINGS = [
+  { id: "b1", property: "C1", guest: "Aditi Rao",      mobile: "+919876543210", source: "Airbnb",      checkIn: "2026-05-02", checkOut: "2026-05-06", nights: 4, guests: 4, nightly: 8500, total: 34000, status: "checked-out", cleaningSchedule: "Alternate", concierge: [] },
+  { id: "b2", property: "C4", guest: "Jonas Weber",     mobile: "+4917612345678", source: "Airbnb",      checkIn: "2026-05-08", checkOut: "2026-05-12", nights: 4, guests: 2, nightly: 7100, total: 28400, status: "checked-out", cleaningSchedule: "None", concierge: [] },
+  { id: "b3", property: "202", guest: "Priya Sharma",   mobile: "+919812345678", source: "Self",        checkIn: "2026-05-15", checkOut: "2026-05-19", nights: 4, guests: 3, nightly: 5800, total: 23200, status: "checked-out", cleaningSchedule: "Alternate", concierge: ["Scooter Rental"] },
+  { id: "b4", property: "203", guest: "M. D'Souza",     mobile: "+919998887776", source: "Social Media",checkIn: "2026-05-20", checkOut: "2026-05-24", nights: 4, guests: 2, nightly: 5600, total: 22400, status: "in-house", cleaningSchedule: "Daily", concierge: [] },
+  { id: "b5", property: "B1", guest: "L. Chen",         mobile: "+8613912345678", source: "Airbnb",      checkIn: "2026-05-22", checkOut: "2026-05-26", nights: 4, guests: 1, nightly: 4400, total: 17600, status: "in-house", cleaningSchedule: "None", concierge: [] },
+  { id: "b6", property: "C1", guest: "R. Joshi",        mobile: "+919876500001", source: "Third Party", checkIn: "2026-05-27", checkOut: "2026-05-31", nights: 4, guests: 5, nightly: 8800, total: 35200, status: "upcoming", cleaningSchedule: "Alternate", concierge: ["Private Chef", "Airport Transfer"] },
+  { id: "b7", property: "C4", guest: "Khan family",     mobile: "+919876500002", source: "Airbnb",      checkIn: "2026-05-28", checkOut: "2026-06-02", nights: 5, guests: 6, nightly: 7400, total: 37000, status: "upcoming", cleaningSchedule: "Daily", concierge: [] },
+  { id: "b8", property: "202", guest: "T. Bhandari",    mobile: "+919876500003", source: "Past Tenant", checkIn: "2026-05-25", checkOut: "2026-05-28", nights: 3, guests: 2, nightly: 5200, total: 15600, status: "upcoming", cleaningSchedule: "None", concierge: [] },
+];
+
+const SEED_EXPENSES = [
+  { id: "e1", date: "2026-05-21", property: "C1",  category: "Housekeeping",  amount: 2400, vendor: "Sparkle Co.",       note: "Post-checkout deep clean", bill: "" },
+  { id: "e2", date: "2026-05-20", property: "C4",  category: "Utility",       amount: 4180, vendor: "Electricity board", note: "April bill", bill: "" },
+  { id: "e3", date: "2026-05-19", property: "202", category: "Minor Repair / Change", amount: 1750, vendor: "Local plumber", note: "Tap replacement", bill: "" },
+  { id: "e4", date: "2026-05-18", property: "C1",  category: "Consumables",   amount: 3200, vendor: "Amazon Business",   note: "Toiletries restock", bill: "" },
+  { id: "e5", date: "2026-05-17", property: "B1",  category: "Servicing / Major Repair", amount: 8600, vendor: "AC service co.", note: "AC gas refill + service", bill: "" },
+  { id: "e6", date: "2026-05-15", property: "203", category: "Laundry",       amount: 1800, vendor: "Laundry vendor",    note: "Checkout linen wash", bill: "" },
+  { id: "e7", date: "2026-05-14", property: "C4",  category: "Housekeeping",  amount: 2200, vendor: "Sparkle Co.",       note: "Turnover clean", bill: "" },
+  { id: "e8", date: "2026-05-12", property: "C1",  category: "Item Purchase", amount: 2100, vendor: "Local market",      note: "Kitchen restock", bill: "" },
+  { id: "e9", date: "2026-05-10", property: "B1",  category: "Utility",       amount: 2900, vendor: "Electricity board", note: "April bill", bill: "" },
+  { id: "e10", date: "2026-05-07", property: "202",category: "Consumables",   amount: 1400, vendor: "DMart",             note: "Cleaning supplies", bill: "" },
+];
+
+const SEED_COMPANY_EXPENSES = [
+  { id: "c1", date: "2026-05-20", category: "Travel",    vendor: "Petrol",         amount: 1800,  note: "Site visits" },
+  { id: "c2", date: "2026-05-15", category: "Hosting",   vendor: "Hostinger",      amount: 499,   note: "Monthly plan" },
+  { id: "c3", date: "2026-05-10", category: "Work Setup",vendor: "Amazon",         amount: 8200,  note: "Monitor + cables" },
+  { id: "c4", date: "2026-05-06", category: "Travel",    vendor: "IndiGo",         amount: 5400,  note: "Flight to Goa" },
+  { id: "c5", date: "2026-05-01", category: "TDS",       vendor: "TDS payment",    amount: 3200,  note: "April TDS deposit" },
+];
+
+const SEED_DISPUTES = [];
+const SEED_HOUSEKEEPING = [];
+const SEED_LAUNDRY = [];
+
+/* ─── Budgeting structure from CMS Budgeting spreadsheet ─── */
+const BUDGET_MONTHS = ["Apr-26","May-26","Jun-26","Jul-26","Aug-26","Sep-26","Oct-26","Nov-26","Dec-26","Jan-27","Feb-27","Mar-27"];
+
+const BUDGET_CATEGORIES = [
+  { section: "TEAM COSTS", items: ["Founder 1 Drawing", "Founder 2 Drawing", "Tech Director", "Operations Director", "Housekeeping Lead", "Part-time Bookkeeper"] },
+  { section: "OPERATIONAL IMPROVEMENT", items: ["Referral Commissions (Third Party)", "Staff Training Costs (Service)", "Extra Service for Guests"] },
+  { section: "TECHNOLOGY & TOOLS", items: ["Accounting Software", "Website Hosting & Domain", "Other Tools (Dynamic Pricing etc.)"] },
+  { section: "TEAM OPERATIONS", items: ["Fuel Cost", "Business Travel", "Phone / SIM Cards (Team)", "Internet & Cloud Storage"] },
+  { section: "GROWTH & MARKETING", items: ["Ad Spend (Owner Acq)", "Ad Spend (For Bookings)", "Marketing Costs", "Owner Acquisition Costs"] },
+  { section: "LEGAL & COMPLIANCE", items: ["Legal Drafting", "Insurance Provision", "CA / TDS Filing", "ITR Filing Costs"] },
+  { section: "CONTINGENCY", items: ["Emergency / Buffer Fund"] },
+];
+
+const DEFAULT_BUDGET = {};
+BUDGET_CATEGORIES.forEach(cat => {
+  cat.items.forEach(item => {
+    BUDGET_MONTHS.forEach(m => { DEFAULT_BUDGET[item + "|" + m] = 0; });
+  });
+});
+// Set some sample values from the spreadsheet
+const sampleBudget = {
+  "Founder 1 Drawing": [0,0,0,0,0,0,0,0,0,0,0,0],
+  "Founder 2 Drawing": [0,0,0,0,0,0,0,0,0,0,0,0],
+  "Tech Director":     [0,25000,0,0,0,0,0,0,0,0,0,0],
+  "Housekeeping Lead": [0,0,0,0,0,0,0,0,0,0,0,0],
+};
+Object.entries(sampleBudget).forEach(([item, vals]) => {
+  vals.forEach((v, i) => { DEFAULT_BUDGET[item + "|" + BUDGET_MONTHS[i]] = v; });
+});
+
+/* ─── Helpers ─── */
+const INR = (n) => "₹" + Math.round(Number(n) || 0).toLocaleString("en-IN");
+const SHORT_INR = (n) => {
+  const v = Math.abs(n);
+  if (v >= 10000000) return "₹" + (n / 10000000).toFixed(1) + "Cr";
+  if (v >= 100000)   return "₹" + (n / 100000).toFixed(1) + "L";
+  if (v >= 1000)     return "₹" + (n / 1000).toFixed(1) + "k";
+  return "₹" + Math.round(n);
+};
+const fmtDate = (s) => new Date(s).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+const fmtDateLong = (s) => new Date(s).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+const findProp = (id) => PROPERTIES.find(p => p.id === id) || { name: id, sub: "", city: "", bedrooms: 0, owner: "", color: "#999", img: "??" };
+
+/* ─── localStorage persistence ─── */
+const LS_KEY = "cms_dashboard_v2";
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return null;
+}
+function saveState(state) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+/* ─── Inline icon set ─── */
+const Icon = ({ name, size = 16, color = "currentColor", strokeWidth = 1.75 }) => {
+  const paths = {
+    home:        <><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></>,
+    expense:     <><path d="M3 7h18M3 12h18M3 17h12"/></>,
+    income:      <><path d="M4 16l5-5 4 4 7-7"/><path d="M14 8h6v6"/></>,
+    pnl:         <><path d="M4 20V8M10 20V4M16 20v-8M22 20H2"/></>,
+    owner:       <><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></>,
+    company:     <><rect x="4" y="6" width="16" height="14" rx="2"/><path d="M9 6V4h6v2M9 12h6M9 16h6"/></>,
+    calendar:    <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></>,
+    forma:       <><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></>,
+    housekeeping:<><path d="M4 21V10l8-6 8 6v11"/><path d="M9 21v-6h6v6"/></>,
+    budget:      <><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></>,
+    settings:    <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></>,
+    search:      <><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></>,
+    plus:        <><path d="M12 5v14M5 12h14"/></>,
+    close:       <><path d="M6 6l12 12M6 18L18 6"/></>,
+    chevron:     <><path d="M9 6l6 6-6 6"/></>,
+    arrowUp:     <><path d="M12 19V5M5 12l7-7 7 7"/></>,
+    arrowDown:   <><path d="M12 5v14M5 12l7 7 7-7"/></>,
+    bell:        <><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 004 0"/></>,
+    download:    <><path d="M12 3v12M6 11l6 6 6-6M5 21h14"/></>,
+    check:       <><path d="M5 12l5 5L20 7"/></>,
+    edit:        <><path d="M12 20h9"/><path d="M16.5 3.5l4 4L8 20H4v-4z"/></>,
+    trash:       <><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></>,
+    filter:      <><path d="M3 5h18M6 12h12M10 19h4"/></>,
+    flag:        <><path d="M5 21V4h11l-2 4 2 4H5"/></>,
+    spark:       <><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></>,
+    location:    <><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></>,
+    users:       <><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3 3-5 7-5s7 2 7 5"/><path d="M16 4a3.5 3.5 0 010 7M22 20c0-2.5-2-4.5-5-4.5"/></>,
+    bot:         <><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 4v4M8 14h.01M16 14h.01M9 17h6"/></>,
+    upload:      <><path d="M12 21V9M6 13l6-6 6 6M5 3h14"/></>,
+    msg:         <><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></>,
+    copy:        <><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></>,
+    lock:        <><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></>,
+    logout:      <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={{flex:"none"}}>
+      {paths[name] || null}
+    </svg>
+  );
+};
+
+Object.assign(window, {
+  TODAY, MONTH_LABEL, PROPERTIES, OWNERS, DEFAULT_SETTINGS, CAT_TONES, catTone,
+  SEED_BOOKINGS, SEED_EXPENSES, SEED_COMPANY_EXPENSES, SEED_DISPUTES, SEED_HOUSEKEEPING, SEED_LAUNDRY,
+  BUDGET_MONTHS, BUDGET_CATEGORIES, DEFAULT_BUDGET,
+  INR, SHORT_INR, fmtDate, fmtDateLong, findProp,
+  loadState, saveState, LS_KEY,
+  Icon,
+});
+
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODULE 2 : SHARED UI COMPONENTS
+       Login screen, Sidebar, Topbar, Modal, Kpi, Tag, Icon,
+       Toast, PropertyCell, StatusDot, and other reusable parts.
+       ═══════════════════════════════════════════════════════════ -->
+  <script type="text/babel">
+/* CurateMyStay v2 — Shared UI: Login, Sidebar, Topbar, Components */
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+/* ─── LOGIN SCREEN ─── */
+function LoginScreen({ onLogin }) {
+  const [role, setRole] = useState(null); // null, "admin", "owner"
+  const [selectedOwner, setSelectedOwner] = useState(OWNERS[0]);
+
+  return (
+    <div style={{minHeight:"100vh", background:"var(--bg)", display:"grid", placeItems:"center", padding:24}}>
+      <div style={{width:"100%", maxWidth:420, textAlign:"center"}}>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='16' fill='%23B85C38'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif' font-weight='800' font-size='28' fill='white'%3ECmS%3C/text%3E%3C/svg%3E" style={{width:88, height:88, borderRadius:16, marginBottom:16, objectFit:"contain"}} alt="CurateMyStay" />
+        <h1 style={{fontSize:24, fontWeight:800, letterSpacing:"-0.02em", margin:"0 0 4px"}}>CurateMyStay</h1>
+        <p style={{color:"var(--ink-3)", fontSize:14, margin:"0 0 28px"}}>Operations Console</p>
+
+        {!role && (
+          <div style={{display:"flex", flexDirection:"column", gap:10}}>
+            <button className="btn btn--primary" style={{padding:"14px 20px", fontSize:15, justifyContent:"center", borderRadius:12}}
+              onClick={() => onLogin({ role:"admin", user:"CMS Admin" })}>
+              <Icon name="lock" size={18}/> Sign in as Admin
+            </button>
+            <button className="btn" style={{padding:"14px 20px", fontSize:15, justifyContent:"center", borderRadius:12}}
+              onClick={() => setRole("owner")}>
+              <Icon name="owner" size={18}/> Sign in as Property Owner
+            </button>
+            <p style={{fontSize:12, color:"var(--ink-4)", marginTop:8}}>This is a prototype. Production will use secure authentication.</p>
+          </div>
+        )}
+
+        {role === "owner" && (
+          <div style={{display:"flex", flexDirection:"column", gap:12, textAlign:"left"}}>
+            <div className="field">
+              <label>Select your profile</label>
+              <select value={selectedOwner} onChange={e => setSelectedOwner(e.target.value)} style={{padding:"12px"}}>
+                {OWNERS.map(o => {
+                  const props = PROPERTIES.filter(p => p.owner === o);
+                  return <option key={o} value={o}>{o} — {props.map(p=>p.name).join(", ")}</option>;
+                })}
+              </select>
+            </div>
+            <button className="btn btn--primary" style={{padding:"14px", fontSize:15, justifyContent:"center", borderRadius:12}}
+              onClick={() => onLogin({ role:"owner", user: selectedOwner })}>
+              Continue as {selectedOwner}
+            </button>
+            <button className="btn btn--ghost" style={{justifyContent:"center"}} onClick={() => setRole(null)}>← Back</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── NAV ITEMS ─── */
+const ADMIN_NAV = [
+  { id: "home",        label: "Overview",          icon: "home"        },
+  { id: "income",      label: "Bookings & Income", icon: "income"      },
+  { id: "expense",     label: "Property Expenses", icon: "expense"     },
+  { id: "pnl",         label: "P&L : Admin",       icon: "pnl"         },
+  { id: "owner",       label: "Owner Portal",      icon: "owner"       },
+  { id: "calendar",    label: "Booking Calendar",  icon: "calendar"    },
+  { id: "housekeeping",label: "Housekeeping",      icon: "housekeeping"},
+  { id: "forma",       label: "Forma Sheet",       icon: "forma"       },
+  { id: "company",     label: "Company Expenses",  icon: "company"     },
+  { id: "budget",      label: "Budgeting",         icon: "budget"      },
+  { id: "settings",    label: "Settings",          icon: "settings"    },
+];
+const OWNER_NAV = [
+  { id: "owner", label: "My Properties", icon: "owner" },
+];
+
+/* ─── SIDEBAR ─── */
+function Sidebar({ route, onRoute, session }) {
+  const nav = session.role === "admin" ? ADMIN_NAV : OWNER_NAV;
+  return (
+    <aside className="sidebar">
+      <div className="sidebar__logo">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='16' fill='%23B85C38'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif' font-weight='800' font-size='28' fill='white'%3ECmS%3C/text%3E%3C/svg%3E" alt="CurateMyStay" />
+        <div>
+          <div className="name">CurateMyStay</div>
+          <div className="sub">Operations Console</div>
+        </div>
+      </div>
+      <div className="sidebar__section">Workspace</div>
+      <nav className="nav">
+        {nav.map(item => (
+          <button key={item.id}
+            className={"nav__item " + (route === item.id ? "nav__item--active" : "")}
+            onClick={() => onRoute(item.id)}>
+            <Icon name={item.icon} />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
+      <div className="sidebar__footer">
+        <div className="avatar">{session.user.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+        <div style={{flex:1}}>
+          <div className="who">{session.user}</div>
+          <div className="role">{session.role === "admin" ? "Admin · Operations" : "Property Owner"}</div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+/* ─── TOPBAR ─── */
+function Topbar({ title, sub, session, onLogout, right }) {
+  return (
+    <div className="topbar">
+      <h1>{title}</h1>
+      {sub && <span className="crumb">· {sub}</span>}
+      <div className="right">
+        {right}
+        <span style={{fontSize:12, color:"var(--ink-3)", fontWeight:600, padding:"4px 10px", background:"var(--surface-2)", borderRadius:6, border:"1px solid var(--border)"}}>
+          {session.role === "admin" ? "🔑 Admin" : "👤 " + session.user}
+        </span>
+        <button className="btn btn--ghost btn--icon" title="Sign out" onClick={onLogout}><Icon name="logout" /></button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SHARED COMPONENTS ─── */
+function Kpi({ label, value, delta, deltaTone = "neutral", sub }) {
+  return (
+    <div className="kpi">
+      <div className="kpi__label">{label}</div>
+      <div className="kpi__value">{value}</div>
+      {(delta || sub) && (
+        <div className={"kpi__delta kpi__delta--" + deltaTone}>
+          {delta && deltaTone === "up" && <Icon name="arrowUp" size={12} />}
+          {delta && deltaTone === "down" && <Icon name="arrowDown" size={12} />}
+          {delta || sub}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Tag({ tone = "neutral", children, dot }) {
+  return <span className={"tag tag--" + tone}>{dot && <span className="dot" />}{children}</span>;
+}
+
+function PropertyCell({ id }) {
+  const p = findProp(id);
+  return (
+    <div style={{display:"flex", alignItems:"center", gap:10}}>
+      <div style={{width:30, height:30, borderRadius:8, background:p.color, color:"white", fontWeight:700, fontSize:10, display:"grid", placeItems:"center", flex:"none", letterSpacing:0.2}}>{p.img}</div>
+      <div>
+        <div style={{fontWeight:600, fontSize:13}}>{p.name}</div>
+        <div className="muted">{p.sub || p.city}</div>
+      </div>
+    </div>
+  );
+}
+
+function Modal({ title, onClose, footer, children, width = 540 }) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+  return (
+    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal" style={{maxWidth: width}}>
+        <div className="modal__head">
+          <div className="modal__title">{title}</div>
+          <button className="btn btn--ghost btn--icon" onClick={onClose}><Icon name="close" /></button>
+        </div>
+        <div className="modal__body">{children}</div>
+        {footer && <div className="modal__foot">{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Searchbar({ value, onChange, placeholder = "Search…" }) {
+  return (
+    <div className="searchbar">
+      <Icon name="search" size={15} />
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
+    </div>
+  );
+}
+
+function Toast({ msg, onDone }) {
+  useEffect(() => {
+    if (!msg) return;
+    const t = setTimeout(onDone, 2800);
+    return () => clearTimeout(t);
+  }, [msg, onDone]);
+  if (!msg) return null;
+  return <div className="toast">{msg}</div>;
+}
+
+function Sparkline({ data, color = "#E5484D", height = 38, width = 120, fill = true }) {
+  if (!data || !data.length) return null;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const step = width / (data.length - 1 || 1);
+  const pts = data.map((v, i) => [i * step, height - ((v - min) / range) * (height - 4) - 2]);
+  const d = pts.map((p, i) => (i === 0 ? "M" : "L") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const area = d + ` L${width} ${height} L0 ${height} Z`;
+  return (
+    <svg width={width} height={height} style={{display:"block"}}>
+      {fill && <path d={area} fill={color} opacity="0.12" />}
+      <path d={d} fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function BarChart({ series, height = 160, color = "var(--brand)", labels }) {
+  const m = Math.max(...series, 1);
+  return (
+    <div style={{display:"flex", alignItems:"flex-end", gap:8, height}}>
+      {series.map((v, i) => (
+        <div key={i} style={{flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:6, height:"100%"}}>
+          <div style={{flex:1, width:"100%", display:"flex", alignItems:"flex-end"}}>
+            <div style={{width:"100%", height: ((v / m) * 100) + "%", background: i === series.length-1 ? color : "var(--surface-2)", border: "1px solid " + (i === series.length-1 ? color : "var(--border-strong)"), borderRadius:"6px 6px 0 0", minHeight: 4}} title={SHORT_INR(v)} />
+          </div>
+          {labels && <div style={{fontSize:11, color:"var(--ink-3)", fontWeight:600}}>{labels[i]}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DonutChart({ data, size = 140, stroke = 18 }) {
+  const total = data.reduce((a, d) => a + d.value, 0) || 1;
+  const r = (size - stroke) / 2;
+  const cx = size/2, cy = size/2;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  return (
+    <svg width={size} height={size}>
+      {data.map((d, i) => {
+        const len = (d.value / total) * circ;
+        const dashOffset = circ - offset;
+        offset += len;
+        return <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={d.color} strokeWidth={stroke} strokeDasharray={`${len} ${circ - len}`} strokeDashoffset={dashOffset} transform={`rotate(-90 ${cx} ${cy})`} />;
+      })}
+    </svg>
+  );
+}
+
+function StatusDot({ status }) {
+  const map = {
+    "in-house": { color:"var(--brand)", label:"In-house" },
+    "upcoming": { color:"var(--teal)",  label:"Upcoming" },
+    "checked-out": { color:"var(--ink-4)", label:"Checked out" },
+    "done": { color:"var(--green)", label:"Done" },
+    "in-progress": { color:"var(--orange)", label:"In progress" },
+    "scheduled": { color:"var(--teal)", label:"Scheduled" },
+    "open": { color:"var(--brand)", label:"Open" },
+    "resolved": { color:"var(--green)", label:"Resolved" },
+  };
+  const m = map[status] || { color:"var(--ink-4)", label:status };
+  return (
+    <span style={{display:"inline-flex", alignItems:"center", gap:6, fontSize:12.5, fontWeight:600, color:"var(--ink-2)"}}>
+      <span style={{width:8, height:8, borderRadius:"50%", background:m.color}} />
+      {m.label}
+    </span>
+  );
+}
+
+/* ─── Owner message generator ─── */
+function generateOwnerMessage({ ownerName, propertyName, month, revenue, expenses, profitOwnerPct = 80, tdsPct = 10 }) {
+  const profit = revenue - expenses;
+  const ownerShare = Math.round(profit * (profitOwnerPct / 100));
+  const mgmtShare = profit - ownerShare;
+  const tds = Math.round(ownerShare * (tdsPct / 100));
+  const finalAmount = ownerShare - tds;
+  return `Good evening ${ownerName},
+Hope all is well. Sharing our ${month} summary below (for ${propertyName})
+
+Summary of ${month} - ${propertyName}
+
+Total Revenue: INR ${Math.round(revenue).toLocaleString("en-IN")}
+Total Expenses: INR ${Math.round(expenses).toLocaleString("en-IN")}
+Profit : Revenue - Expense = INR ${Math.round(profit).toLocaleString("en-IN")}
+
+Profit Shared to Owner (${profitOwnerPct}%) = INR ${ownerShare.toLocaleString("en-IN")}
+Profit Shared to Management Company (${100 - profitOwnerPct}%) = INR ${mgmtShare.toLocaleString("en-IN")}
+
+TDS (${tdsPct}% to be cut since limit is hit)
+= ${tdsPct}% × ${ownerShare.toLocaleString("en-IN")} = ${tds.toLocaleString("en-IN")}
+
+Amount to be sent for the month of ${month}
+= ${100-tdsPct}% × ${ownerShare.toLocaleString("en-IN")} = ${finalAmount.toLocaleString("en-IN")}
+
+${propertyName} PnL - ${month} Sheet
+(View on CurateMyStay Dashboard)`;
+}
+
+/* ─── TDS summary generator ─── */
+function generateTDSSummary(store, month, tdsPct = 10) {
+  let lines = [`Total TDS to be cut for the month of ${month}:\n`];
+  let total = 0;
+  PROPERTIES.forEach((p, i) => {
+    const rev = store.bookings.filter(b => b.property === p.id).reduce((s,b) => s+b.total, 0);
+    const exp = store.expenses.filter(e => e.property === p.id).reduce((s,e) => s+e.amount, 0);
+    const profit = rev - exp;
+    const ownerShare = Math.round(profit * 0.8);
+    const tds = Math.round(ownerShare * (tdsPct/100));
+    total += tds;
+    lines.push(`[${i+1}] ${p.name} (${p.owner})\n= ${tdsPct}% × ${INR(ownerShare)} = ${INR(tds)}\n--------`);
+  });
+  lines.push(`\nNet Total: ${INR(total)}`);
+  return lines.join("\n");
+}
+
+function generateMgmtProfitSummary(store, month) {
+  let lines = [`Management Company Profit Share - ${month}\n`];
+  let total = 0;
+  PROPERTIES.forEach((p, i) => {
+    const rev = store.bookings.filter(b => b.property === p.id).reduce((s,b) => s+b.total, 0);
+    const exp = store.expenses.filter(e => e.property === p.id).reduce((s,e) => s+e.amount, 0);
+    const mgmt = Math.round((rev - exp) * 0.2);
+    total += mgmt;
+    lines.push(`[${i+1}] ${p.name}\n= ${INR(mgmt)}\n--------`);
+  });
+  lines.push(`\nTotal Management Profit: ${INR(total)}`);
+  return lines.join("\n");
+}
+
+Object.assign(window, {
+  LoginScreen, ADMIN_NAV, OWNER_NAV, Sidebar, Topbar,
+  Kpi, Tag, PropertyCell, Modal, Searchbar, Toast,
+  Sparkline, BarChart, DonutChart, StatusDot,
+  generateOwnerMessage, generateTDSSummary, generateMgmtProfitSummary,
+});
+
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODULE 3 : CORE PAGES
+       Overview, Bookings & Income, Property Expenses,
+       Company Expenses.
+       ═══════════════════════════════════════════════════════════ -->
+  <script type="text/babel">
+/* CurateMyStay v2 — Pages: Overview, Bookings & Income, Property Expenses, Company Expenses */
+const { useState: useStateA, useMemo: useMemoA } = React;
+
+/* ───────── OVERVIEW ───────── */
+function PageHome({ store, settings, onRoute, onToast }) {
+  const totalRevenue = store.bookings.reduce((s,b) => s + b.total, 0);
+  const totalExpense = store.expenses.reduce((s,e) => s + e.amount, 0);
+  const inHouse = store.bookings.filter(b => b.status === "in-house").length;
+  const upcoming = store.bookings.filter(b => b.status === "upcoming").length;
+
+  const propPerf = PROPERTIES.map(p => {
+    const rev = store.bookings.filter(b => b.property === p.id).reduce((s,b) => s+b.total, 0);
+    const exp = store.expenses.filter(e => e.property === p.id).reduce((s,e) => s+e.amount, 0);
+    const nightsBooked = store.bookings.filter(b => b.property === p.id).reduce((s,b) => s+b.nights, 0);
+    const occ = Math.min(100, Math.round((nightsBooked / 31) * 100));
+    return { ...p, rev, exp, profit: rev - exp, occ };
+  }).sort((a,b) => b.profit - a.profit);
+
+  const upcomingCheckins = store.bookings.filter(b => b.status === "upcoming")
+    .sort((a,b) => a.checkIn.localeCompare(b.checkIn)).slice(0, 5);
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">May 2026 — Operations</h2>
+          <div className="page__sub">Live view across all {PROPERTIES.length} properties. Revenue, costs, and occupancy flow from every other module.</div>
+        </div>
+        <div style={{display:"flex", gap:8}}>
+          <button className="btn btn--primary" onClick={() => onRoute("income")}><Icon name="plus" /> Log booking</button>
+        </div>
+      </div>
+      <div className="kpis" style={{marginBottom:14}}>
+        <Kpi label="Revenue this month" value={SHORT_INR(totalRevenue)} delta={store.bookings.length + " bookings"} deltaTone="up" />
+        <Kpi label="Operating expense" value={SHORT_INR(totalExpense)} delta={store.expenses.length + " entries"} deltaTone="down" />
+        <Kpi label="Net profit" value={SHORT_INR(totalRevenue - totalExpense)} deltaTone="up" />
+        <Kpi label="In-house / Upcoming" value={inHouse + " / " + upcoming} sub="guests right now" />
+      </div>
+      <div className="grid-12">
+        <div className="span-7 card">
+          <div className="card__head"><div className="card__title">Property performance</div><div className="card__sub">Profit-ranked, this month</div></div>
+          <div className="card__body" style={{padding:0}}>
+            <table className="table">
+              <thead><tr><th>Property</th><th>Owner</th><th className="num">Revenue</th><th className="num">Expense</th><th className="num">Profit</th><th>Occupancy</th></tr></thead>
+              <tbody>
+                {propPerf.map(p => (
+                  <tr key={p.id}>
+                    <td><PropertyCell id={p.id} /></td>
+                    <td style={{fontSize:13}}>{p.owner}</td>
+                    <td className="num" style={{fontWeight:600}}>{SHORT_INR(p.rev)}</td>
+                    <td className="num">{SHORT_INR(p.exp)}</td>
+                    <td className="num" style={{fontWeight:700, color: p.profit >= 0 ? "var(--green)" : "var(--brand)"}}>{SHORT_INR(p.profit)}</td>
+                    <td style={{minWidth:120}}>
+                      <div style={{display:"flex", alignItems:"center", gap:8}}>
+                        <div className="bar-track" style={{flex:1}}><div className="bar-fill" style={{width: p.occ + "%", background: p.color}} /></div>
+                        <span style={{fontSize:12, fontWeight:600, width:32}}>{p.occ}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="span-5 card">
+          <div className="card__head"><div className="card__title">Upcoming check-ins</div><button className="btn btn--ghost btn--sm" onClick={() => onRoute("calendar")}>Calendar →</button></div>
+          <div className="card__body" style={{padding:0}}>
+            <div className="list" style={{padding:"0 18px"}}>
+              {upcomingCheckins.length === 0 && <div className="empty">No upcoming bookings</div>}
+              {upcomingCheckins.map(b => {
+                const p = findProp(b.property);
+                return (
+                  <div className="list__item" key={b.id}>
+                    <div style={{textAlign:"center", minWidth:42}}>
+                      <div style={{fontSize:18, fontWeight:700, lineHeight:1, color:"var(--brand)"}}>{new Date(b.checkIn).getDate()}</div>
+                      <div style={{fontSize:10.5, color:"var(--ink-3)", fontWeight:600, textTransform:"uppercase"}}>{new Date(b.checkIn).toLocaleDateString("en",{month:"short"})}</div>
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontWeight:600, fontSize:13.5}}>{b.guest}</div>
+                      <div className="muted">{p.name} · {b.nights}n · {b.guests} guests</div>
+                    </div>
+                    <Tag tone={catTone(b.source)}>{b.source}</Tag>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───────── BOOKINGS & INCOME ───────── */
+function PageIncome({ store, settings, dispatch, onToast }) {
+  const [open, setOpen] = useStateA(false);
+  const [editing, setEditing] = useStateA(null);
+  const [filter, setFilter] = useStateA("all");
+  const [search, setSearch] = useStateA("");
+
+  const filtered = store.bookings.filter(b => {
+    if (filter !== "all" && b.status !== filter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return b.guest.toLowerCase().includes(q) || findProp(b.property).name.toLowerCase().includes(q);
+    }
+    return true;
+  }).sort((a,b) => b.checkIn.localeCompare(a.checkIn));
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">Bookings & Income</h2>
+          <div className="page__sub">Every reservation that drives revenue. Log new bookings here — they auto-tag to the right property P&L.</div>
+        </div>
+        <button className="btn btn--primary" onClick={() => { setEditing(null); setOpen(true); }}><Icon name="plus" /> New booking</button>
+      </div>
+      <div className="kpis" style={{marginBottom:14}}>
+        <Kpi label="Total revenue (May)" value={SHORT_INR(store.bookings.reduce((s,b) => s+b.total, 0))} />
+        <Kpi label="Avg nightly rate" value={INR(Math.round(store.bookings.reduce((s,b)=>s+b.nightly,0)/(store.bookings.length||1)))} />
+        <Kpi label="Bookings" value={store.bookings.length} sub={store.bookings.filter(b=>b.status==="in-house").length + " in-house"} />
+        <Kpi label="Room-nights" value={store.bookings.reduce((s,b)=>s+b.nights,0)} />
+      </div>
+      <div className="card">
+        <div className="card__head">
+          <div style={{display:"flex", gap:8, alignItems:"center"}}>
+            <div className="seg">
+              {["all","in-house","upcoming","checked-out"].map(k => (
+                <button key={k} className={filter === k ? "active" : ""} onClick={() => setFilter(k)}>
+                  {k === "all" ? "All" : k === "in-house" ? "In-house" : k === "upcoming" ? "Upcoming" : "Past"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Searchbar value={search} onChange={setSearch} placeholder="Search guest or property…" />
+        </div>
+        <div className="card__body" style={{padding:0}}>
+          <table className="table">
+            <thead><tr><th>Guest</th><th>Property</th><th>Mobile</th><th>Dates</th><th>Source</th><th className="num">Nightly</th><th className="num">Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {filtered.map(b => (
+                <tr key={b.id}>
+                  <td><div style={{fontWeight:600}}>{b.guest}</div><div className="muted">{b.guests} guests · {b.nights}n</div></td>
+                  <td><PropertyCell id={b.property} /></td>
+                  <td>{b.mobile ? <a href={"https://wa.me/" + (b.mobile||"").replace(/[^0-9]/g,"")} target="_blank" rel="noopener" style={{color:"var(--teal)", fontWeight:500, fontSize:12.5, textDecoration:"none"}}>{b.mobile}</a> : <span className="muted">—</span>}</td>
+                  <td><div style={{fontSize:13}}>{fmtDate(b.checkIn)} → {fmtDate(b.checkOut)}</div></td>
+                  <td><Tag tone={catTone(b.source)} dot>{b.source}</Tag></td>
+                  <td className="num">{INR(b.nightly)}</td>
+                  <td className="num" style={{fontWeight:700}}>{INR(b.total)}</td>
+                  <td><StatusDot status={b.status} /></td>
+                  <td style={{display:"flex", gap:4}}>
+                    <button className="btn btn--ghost btn--sm" onClick={() => { setEditing(b); setOpen(true); }}><Icon name="edit" size={13}/></button>
+                    <button className="btn btn--ghost btn--sm" onClick={() => { dispatch({type:"delete_booking", id:b.id}); onToast("Booking deleted"); }}><Icon name="trash" size={13}/></button>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && <tr><td colSpan="9" className="empty">No bookings match your filter</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {open && <BookingModal booking={editing} settings={settings} onClose={() => setOpen(false)} onSave={(b) => { dispatch({type: editing ? "update_booking" : "add_booking", payload: b}); setOpen(false); onToast(editing ? "Booking updated" : "Booking added → " + findProp(b.property).name); }} />}
+    </div>
+  );
+}
+
+function BookingModal({ booking, settings, onClose, onSave }) {
+  const [form, setForm] = useStateA(booking || {
+    property: PROPERTIES[0].id, guest: "", mobile: "", source: settings.bookingSources[0],
+    checkIn: "2026-05-26", checkOut: "2026-05-29", guests: 2, nightly: 6000,
+    status: "upcoming", cleaningSchedule: "None", concierge: []
+  });
+  const nights = Math.max(1, Math.round((new Date(form.checkOut) - new Date(form.checkIn)) / 86400000));
+  const total = nights * Number(form.nightly || 0);
+  const save = () => onSave({...form, id: booking?.id || ("b" + Date.now()), nights, total: Number(total), mobile: form.mobile || ""});
+
+  return (
+    <Modal title={booking ? "Edit booking" : "New booking"} onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn btn--primary" onClick={save} disabled={!form.guest || !form.mobile}><Icon name="check" size={13}/> {booking ? "Save" : "Add booking"}</button></>}>
+      <div className="col" style={{gap:12}}>
+        <div className="grid-2">
+          <div className="field"><label>Property *</label>
+            <select value={form.property} onChange={e => setForm({...form, property: e.target.value})}>
+              {PROPERTIES.map(p => <option key={p.id} value={p.id}>{p.name} — {p.city}</option>)}
+            </select>
+          </div>
+          <div className="field"><label>Source *</label>
+            <select value={form.source} onChange={e => setForm({...form, source: e.target.value})}>
+              {settings.bookingSources.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="field"><label>Guest name *</label><input value={form.guest} onChange={e => setForm({...form, guest: e.target.value})} placeholder="e.g. Aditi Rao" autoFocus /></div>
+        <div className="field"><label>Mobile number *</label><input type="tel" value={form.mobile || ""} onChange={e => setForm({...form, mobile: e.target.value})} placeholder="e.g. +919876543210" /><div className="hint">Required. Include country code for WhatsApp.</div></div>
+        <div className="grid-3">
+          <div className="field"><label>Check-in *</label><input type="date" value={form.checkIn} onChange={e => setForm({...form, checkIn: e.target.value})} /></div>
+          <div className="field"><label>Check-out *</label><input type="date" value={form.checkOut} onChange={e => setForm({...form, checkOut: e.target.value})} /></div>
+          <div className="field"><label>Guests *</label><input type="number" min="1" value={form.guests} onChange={e => setForm({...form, guests: Number(e.target.value)})} /></div>
+        </div>
+        <div className="grid-2">
+          <div className="field"><label>Per night rate (₹) *</label><input type="number" value={form.nightly} onChange={e => setForm({...form, nightly: Number(e.target.value)})} /></div>
+          <div className="field"><label>Status</label>
+            <select value={form.status} onChange={e => setForm({...form, status: e.target.value})}>
+              <option value="upcoming">Upcoming</option><option value="in-house">In-house</option><option value="checked-out">Checked out</option>
+            </select>
+          </div>
+        </div>
+        <div className="divider" style={{margin:0}} />
+        <div style={{fontSize:12, fontWeight:700, color:"var(--ink-3)", textTransform:"uppercase", letterSpacing:"0.05em"}}>Optional fields</div>
+        <div className="grid-2">
+          <div className="field"><label>Cleaning schedule</label>
+            <select value={form.cleaningSchedule || "None"} onChange={e => setForm({...form, cleaningSchedule: e.target.value})}>
+              {settings.cleaningFrequencies.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <div className="hint">Determines housekeeping rotation</div>
+          </div>
+          <div className="field"><label>Concierge requested</label>
+            <div style={{display:"flex", flexWrap:"wrap", gap:5}}>
+              {settings.conciergeOptions.map(opt => {
+                const sel = (form.concierge || []).includes(opt);
+                return <button key={opt} type="button" className={"tag tag--" + (sel ? "green" : "neutral")} style={{cursor:"pointer", padding:"4px 10px", fontSize:12}} onClick={() => {
+                  const c = form.concierge || [];
+                  setForm({...form, concierge: sel ? c.filter(x=>x!==opt) : [...c, opt]});
+                }}>{sel ? "✓ " : ""}{opt}</button>;
+              })}
+            </div>
+          </div>
+        </div>
+        <div style={{background:"var(--surface-2)", padding:"12px 14px", borderRadius:10, display:"flex", justifyContent:"space-between", fontSize:13}}>
+          <span style={{color:"var(--ink-3)"}}>{nights} night{nights !== 1 ? "s" : ""} × {INR(form.nightly)}</span>
+          <span style={{fontWeight:700, fontSize:15}}>Total {INR(total)}</span>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/* ───────── PROPERTY EXPENSES ───────── */
+function PageExpense({ store, settings, dispatch, onToast }) {
+  const [open, setOpen] = useStateA(false);
+  const [editing, setEditing] = useStateA(null);
+  const [propFilter, setPropFilter] = useStateA("all");
+  const [search, setSearch] = useStateA("");
+
+  const filtered = store.expenses.filter(e => {
+    if (propFilter !== "all" && e.property !== propFilter) return false;
+    if (search) { const q = search.toLowerCase(); return (e.vendor||"").toLowerCase().includes(q) || (e.note||"").toLowerCase().includes(q) || (e.category||"").toLowerCase().includes(q); }
+    return true;
+  }).sort((a,b) => b.date.localeCompare(a.date));
+
+  const byCategory = settings.expenseCategories.map(c => ({
+    label: c, total: store.expenses.filter(e => e.category === c).reduce((s,e) => s+e.amount, 0)
+  })).filter(c => c.total > 0).sort((a,b) => b.total - a.total);
+  const total = store.expenses.reduce((s,e) => s+e.amount, 0);
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">Property Expenses</h2>
+          <div className="page__sub">Every operational rupee on a specific property. Tag once — it flows into Admin P&L and the Owner Portal.</div>
+        </div>
+        <button className="btn btn--primary" onClick={() => { setEditing(null); setOpen(true); }}><Icon name="plus" /> Log expense</button>
+      </div>
+      <div className="grid-12" style={{marginBottom:14}}>
+        <div className="span-5 card">
+          <div className="card__head"><div><div className="card__title">May spend by category</div><div className="card__sub">{INR(total)} total</div></div></div>
+          <div className="card__body" style={{display:"flex", gap:18, alignItems:"center"}}>
+            <DonutChart size={130} stroke={18} data={byCategory.map(c => ({label:c.label, value:c.total, color: catTone(c.label)==="brand" ? "var(--brand)" : catTone(c.label)==="teal" ? "var(--teal)" : catTone(c.label)==="orange" ? "var(--orange)" : catTone(c.label)==="green" ? "var(--green)" : catTone(c.label)==="amber" ? "var(--amber)" : "var(--ink-4)"}))} />
+            <div style={{flex:1, display:"flex", flexDirection:"column", gap:5}}>
+              {byCategory.map(c => (
+                <div key={c.label} style={{display:"flex", justifyContent:"space-between", fontSize:12.5}}>
+                  <span style={{fontWeight:500}}>{c.label}</span>
+                  <span style={{fontWeight:600}}>{SHORT_INR(c.total)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="span-7 card">
+          <div className="card__head"><div><div className="card__title">Spend by property</div></div></div>
+          <div className="card__body">
+            <div className="col" style={{gap:10}}>
+              {PROPERTIES.map(p => {
+                const t = store.expenses.filter(e => e.property === p.id).reduce((s,e) => s+e.amount, 0);
+                const max = Math.max(...PROPERTIES.map(pp => store.expenses.filter(e => e.property === pp.id).reduce((s,e) => s+e.amount, 0)), 1);
+                return (
+                  <div key={p.id} style={{display:"grid", gridTemplateColumns:"180px 1fr 80px", gap:10, alignItems:"center"}}>
+                    <div style={{fontSize:13, fontWeight:500}}>{p.name}</div>
+                    <div className="bar-track"><div className="bar-fill" style={{width: ((t/max)*100)+"%", background: p.color}} /></div>
+                    <div className="num" style={{fontWeight:600, fontSize:13}}>{SHORT_INR(t)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div className="card__head">
+          <div style={{display:"flex", gap:8, alignItems:"center"}}>
+            <select className="btn" style={{padding:"7px 10px"}} value={propFilter} onChange={e => setPropFilter(e.target.value)}>
+              <option value="all">All properties</option>
+              {PROPERTIES.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <span className="muted" style={{fontSize:12}}>{filtered.length} entries</span>
+          </div>
+          <Searchbar value={search} onChange={setSearch} placeholder="Vendor or note…" />
+        </div>
+        <div className="card__body" style={{padding:0}}>
+          <table className="table">
+            <thead><tr><th>Date</th><th>Property</th><th>Category</th><th>Vendor / Note</th><th className="num">Amount</th><th></th></tr></thead>
+            <tbody>
+              {filtered.map(e => (
+                <tr key={e.id}>
+                  <td style={{whiteSpace:"nowrap"}}>{fmtDate(e.date)}</td>
+                  <td><PropertyCell id={e.property} /></td>
+                  <td><Tag tone={catTone(e.category)}>{e.category}</Tag></td>
+                  <td><div style={{fontWeight:600, fontSize:13}}>{e.vendor}</div><div className="muted">{e.note}</div></td>
+                  <td className="num" style={{fontWeight:700}}>{INR(e.amount)}</td>
+                  <td style={{display:"flex", gap:4}}>
+                    <button className="btn btn--ghost btn--sm" onClick={() => { setEditing(e); setOpen(true); }}><Icon name="edit" size={13}/></button>
+                    <button className="btn btn--ghost btn--sm" onClick={() => { dispatch({type:"delete_expense", id:e.id}); onToast("Expense deleted"); }}><Icon name="trash" size={13}/></button>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && <tr><td colSpan="6" className="empty">No expenses match your filter</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {open && <ExpenseModal expense={editing} settings={settings} categories={settings.expenseCategories} onClose={() => setOpen(false)} onSave={(ex) => { dispatch({type: editing ? "update_expense" : "add_expense", payload: ex}); setOpen(false); onToast(editing ? "Updated" : INR(ex.amount) + " tagged to " + findProp(ex.property).name); }} />}
+    </div>
+  );
+}
+
+function ExpenseModal({ expense, settings, categories, onClose, onSave, showProperty = true, title }) {
+  const [form, setForm] = useStateA(expense || {
+    date: "2026-05-23", property: PROPERTIES[0].id, category: categories[0],
+    amount: "", vendor: "", note: "", bill: ""
+  });
+  const save = () => onSave({...form, id: expense?.id || ("e" + Date.now()), amount: Number(form.amount)});
+  return (
+    <Modal title={title || (expense ? "Edit expense" : "Log expense")} onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn btn--primary" onClick={save} disabled={!form.category || !form.amount}><Icon name="check" size={13}/> {expense ? "Save" : "Add expense"}</button></>}>
+      <div className="col" style={{gap:12}}>
+        <div className="grid-2">
+          <div className="field"><label>Date *</label><input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} /></div>
+          <div className="field"><label>Amount (₹) *</label><input type="number" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} placeholder="0" /></div>
+        </div>
+        {showProperty && <div className="field"><label>Property *</label>
+          <select value={form.property} onChange={e => setForm({...form, property: e.target.value})}>
+            {PROPERTIES.map(p => <option key={p.id} value={p.id}>{p.name} — {p.city}</option>)}
+          </select>
+        </div>}
+        <div className="field"><label>Category *</label>
+          <div style={{display:"flex", flexWrap:"wrap", gap:6}}>
+            {categories.map(c => (
+              <button key={c} type="button" className={"tag tag--" + (form.category === c ? catTone(c) : "neutral")}
+                style={{cursor:"pointer", fontSize:12.5, padding:"5px 12px", border: form.category === c ? "1px solid currentColor" : undefined}}
+                onClick={() => setForm({...form, category: c})}>{c}</button>
+            ))}
+          </div>
+        </div>
+        <div className="field"><label>Vendor</label><input value={form.vendor} onChange={e => setForm({...form, vendor: e.target.value})} placeholder="Optional" /></div>
+        <div className="field"><label>Description</label><input value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="Optional" /></div>
+        <div className="field"><label>Bill / receipt reference</label><input value={form.bill || ""} onChange={e => setForm({...form, bill: e.target.value})} placeholder="Optional — paste link or note" /></div>
+      </div>
+    </Modal>
+  );
+}
+
+/* ───────── COMPANY EXPENSES ───────── */
+function PageCompany({ store, settings, dispatch, onToast }) {
+  const [open, setOpen] = useStateA(false);
+  const [editing, setEditing] = useStateA(null);
+  const total = store.companyExpenses.reduce((s,e) => s+e.amount, 0);
+  const byCat = settings.companyExpenseCategories.map(c => ({
+    label: c, total: store.companyExpenses.filter(e => e.category === c).reduce((s,e) => s+e.amount, 0)
+  })).sort((a,b) => b.total - a.total);
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">Company Expenses</h2>
+          <div className="page__sub">Costs that belong to CurateMyStay the business — not any one property.</div>
+        </div>
+        <button className="btn btn--primary" onClick={() => { setEditing(null); setOpen(true); }}><Icon name="plus" /> Log expense</button>
+      </div>
+      <div className="kpis" style={{marginBottom:14}}>
+        <Kpi label="May spend" value={SHORT_INR(total)} />
+        <Kpi label="Entries" value={store.companyExpenses.length} />
+        <Kpi label="Largest" value={byCat[0]?.label || "—"} sub={byCat[0] ? SHORT_INR(byCat[0].total) : ""} />
+      </div>
+      <div className="grid-12">
+        <div className="span-5 card">
+          <div className="card__head"><div className="card__title">By category</div></div>
+          <div className="card__body">
+            <div className="col" style={{gap:12}}>
+              {byCat.filter(c=>c.total>0).map(c => (
+                <div key={c.label}>
+                  <div style={{display:"flex", justifyContent:"space-between", marginBottom:5, fontSize:13}}>
+                    <span style={{fontWeight:500}}>{c.label}</span><span style={{fontWeight:700}}>{SHORT_INR(c.total)}</span>
+                  </div>
+                  <div className="bar-track"><div className="bar-fill" style={{width: ((c.total/(total||1))*100)+"%", background: catTone(c.label)==="brand" ? "var(--brand)" : catTone(c.label)==="teal" ? "var(--teal)" : catTone(c.label)==="orange" ? "var(--orange)" : "var(--ink-4)"}} /></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="span-7 card">
+          <div className="card__head"><div className="card__title">All entries — May 2026</div></div>
+          <div className="card__body" style={{padding:0}}>
+            <table className="table">
+              <thead><tr><th>Date</th><th>Category</th><th>Vendor</th><th>Note</th><th className="num">Amount</th><th></th></tr></thead>
+              <tbody>
+                {store.companyExpenses.sort((a,b) => b.date.localeCompare(a.date)).map(e => (
+                  <tr key={e.id}>
+                    <td style={{whiteSpace:"nowrap"}}>{fmtDate(e.date)}</td>
+                    <td><Tag tone={catTone(e.category)}>{e.category}</Tag></td>
+                    <td style={{fontWeight:600}}>{e.vendor}</td>
+                    <td className="muted">{e.note}</td>
+                    <td className="num" style={{fontWeight:700}}>{INR(e.amount)}</td>
+                    <td style={{display:"flex", gap:4}}>
+                      <button className="btn btn--ghost btn--sm" onClick={() => { setEditing(e); setOpen(true); }}><Icon name="edit" size={13}/></button>
+                      <button className="btn btn--ghost btn--sm" onClick={() => { dispatch({type:"delete_company", id:e.id}); onToast("Deleted"); }}><Icon name="trash" size={13}/></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {open && <ExpenseModal expense={editing} settings={settings} categories={settings.companyExpenseCategories} showProperty={false} title={editing ? "Edit company expense" : "Log company expense"} onClose={() => setOpen(false)} onSave={(ex) => { dispatch({type: editing ? "update_company" : "add_company", payload: ex}); setOpen(false); onToast(editing ? "Updated" : INR(ex.amount) + " logged"); }} />}
+    </div>
+  );
+}
+
+Object.assign(window, { PageHome, PageIncome, PageExpense, PageCompany, BookingModal, ExpenseModal });
+
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODULE 4 : FINANCE PAGES
+       Admin P&L, Owner Portal (with expense toggle,
+       disputes table, and approval flow).
+       ═══════════════════════════════════════════════════════════ -->
+  <script type="text/babel">
+/* CurateMyStay v3 — Pages: Admin P&L, Owner Portal */
+const { useState: useStateB } = React;
+
+/* ───────── ADMIN P&L ───────── */
+function PagePnL({ store, settings, dispatch, onToast }) {
+  const [property, setProperty] = useStateB("all");
+  const [msgModal, setMsgModal] = useStateB(null);
+  const [extractModal, setExtractModal] = useStateB(null);
+
+  const filterRev = (b) => property === "all" || b.property === property;
+  const filterExp = (e) => property === "all" || e.property === property;
+
+  const rev = store.bookings.filter(filterRev);
+  const exp = store.expenses.filter(filterExp);
+  const grossRevenue = rev.reduce((s,b) => s+b.total, 0);
+  const totalExp = exp.reduce((s,e) => s+e.amount, 0);
+  const profit = grossRevenue - totalExp;
+  const ownerShare = Math.round(profit * 0.8);
+  const mgmtShare = profit - ownerShare;
+  const tds = Math.round(ownerShare * 0.1);
+  const netToOwner = ownerShare - tds;
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">Admin P&L</h2>
+          <div className="page__sub">Live profit & loss from bookings and expenses. 80/20 split with TDS calculation.</div>
+        </div>
+        <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+          <button className="btn" onClick={() => setExtractModal("tds")}><Icon name="download" /> TDS Summary</button>
+          <button className="btn" onClick={() => setExtractModal("mgmt")}><Icon name="download" /> Mgmt Profit</button>
+        </div>
+      </div>
+
+      <div style={{display:"flex", gap:6, marginBottom:14, flexWrap:"wrap", alignItems:"center"}}>
+        <button className={"tag tag--" + (property === "all" ? "brand" : "neutral")} style={{cursor:"pointer", padding:"5px 12px", fontSize:12.5}} onClick={() => setProperty("all")}>All properties</button>
+        {PROPERTIES.map(p => (
+          <button key={p.id} className={"tag tag--" + (property === p.id ? "brand" : "neutral")} style={{cursor:"pointer", padding:"5px 12px", fontSize:12.5}} onClick={() => setProperty(p.id)}>{p.name}</button>
+        ))}
+      </div>
+
+      <div className="kpis" style={{marginBottom:14}}>
+        <Kpi label="Gross revenue" value={SHORT_INR(grossRevenue)} />
+        <Kpi label="Total expenses" value={SHORT_INR(totalExp)} />
+        <Kpi label="Owner share (80%)" value={SHORT_INR(ownerShare)} />
+        <Kpi label="CMS share (20%)" value={SHORT_INR(mgmtShare)} />
+      </div>
+
+      <div className="grid-12">
+        <div className="span-5 card">
+          <div className="card__head"><div className="card__title">P&L Statement</div><div className="card__sub">May 2026 · {property === "all" ? "Portfolio" : findProp(property).name}</div></div>
+          <div className="card__body">
+            <table className="table" style={{fontSize:13}}>
+              <tbody>
+                <tr><td style={{fontWeight:600}}>Gross rental revenue</td><td className="num" style={{fontWeight:600, color:"var(--green)"}}>+ {INR(grossRevenue)}</td></tr>
+                <tr><td colSpan="2" style={{paddingTop:14, paddingBottom:4, fontSize:11, color:"var(--ink-4)", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em"}}>Operating expenses</td></tr>
+                {settings.expenseCategories.map(cat => {
+                  const t = exp.filter(e => e.category === cat).reduce((s,e) => s+e.amount, 0);
+                  if (t === 0) return null;
+                  return <tr key={cat}><td style={{paddingLeft:14}}>{cat}</td><td className="num" style={{color:"var(--brand)"}}>– {INR(t)}</td></tr>;
+                })}
+                <tr><td style={{fontWeight:600, borderTop:"1px solid var(--border)"}}>Total expenses</td><td className="num" style={{fontWeight:600, borderTop:"1px solid var(--border)", color:"var(--brand)"}}>– {INR(totalExp)}</td></tr>
+                <tr><td style={{fontWeight:700, borderTop:"2px solid var(--ink)", paddingTop:12}}>Net profit</td><td className="num" style={{fontWeight:700, borderTop:"2px solid var(--ink)", paddingTop:12}}>{INR(profit)}</td></tr>
+                <tr><td colSpan="2" style={{paddingTop:14, paddingBottom:4, fontSize:11, color:"var(--ink-4)", fontWeight:700, textTransform:"uppercase"}}>Distribution</td></tr>
+                <tr><td style={{paddingLeft:14}}>Owner share (80%)</td><td className="num">{INR(ownerShare)}</td></tr>
+                <tr><td style={{paddingLeft:14}}>CMS management (20%)</td><td className="num">{INR(mgmtShare)}</td></tr>
+                <tr><td style={{paddingLeft:14, color:"var(--ink-3)"}}>TDS on owner share (10%)</td><td className="num" style={{color:"var(--ink-3)"}}>– {INR(tds)}</td></tr>
+                <tr><td style={{fontWeight:800, fontSize:14, borderTop:"2px solid var(--ink)", paddingTop:12}}>Net payable to owner</td><td className="num" style={{fontWeight:800, fontSize:16, color:"var(--green)", borderTop:"2px solid var(--ink)", paddingTop:12}}>{INR(netToOwner)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="span-7 card">
+          <div className="card__head"><div className="card__title">Per-property P&L</div></div>
+          <div className="card__body table-scroll" style={{padding:0}}>
+            <table className="table" style={{fontSize:12.5}}>
+              <thead><tr><th>Property</th><th>Owner</th><th className="num">Revenue</th><th className="num">Expense</th><th className="num">Profit</th><th className="num">Owner (80%)</th><th className="num">CMS (20%)</th><th></th></tr></thead>
+              <tbody>
+                {PROPERTIES.map(p => {
+                  const pr = store.bookings.filter(b => b.property === p.id).reduce((s,b) => s+b.total, 0);
+                  const pe = store.expenses.filter(e => e.property === p.id).reduce((s,e) => s+e.amount, 0);
+                  const pp = pr - pe;
+                  return (
+                    <tr key={p.id}>
+                      <td><PropertyCell id={p.id} /></td>
+                      <td style={{fontSize:12}}>{p.owner}</td>
+                      <td className="num">{INR(pr)}</td>
+                      <td className="num">{INR(pe)}</td>
+                      <td className="num" style={{fontWeight:700, color: pp >= 0 ? "var(--green)" : "var(--brand)"}}>{INR(pp)}</td>
+                      <td className="num">{INR(Math.round(pp * 0.8))}</td>
+                      <td className="num">{INR(Math.round(pp * 0.2))}</td>
+                      <td><button className="btn btn--ghost btn--sm" onClick={() => setMsgModal(p.id)} title="Generate owner message"><Icon name="msg" size={13}/></button></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {msgModal && <OwnerMessageModal propertyId={msgModal} store={store} onClose={() => setMsgModal(null)} onToast={onToast} />}
+      {extractModal && <ExtractModal type={extractModal} store={store} onClose={() => setExtractModal(null)} onToast={onToast} />}
+    </div>
+  );
+}
+
+function OwnerMessageModal({ propertyId, store, onClose, onToast }) {
+  const p = findProp(propertyId);
+  const revenue = store.bookings.filter(b => b.property === propertyId).reduce((s,b) => s+b.total, 0);
+  const expenses = store.expenses.filter(e => e.property === propertyId).reduce((s,e) => s+e.amount, 0);
+  const msg = generateOwnerMessage({ ownerName: p.owner, propertyName: p.name, month: MONTH_LABEL, revenue, expenses });
+  const copy = () => { navigator.clipboard.writeText(msg).then(() => onToast("Copied to clipboard!")); };
+  return (
+    <Modal title={"Owner message : " + p.name} onClose={onClose} width={600}
+      footer={<><button className="btn" onClick={onClose}>Close</button><button className="btn btn--primary" onClick={copy}><Icon name="copy" size={13}/> Copy message</button></>}>
+      <div style={{fontSize:12, color:"var(--ink-3)", marginBottom:10}}>Auto-generated from live P&L. Copy and send via WhatsApp.</div>
+      <pre style={{background:"var(--surface-2)", padding:16, borderRadius:10, fontSize:13, lineHeight:1.6, whiteSpace:"pre-wrap", fontFamily:"inherit", border:"1px solid var(--border)"}}>{msg}</pre>
+    </Modal>
+  );
+}
+
+function ExtractModal({ type, store, onClose, onToast }) {
+  const text = type === "tds" ? generateTDSSummary(store, MONTH_LABEL) : generateMgmtProfitSummary(store, MONTH_LABEL);
+  const title = type === "tds" ? "TDS Summary : " + MONTH_LABEL : "Management Profit Share : " + MONTH_LABEL;
+  const copy = () => { navigator.clipboard.writeText(text).then(() => onToast("Copied!")); };
+  return (
+    <Modal title={title} onClose={onClose} width={560}
+      footer={<><button className="btn" onClick={onClose}>Close</button><button className="btn btn--primary" onClick={copy}><Icon name="copy" size={13}/> Copy</button></>}>
+      <pre style={{background:"var(--surface-2)", padding:16, borderRadius:10, fontSize:13, lineHeight:1.6, whiteSpace:"pre-wrap", fontFamily:"inherit", border:"1px solid var(--border)"}}>{text}</pre>
+    </Modal>
+  );
+}
+
+/* ───────── OWNER PORTAL ───────── */
+function PageOwner({ store, settings, dispatch, onToast, session }) {
+  const ownerName = session.role === "owner" ? session.user : null;
+  const myProps = ownerName ? PROPERTIES.filter(p => p.owner === ownerName) : PROPERTIES;
+  const [selectedProp, setSelectedProp] = useStateB(myProps[0]?.id || PROPERTIES[0].id);
+  const [disputeOpen, setDisputeOpen] = useStateB(false);
+  const [approveOpen, setApproveOpen] = useStateB(false);
+  const [msgModal, setMsgModal] = useStateB(false);
+  const [expenseView, setExpenseView] = useStateB("all"); // "summary" or "all"
+
+  const p = findProp(selectedProp);
+  const bookings = store.bookings.filter(b => b.property === selectedProp);
+  const expenses = store.expenses.filter(e => e.property === selectedProp);
+  const revenue = bookings.reduce((s,b) => s+b.total, 0);
+  const totalExp = expenses.reduce((s,e) => s+e.amount, 0);
+  const profit = revenue - totalExp;
+  const ownerShareAmt = Math.round(profit * 0.8);
+  const mgmtAmt = profit - ownerShareAmt;
+  const tds = Math.round(ownerShareAmt * 0.1);
+  const net = ownerShareAmt - tds;
+  const nightsBooked = bookings.reduce((s,b) => s+b.nights, 0);
+  const occ = Math.min(100, Math.round((nightsBooked / 31) * 100));
+
+  const myDisputes = store.disputes.filter(d => d.property === selectedProp);
+
+  // Expense breakdown by category
+  const expByCategory = settings.expenseCategories.map(c => ({
+    label: c, total: expenses.filter(e => e.category === c).reduce((s,e) => s+e.amount, 0)
+  })).filter(c => c.total > 0).sort((a,b) => b.total - a.total);
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">{ownerName ? `Hello, ${ownerName}.` : "Owner Portal (Admin view)"}</h2>
+          <div className="page__sub">Live performance for {myProps.length === 1 ? "your property" : "your " + myProps.length + " properties"}. Updated in real-time.</div>
+        </div>
+        <div style={{display:"flex", gap:8}}>
+          <button className="btn" onClick={() => setDisputeOpen(true)}><Icon name="flag" /> Raise a query</button>
+          {ownerName && <button className="btn btn--primary" onClick={() => setApproveOpen(true)}><Icon name="check" /> Approve May P&L</button>}
+          {!ownerName && <button className="btn" onClick={() => setMsgModal(true)}><Icon name="msg" /> Generate message</button>}
+        </div>
+      </div>
+
+      {/* Property switcher */}
+      <div style={{display:"flex", gap:10, marginBottom:14, flexWrap:"wrap"}}>
+        {myProps.map(mp => (
+          <button key={mp.id} onClick={() => setSelectedProp(mp.id)}
+            style={{display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background: selectedProp === mp.id ? "white" : "var(--surface-2)", border: "1px solid " + (selectedProp === mp.id ? mp.color : "var(--border)"), borderRadius:12, cursor:"pointer", textAlign:"left", minWidth:220}}>
+            <div style={{width:36, height:36, borderRadius:8, background: mp.color, color:"white", fontWeight:700, fontSize:13, display:"grid", placeItems:"center"}}>{mp.img}</div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700, fontSize:13.5}}>{mp.name}</div>
+              <div style={{fontSize:12, color:"var(--ink-3)"}}>{mp.sub}</div>
+            </div>
+            {selectedProp === mp.id && <Icon name="check" color={mp.color} />}
+          </button>
+        ))}
+      </div>
+
+      {/* Hero KPI */}
+      <div className="card" style={{marginBottom:14}}>
+        <div style={{padding:"22px 26px", display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:16}}>
+          <div>
+            <div style={{fontSize:11, color:"var(--ink-3)", fontWeight:600, textTransform:"uppercase"}}>Occupancy</div>
+            <div style={{fontSize:26, fontWeight:800, marginTop:4, color: p.color}}>{occ}%</div>
+            <div style={{fontSize:12, color:"var(--ink-3)"}}>{nightsBooked} room-nights</div>
+          </div>
+          <div>
+            <div style={{fontSize:11, color:"var(--ink-3)", fontWeight:600, textTransform:"uppercase"}}>Revenue</div>
+            <div style={{fontSize:26, fontWeight:800, marginTop:4}}>{INR(revenue)}</div>
+            <div style={{fontSize:12, color:"var(--ink-3)"}}>{bookings.length} bookings</div>
+          </div>
+          <div>
+            <div style={{fontSize:11, color:"var(--ink-3)", fontWeight:600, textTransform:"uppercase"}}>Expenses</div>
+            <div style={{fontSize:26, fontWeight:800, marginTop:4}}>{INR(totalExp)}</div>
+          </div>
+          <div>
+            <div style={{fontSize:11, color:"var(--ink-3)", fontWeight:600, textTransform:"uppercase"}}>Net to you</div>
+            <div style={{fontSize:26, fontWeight:800, marginTop:4, color:"var(--green)"}}>{INR(net)}</div>
+            <div style={{fontSize:12, color:"var(--ink-3)"}}>after 80/20 split + TDS</div>
+          </div>
+          <div>
+            <div style={{fontSize:11, color:"var(--ink-3)", fontWeight:600, textTransform:"uppercase"}}>TDS deducted</div>
+            <div style={{fontSize:26, fontWeight:800, marginTop:4}}>{INR(tds)}</div>
+            <div style={{fontSize:12, color:"var(--ink-3)"}}>10% of owner share</div>
+          </div>
+        </div>
+      </div>
+
+      {myDisputes.filter(d => d.status === "open").length > 0 && (
+        <div className="dispute-banner" style={{marginBottom:14}}>
+          <Icon name="flag" color="#8B6300" />
+          <div style={{flex:1}}>
+            <div style={{fontWeight:700, marginBottom:2}}>Your query is being reviewed</div>
+            <div>"{myDisputes.find(d => d.status === "open").topic}" : raised {fmtDate(myDisputes.find(d => d.status === "open").date)}</div>
+          </div>
+          <Tag tone="amber">Open</Tag>
+        </div>
+      )}
+
+      <div className="grid-12">
+        <div className="span-7 card">
+          <div className="card__head"><div><div className="card__title">Statement : May 2026</div></div><Tag tone="amber">Pending approval</Tag></div>
+          <div className="card__body">
+            <table className="table" style={{fontSize:13.5}}>
+              <tbody>
+                <tr><td style={{fontWeight:600}}>Rental revenue ({bookings.length} bookings)</td><td className="num" style={{fontWeight:600, color:"var(--green)"}}>+ {INR(revenue)}</td></tr>
+                {settings.expenseCategories.map(cat => {
+                  const t = expenses.filter(e => e.category === cat).reduce((s,e) => s+e.amount, 0);
+                  if (t === 0) return null;
+                  return <tr key={cat}><td style={{paddingLeft:14}}>{cat}</td><td className="num" style={{color:"var(--brand)"}}>– {INR(t)}</td></tr>;
+                })}
+                <tr><td style={{fontWeight:600, borderTop:"1px solid var(--border)"}}>Profit</td><td className="num" style={{fontWeight:600, borderTop:"1px solid var(--border)"}}>{INR(profit)}</td></tr>
+                <tr><td style={{paddingLeft:14}}>Owner share (80%)</td><td className="num">{INR(ownerShareAmt)}</td></tr>
+                <tr><td style={{paddingLeft:14}}>CMS management (20%)</td><td className="num">{INR(mgmtAmt)}</td></tr>
+                <tr><td style={{paddingLeft:14, color:"var(--ink-3)"}}>TDS (10% of owner share)</td><td className="num" style={{color:"var(--ink-3)"}}>– {INR(tds)}</td></tr>
+                <tr><td style={{fontWeight:800, fontSize:15, borderTop:"2px solid var(--ink)", paddingTop:12}}>Net payable to you</td><td className="num" style={{fontWeight:800, fontSize:18, color:"var(--green)", borderTop:"2px solid var(--ink)", paddingTop:12}}>{INR(net)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="span-5 col" style={{gap:14}}>
+          <div className="card">
+            <div className="card__head"><div className="card__title">Bookings this month</div></div>
+            <div className="card__body" style={{padding:"0 18px"}}>
+              <div className="list">
+                {bookings.length === 0 && <div className="empty">No bookings yet</div>}
+                {bookings.slice(0,5).map(b => (
+                  <div className="list__item" key={b.id}>
+                    <div style={{flex:1}}>
+                      <div style={{fontWeight:600, fontSize:13}}>{b.guest}</div>
+                      <div className="muted">{fmtDate(b.checkIn)} → {fmtDate(b.checkOut)} · {b.nights}n</div>
+                      {b.mobile && <a href={"https://wa.me/" + (b.mobile||"").replace(/[^0-9]/g,"")} target="_blank" rel="noopener" style={{fontSize:11, color:"var(--teal)", textDecoration:"none"}}>{b.mobile} (WhatsApp)</a>}
+                    </div>
+                    <Tag tone={catTone(b.source)}>{b.source}</Tag>
+                    <div style={{fontWeight:700, fontSize:13, minWidth:60, textAlign:"right"}}>{SHORT_INR(b.total)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Expenses section with toggle */}
+        <div className="span-12 card">
+          <div className="card__head">
+            <div className="card__title">Property Expenses</div>
+            <div style={{display:"flex", gap:8, alignItems:"center"}}>
+              <div className="seg">
+                <button className={expenseView==="all"?"active":""} onClick={()=>setExpenseView("all")}>All expenses</button>
+                <button className={expenseView==="summary"?"active":""} onClick={()=>setExpenseView("summary")}>By category</button>
+              </div>
+              <span className="muted" style={{fontSize:12}}>{expenses.length} entries · {INR(totalExp)}</span>
+            </div>
+          </div>
+          <div className="card__body" style={{padding:0}}>
+            {expenseView === "summary" && (
+              <div style={{padding:"16px 18px"}}>
+                <div className="col" style={{gap:10}}>
+                  {expByCategory.map(c => (
+                    <div key={c.label} style={{display:"grid", gridTemplateColumns:"200px 1fr 90px", gap:10, alignItems:"center"}}>
+                      <div style={{fontSize:13, fontWeight:500}}><Tag tone={catTone(c.label)}>{c.label}</Tag></div>
+                      <div className="bar-track"><div className="bar-fill" style={{width: ((c.total/(totalExp||1))*100)+"%", background:"var(--brand)"}} /></div>
+                      <div className="num" style={{fontWeight:700, fontSize:13}}>{INR(c.total)}</div>
+                    </div>
+                  ))}
+                  {expByCategory.length === 0 && <div className="empty">No expenses logged</div>}
+                </div>
+              </div>
+            )}
+            {expenseView === "all" && (
+              <div className="table-scroll">
+                <table className="table">
+                  <thead><tr><th>Date</th><th>Category</th><th>Vendor / Note</th><th className="num">Amount</th></tr></thead>
+                  <tbody>
+                    {expenses.sort((a,b) => b.date.localeCompare(a.date)).map(e => (
+                      <tr key={e.id}>
+                        <td style={{whiteSpace:"nowrap"}}>{fmtDate(e.date)}</td>
+                        <td><Tag tone={catTone(e.category)}>{e.category}</Tag></td>
+                        <td><div style={{fontWeight:600, fontSize:13}}>{e.vendor}</div><div className="muted">{e.note}</div></td>
+                        <td className="num" style={{fontWeight:700}}>{INR(e.amount)}</td>
+                      </tr>
+                    ))}
+                    {expenses.length === 0 && <tr><td colSpan="4" className="empty">No expenses logged for this property</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Queries & disputes — full width, properly visible */}
+        <div className="span-12 card" style={{marginTop:0}}>
+          <div className="card__head"><div className="card__title">Queries & Disputes</div><div className="card__sub">{myDisputes.length} total</div></div>
+          <div className="card__body table-scroll" style={{padding:0}}>
+            <table className="table">
+              <thead><tr><th>Raised</th><th>Topic</th><th className="num">Amount</th><th>Status</th><th>Note</th></tr></thead>
+              <tbody>
+                {myDisputes.length === 0 && <tr><td colSpan="5" className="empty">No queries raised. Everything looks aligned.</td></tr>}
+                {myDisputes.map(d => (
+                  <tr key={d.id}><td>{fmtDate(d.date)}</td><td style={{fontWeight:600}}>{d.topic}</td><td className="num">{INR(d.amount)}</td><td><StatusDot status={d.status} /></td><td className="muted">{d.note}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {disputeOpen && <DisputeModal properties={myProps} defaultProperty={selectedProp} onClose={() => setDisputeOpen(false)} onSubmit={(d) => { dispatch({type:"add_dispute", payload: d}); setDisputeOpen(false); onToast("Query sent"); }} />}
+      {approveOpen && <ApproveModal property={p} amount={net} onClose={() => setApproveOpen(false)} onApprove={() => { setApproveOpen(false); onToast("May P&L approved : payout queued"); }} />}
+      {msgModal && <OwnerMessageModal propertyId={selectedProp} store={store} onClose={() => setMsgModal(false)} onToast={onToast} />}
+    </div>
+  );
+}
+
+function DisputeModal({ properties, defaultProperty, onClose, onSubmit }) {
+  const [form, setForm] = useStateB({ property: defaultProperty, topic: "", amount: "", note: "" });
+  return (
+    <Modal title="Raise a query" onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn btn--primary" onClick={() => onSubmit({id:"d"+Date.now(), property:form.property, raisedBy:"Owner", date:"2026-05-23", topic:form.topic, amount:Number(form.amount||0), status:"open", note:form.note})} disabled={!form.topic}><Icon name="flag" size={13}/> Submit</button></>}>
+      <div className="col" style={{gap:12}}>
+        <div className="field"><label>Property</label><select value={form.property} onChange={e => setForm({...form, property:e.target.value})}>{properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+        <div className="field"><label>Topic</label><input value={form.topic} onChange={e => setForm({...form, topic:e.target.value})} placeholder="e.g. Utilities : April bill" /></div>
+        <div className="field"><label>Amount in question (₹)</label><input type="number" value={form.amount} onChange={e => setForm({...form, amount:e.target.value})} placeholder="Optional" /></div>
+        <div className="field"><label>Details</label><textarea rows={3} value={form.note} onChange={e => setForm({...form, note:e.target.value})} placeholder="What looks off?" /></div>
+      </div>
+    </Modal>
+  );
+}
+
+function ApproveModal({ property, amount, onClose, onApprove }) {
+  const [confirm, setConfirm] = useStateB(false);
+  return (
+    <Modal title="Approve May P&L" onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Not yet</button><button className="btn btn--primary" disabled={!confirm} onClick={onApprove}><Icon name="check" size={13}/> Approve</button></>}>
+      <div className="col" style={{gap:14}}>
+        <div style={{textAlign:"center", padding:"10px 0"}}>
+          <div style={{fontSize:12, color:"var(--ink-3)", fontWeight:600, textTransform:"uppercase"}}>{property.name}</div>
+          <div style={{fontSize:30, fontWeight:800, marginTop:6, color:"var(--green)"}}>{INR(amount)}</div>
+          <div style={{fontSize:13, color:"var(--ink-3)"}}>will be transferred to your account</div>
+        </div>
+        <label className="checkbox" style={{alignItems:"flex-start", gap:9}}>
+          <input type="checkbox" checked={confirm} onChange={e => setConfirm(e.target.checked)} />
+          <span style={{fontSize:13, lineHeight:1.45}}>I've reviewed the statement, all bookings and expenses look correct, and I authorise the payout.</span>
+        </label>
+      </div>
+    </Modal>
+  );
+}
+
+Object.assign(window, { PagePnL, PageOwner });
+
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODULE 5 : OPERATIONS PAGES
+       Booking Calendar (with month nav & detail popups),
+       Housekeeping & Laundry (with reconciliation),
+       Statistical Forma Sheet.
+       ═══════════════════════════════════════════════════════════ -->
+  <script type="text/babel">
+/* CurateMyStay v3 — Pages: Calendar, Housekeeping & Laundry, Statistical Forma Sheet */
+const { useState: useStateC } = React;
+
+/* ───────── BOOKING CALENDAR ───────── */
+function PageCalendar({ store, dispatch, onToast }) {
+  const [calMonth, setCalMonth] = useStateC(4); // 0-indexed: 4 = May
+  const [calYear, setCalYear] = useStateC(2026);
+  const [popup, setPopup] = useStateC(null); // { booking, x, y }
+
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const days = new Date(calYear, calMonth + 1, 0).getDate();
+  const today = calMonth === 4 && calYear === 2026 ? 23 : -1;
+  const dayList = Array.from({length: days}, (_, i) => i + 1);
+
+  const dayHeaders = dayList.map(d => {
+    const wd = new Date(calYear, calMonth, d).getDay();
+    return { day: d, label: ["S","M","T","W","T","F","S"][wd], isWeekend: wd === 0 || wd === 6 };
+  });
+
+  const propRows = PROPERTIES.map(p => {
+    const bars = store.bookings.filter(b => b.property === p.id).map(b => {
+      const start = new Date(b.checkIn), end = new Date(b.checkOut);
+      const sM = start.getMonth(), sY = start.getFullYear();
+      const eM = end.getMonth(), eY = end.getFullYear();
+      // Only show if overlaps current month
+      if ((sY > calYear || (sY === calYear && sM > calMonth)) && (eY > calYear || (eY === calYear && eM > calMonth))) return null;
+      if ((sY < calYear || (sY === calYear && sM < calMonth)) && (eY < calYear || (eY === calYear && eM < calMonth))) return null;
+      const startDay = (sY === calYear && sM === calMonth) ? start.getDate() : 1;
+      const endDay = (eY === calYear && eM === calMonth) ? end.getDate() - 1 : days;
+      if (endDay < 1 || startDay > days) return null;
+      return { ...b, startDay: Math.max(1, startDay), endDay: Math.min(days, endDay) };
+    }).filter(Boolean);
+    return { ...p, bars };
+  });
+
+  const navMonth = (delta) => {
+    let m = calMonth + delta;
+    let y = calYear;
+    if (m > 11) { m = 0; y++; }
+    if (m < 0) { m = 11; y--; }
+    setCalMonth(m); setCalYear(y);
+  };
+
+  const handleBarClick = (e, booking) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    setPopup({ booking, x: rect.left + rect.width / 2, y: rect.bottom + 8 });
+  };
+
+  return (
+    <div className="page" onClick={() => setPopup(null)}>
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">Booking Calendar</h2>
+          <div className="page__sub">Consolidated view across all properties and months.</div>
+        </div>
+      </div>
+      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14}}>
+        <div style={{display:"flex", gap:10, alignItems:"center"}}>
+          <button className="btn btn--ghost" onClick={() => navMonth(-1)}>← Prev</button>
+          <div style={{fontSize:17, fontWeight:700, minWidth:160, textAlign:"center"}}>{monthNames[calMonth]} {calYear}</div>
+          <button className="btn btn--ghost" onClick={() => navMonth(1)}>Next →</button>
+        </div>
+        <div style={{display:"flex", gap:14, fontSize:12, color:"var(--ink-2)", alignItems:"center", flexWrap:"wrap"}}>
+          {["Airbnb","Social Media","Third Party","Self","Past Tenant"].map(s => (
+            <span key={s} style={{display:"flex", alignItems:"center", gap:5}}><span style={{width:10, height:10, borderRadius:3, background: catTone(s)==="brand"?"var(--brand-soft)":catTone(s)==="teal"?"var(--teal-soft)":catTone(s)==="orange"?"var(--orange-soft)":catTone(s)==="green"?"var(--green-soft)":"var(--amber-soft)", border:"1px solid " + (catTone(s)==="brand"?"var(--brand)":catTone(s)==="teal"?"var(--teal)":catTone(s)==="orange"?"var(--orange)":catTone(s)==="green"?"var(--green)":"var(--amber)")}} />{s}</span>
+          ))}
+        </div>
+      </div>
+      <div className="card" style={{overflow:"auto", position:"relative"}}>
+        <div className="cal" style={{minWidth: 1100}}>
+          <div className="cal__head" style={{borderRight:"1px solid var(--border-strong)"}}>Property</div>
+          {dayHeaders.map(h => (
+            <div key={h.day} className={"cal__head " + (h.isWeekend ? "cal__weekend" : "") + (h.day === today ? " cal__today" : "")}>
+              <div style={{fontSize:10, color:"var(--ink-4)"}}>{h.label}</div>
+              <div style={{fontWeight:700, color: h.day === today ? "var(--brand)" : "var(--ink-2)"}}>{h.day}</div>
+            </div>
+          ))}
+          {propRows.map(p => (
+            <React.Fragment key={p.id}>
+              <div className="cal__rowhead">
+                <div style={{width:24, height:24, background:p.color, borderRadius:6, color:"white", fontSize:10, fontWeight:700, display:"grid", placeItems:"center"}}>{p.img}</div>
+                <div><div style={{fontSize:12.5, fontWeight:600}}>{p.name}</div><div style={{fontSize:10.5, color:"var(--ink-3)"}}>{p.sub}</div></div>
+              </div>
+              {dayList.map(d => {
+                const bar = p.bars.find(b => b.startDay === d);
+                const isWeekend = new Date(calYear, calMonth, d).getDay() % 6 === 0;
+                const srcTone = bar ? catTone(bar.source) : "neutral";
+                return (
+                  <div key={d} className={"cal__cell " + (isWeekend ? "cal__weekend " : "") + (d === today ? "cal__today" : "")}>
+                    {bar && (
+                      <div className={"cal__bar cal__bar--" + srcTone}
+                        style={{width: ((bar.endDay - bar.startDay + 1) * 100) + "%", zIndex: 2, background: srcTone==="brand"?"var(--brand-soft)":srcTone==="teal"?"var(--teal-soft)":srcTone==="green"?"var(--green-soft)":srcTone==="orange"?"var(--orange-soft)":"var(--amber-soft)", borderColor: srcTone==="brand"?"var(--brand)":srcTone==="teal"?"var(--teal)":srcTone==="green"?"var(--green)":srcTone==="orange"?"var(--orange)":"var(--amber)", color: srcTone==="brand"?"var(--brand-ink)":srcTone==="teal"?"#266076":srcTone==="green"?"#1E6A37":"#8B6300", cursor:"pointer"}}
+                        onClick={(e) => handleBarClick(e, bar)}>
+                        {bar.guest.split(" ")[0]} · {bar.nights}n
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* Booking detail popup */}
+      {popup && (
+        <div style={{position:"fixed", left: Math.min(popup.x - 160, window.innerWidth - 340), top: popup.y, zIndex:50, width:320, background:"white", borderRadius:12, border:"1px solid var(--border)", boxShadow:"0 8px 32px rgba(0,0,0,0.15)", padding:16}} onClick={e => e.stopPropagation()}>
+          <div style={{display:"flex", justifyContent:"space-between", alignItems:"start", marginBottom:10}}>
+            <div>
+              <div style={{fontWeight:700, fontSize:15}}>{popup.booking.guest}</div>
+              <div className="muted">{findProp(popup.booking.property).name}</div>
+            </div>
+            <button className="btn btn--ghost btn--icon btn--sm" onClick={() => setPopup(null)}><Icon name="close" size={14}/></button>
+          </div>
+          <div style={{display:"flex", flexDirection:"column", gap:8, fontSize:13}}>
+            {popup.booking.mobile && (
+              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                <span style={{color:"var(--ink-3)"}}>Mobile</span>
+                <a href={"https://wa.me/" + (popup.booking.mobile||"").replace(/[^0-9]/g,"")} target="_blank" rel="noopener" style={{color:"var(--teal)", fontWeight:600, textDecoration:"none", display:"flex", alignItems:"center", gap:4}}>
+                  {popup.booking.mobile} <span style={{fontSize:11, background:"var(--green-soft)", color:"var(--green)", padding:"1px 6px", borderRadius:4, fontWeight:700}}>WhatsApp</span>
+                </a>
+              </div>
+            )}
+            <div style={{display:"flex", justifyContent:"space-between"}}>
+              <span style={{color:"var(--ink-3)"}}>Check-in</span>
+              <span style={{fontWeight:600}}>{fmtDateLong(popup.booking.checkIn)}</span>
+            </div>
+            <div style={{display:"flex", justifyContent:"space-between"}}>
+              <span style={{color:"var(--ink-3)"}}>Check-out</span>
+              <span style={{fontWeight:600}}>{fmtDateLong(popup.booking.checkOut)}</span>
+            </div>
+            <div style={{display:"flex", justifyContent:"space-between"}}>
+              <span style={{color:"var(--ink-3)"}}>Nights / Guests</span>
+              <span style={{fontWeight:600}}>{popup.booking.nights}n · {popup.booking.guests} guests</span>
+            </div>
+            <div style={{display:"flex", justifyContent:"space-between"}}>
+              <span style={{color:"var(--ink-3)"}}>Source</span>
+              <Tag tone={catTone(popup.booking.source)} dot>{popup.booking.source}</Tag>
+            </div>
+            <div style={{display:"flex", justifyContent:"space-between"}}>
+              <span style={{color:"var(--ink-3)"}}>Total</span>
+              <span style={{fontWeight:700, color:"var(--green)"}}>{INR(popup.booking.total)}</span>
+            </div>
+            {popup.booking.cleaningSchedule && popup.booking.cleaningSchedule !== "None" && (
+              <div style={{display:"flex", justifyContent:"space-between"}}>
+                <span style={{color:"var(--ink-3)"}}>Cleaning</span>
+                <span>{popup.booking.cleaningSchedule}</span>
+              </div>
+            )}
+            {popup.booking.concierge && popup.booking.concierge.length > 0 && (
+              <div>
+                <div style={{color:"var(--ink-3)", marginBottom:4}}>Preferences</div>
+                <div style={{display:"flex", gap:4, flexWrap:"wrap"}}>
+                  {popup.booking.concierge.map(c => <Tag key={c} tone="teal">{c}</Tag>)}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ───────── HOUSEKEEPING & LAUNDRY ───────── */
+function PageHousekeeping({ store, settings, dispatch, onToast }) {
+  const [tab, setTab] = useStateC("rotation");
+  const [filter, setFilter] = useStateC("all");
+  const [laundryEditing, setLaundryEditing] = useStateC(null); // booking id being edited
+
+  // Laundry overrides stored in state
+  const [laundryOverrides, setLaundryOverrides] = useStateC(() => {
+    try { const raw = localStorage.getItem("cms_laundry_overrides"); if (raw) return JSON.parse(raw); } catch(e) {}
+    return {};
+  });
+  const saveLaundryOverride = (bookingId, data) => {
+    const updated = { ...laundryOverrides, [bookingId]: data };
+    setLaundryOverrides(updated);
+    localStorage.setItem("cms_laundry_overrides", JSON.stringify(updated));
+  };
+
+  // Auto-generate housekeeping tasks from bookings
+  const autoTasks = store.bookings.flatMap(b => {
+    const tasks = [];
+    tasks.push({
+      id: "hk-co-"+b.id, property: b.property, date: b.checkOut,
+      time: settings.hkCheckoutTime || "11:00", type: "Turnover clean",
+      assignee: "Housekeeping team", status: b.status === "checked-out" ? "done" : "scheduled",
+      source: "auto : checkout"
+    });
+    if ((b.cleaningSchedule === "Alternate" || b.cleaningSchedule === "Daily") && b.nights >= 3) {
+      const startNight = settings.hkMidStayStartNight || 3;
+      const step = b.cleaningSchedule === "Daily" ? 1 : 2;
+      for (let n = startNight; n <= b.nights; n += step) {
+        const d = new Date(b.checkIn);
+        d.setDate(d.getDate() + n - 1);
+        tasks.push({
+          id: "hk-mid-"+b.id+"-"+n, property: b.property, date: d.toISOString().slice(0,10),
+          time: "12:00", type: b.cleaningSchedule === "Daily" ? "Daily clean" : "Alternate-day clean",
+          assignee: "Housekeeping team", status: d < TODAY ? "done" : "scheduled",
+          source: "auto : mid-stay"
+        });
+      }
+    }
+    return tasks;
+  });
+
+  const allTasks = [...autoTasks, ...store.housekeeping]
+    .filter(t => filter === "all" || t.property === filter)
+    .sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+  const byDay = {};
+  allTasks.forEach(t => { byDay[t.date] = byDay[t.date] || []; byDay[t.date].push(t); });
+
+  // Auto-generate laundry from bookings (at checkout)
+  const autoLaundry = store.bookings.filter(b => b.status === "checked-out" || b.status === "in-house").map(b => {
+    const p = findProp(b.property);
+    const rooms = p.bedrooms;
+    const lpr = settings.laundryPerRoom || { towels: 2, pillowCovers: 1, bedSheets: 1 };
+    const override = laundryOverrides[b.id] || {};
+    const defaultOut = { towels: rooms * lpr.towels, pillowCovers: rooms * lpr.pillowCovers, bedSheets: rooms * lpr.bedSheets };
+    const sentOut = override.sentOut || defaultOut;
+    const receivedBack = override.receivedBack || null;
+    const isReconciled = !!receivedBack;
+    const hasDiscrepancy = isReconciled && (receivedBack.towels !== sentOut.towels || receivedBack.bedSheets !== sentOut.bedSheets || receivedBack.pillowCovers !== sentOut.pillowCovers);
+    return {
+      id: "ldr-" + b.id, bookingId: b.id, property: b.property, date: b.checkOut,
+      guestName: b.guest, rooms,
+      sentOut, receivedBack, isReconciled, hasDiscrepancy,
+    };
+  }).filter(l => filter === "all" || l.property === filter);
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">Housekeeping & Laundry</h2>
+          <div className="page__sub">Auto-generated from bookings. Cleaning frequency & laundry items are configurable in Settings.</div>
+        </div>
+      </div>
+
+      <div className="kpis" style={{marginBottom:14}}>
+        <Kpi label="Total tasks" value={allTasks.length} sub={allTasks.filter(t=>t.status==="done").length + " completed"} />
+        <Kpi label="Scheduled" value={allTasks.filter(t=>t.status==="scheduled").length} />
+        <Kpi label="Laundry batches" value={autoLaundry.length} sub={autoLaundry.filter(l=>!l.isReconciled).length + " pending reconciliation"} />
+        <Kpi label="Items per room" value={`${(settings.laundryPerRoom||{}).towels||2}T / ${(settings.laundryPerRoom||{}).bedSheets||1}BS / ${(settings.laundryPerRoom||{}).pillowCovers||1}PC`} sub="Configure in Settings" />
+      </div>
+
+      <div style={{display:"flex", gap:10, marginBottom:14, alignItems:"center", flexWrap:"wrap"}}>
+        <div className="seg">
+          <button className={tab==="rotation"?"active":""} onClick={()=>setTab("rotation")}>Rotation</button>
+          <button className={tab==="laundry"?"active":""} onClick={()=>setTab("laundry")}>Laundry tracker</button>
+        </div>
+        <select className="btn" style={{padding:"7px 10px"}} value={filter} onChange={e=>setFilter(e.target.value)}>
+          <option value="all">All properties</option>
+          {PROPERTIES.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+      </div>
+
+      {tab === "rotation" && (
+        <div className="card">
+          <div className="card__body" style={{padding:0}}>
+            {Object.entries(byDay).map(([date, list]) => (
+              <div key={date} style={{borderBottom:"1px solid var(--border)"}}>
+                <div style={{padding:"10px 18px", background:"var(--surface-2)", display:"flex", justifyContent:"space-between", fontSize:12.5, fontWeight:600}}>
+                  <span>{new Date(date).toLocaleDateString("en",{weekday:"long", month:"short", day:"numeric"})}</span>
+                  <span className="muted">{list.length} task{list.length!==1?"s":""}</span>
+                </div>
+                {list.map(t => (
+                  <div key={t.id} style={{display:"grid", gridTemplateColumns:"60px 1fr 1fr auto auto", gap:14, alignItems:"center", padding:"12px 18px", borderTop:"1px solid var(--border)"}}>
+                    <div style={{fontSize:13, fontWeight:700, color:"var(--brand)"}}>{t.time}</div>
+                    <PropertyCell id={t.property} />
+                    <div><div style={{fontSize:13, fontWeight:600}}>{t.type}</div><div className="muted">{t.source || t.assignee}</div></div>
+                    <StatusDot status={t.status} />
+                    <button className="btn btn--ghost btn--sm"><Icon name="edit" size={13}/></button>
+                  </div>
+                ))}
+              </div>
+            ))}
+            {Object.keys(byDay).length === 0 && <div className="empty">No housekeeping tasks. Add bookings first.</div>}
+          </div>
+        </div>
+      )}
+
+      {tab === "laundry" && (
+        <div className="card">
+          <div className="card__head">
+            <div className="card__title">Linen in/out log</div>
+            <div className="card__sub">Default : {(settings.laundryPerRoom||{}).towels||2} towels, {(settings.laundryPerRoom||{}).bedSheets||1} bed sheet, {(settings.laundryPerRoom||{}).pillowCovers||1} pillow cover per room. Click to edit or reconcile.</div>
+          </div>
+          <div className="card__body table-scroll" style={{padding:0}}>
+            <table className="table">
+              <thead><tr><th>Date</th><th>Property</th><th>Guest</th><th className="num">Towels Out</th><th className="num">Bed Sheets Out</th><th className="num">Pillow Covers Out</th><th className="num">Towels In</th><th className="num">Bed Sheets In</th><th className="num">P.Covers In</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                {autoLaundry.map(l => (
+                  <tr key={l.id} style={l.hasDiscrepancy ? {background:"#FFF6E0"} : {}}>
+                    <td style={{whiteSpace:"nowrap"}}>{fmtDate(l.date)}</td>
+                    <td><PropertyCell id={l.property} /></td>
+                    <td style={{fontWeight:600}}>{l.guestName}</td>
+                    <td className="num">{l.sentOut.towels}</td>
+                    <td className="num">{l.sentOut.bedSheets}</td>
+                    <td className="num">{l.sentOut.pillowCovers}</td>
+                    <td className="num" style={{color: l.isReconciled && l.receivedBack.towels < l.sentOut.towels ? "var(--brand)" : "inherit", fontWeight: l.isReconciled ? 600 : 400}}>
+                      {l.isReconciled ? l.receivedBack.towels : <span className="muted">-</span>}
+                    </td>
+                    <td className="num" style={{color: l.isReconciled && l.receivedBack.bedSheets < l.sentOut.bedSheets ? "var(--brand)" : "inherit", fontWeight: l.isReconciled ? 600 : 400}}>
+                      {l.isReconciled ? l.receivedBack.bedSheets : <span className="muted">-</span>}
+                    </td>
+                    <td className="num" style={{color: l.isReconciled && l.receivedBack.pillowCovers < l.sentOut.pillowCovers ? "var(--brand)" : "inherit", fontWeight: l.isReconciled ? 600 : 400}}>
+                      {l.isReconciled ? l.receivedBack.pillowCovers : <span className="muted">-</span>}
+                    </td>
+                    <td>
+                      {l.hasDiscrepancy ? <Tag tone="brand" dot>Discrepancy</Tag> : l.isReconciled ? <Tag tone="green" dot>Reconciled</Tag> : <Tag tone="amber" dot>Pending</Tag>}
+                    </td>
+                    <td>
+                      <button className="btn btn--ghost btn--sm" onClick={() => setLaundryEditing(l)} title="Edit / Reconcile"><Icon name="edit" size={13}/></button>
+                    </td>
+                  </tr>
+                ))}
+                {autoLaundry.length === 0 && <tr><td colSpan="11" className="empty">No laundry data yet</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Laundry edit/reconcile modal */}
+      {laundryEditing && (
+        <LaundryEditModal entry={laundryEditing} onClose={() => setLaundryEditing(null)} onSave={(data) => {
+          saveLaundryOverride(laundryEditing.bookingId, data);
+          setLaundryEditing(null);
+          onToast("Laundry updated for " + laundryEditing.guestName);
+        }} />
+      )}
+    </div>
+  );
+}
+
+function LaundryEditModal({ entry, onClose, onSave }) {
+  const [sentOut, setSentOut] = useStateC({ ...entry.sentOut });
+  const [receivedBack, setReceivedBack] = useStateC(entry.receivedBack || { ...entry.sentOut });
+  const [hasReturned, setHasReturned] = useStateC(entry.isReconciled);
+
+  return (
+    <Modal title={"Laundry : " + entry.guestName} onClose={onClose} width={520}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn btn--primary" onClick={() => onSave({ sentOut, receivedBack: hasReturned ? receivedBack : null })}><Icon name="check" size={13}/> Save</button></>}>
+      <div className="col" style={{gap:16}}>
+        <div style={{fontSize:12, color:"var(--ink-3)"}}>Property: {findProp(entry.property).name} · Rooms: {entry.rooms} · Date: {fmtDate(entry.date)}</div>
+
+        <div>
+          <div style={{fontSize:12, fontWeight:700, color:"var(--ink-3)", textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:8}}>Items Sent Out</div>
+          <div className="grid-3">
+            <div className="field"><label>Towels</label><input type="number" min="0" value={sentOut.towels} onChange={e => setSentOut({...sentOut, towels: Number(e.target.value)})} /></div>
+            <div className="field"><label>Bed Sheets</label><input type="number" min="0" value={sentOut.bedSheets} onChange={e => setSentOut({...sentOut, bedSheets: Number(e.target.value)})} /></div>
+            <div className="field"><label>Pillow Covers</label><input type="number" min="0" value={sentOut.pillowCovers} onChange={e => setSentOut({...sentOut, pillowCovers: Number(e.target.value)})} /></div>
+          </div>
+          <div className="hint" style={{marginTop:4}}>Edit if the actual items differ from the default per-room calculation.</div>
+        </div>
+
+        <div className="divider" style={{margin:0}} />
+
+        <label className="checkbox">
+          <input type="checkbox" checked={hasReturned} onChange={e => setHasReturned(e.target.checked)} />
+          <span style={{fontWeight:600}}>Laundry has been returned</span>
+        </label>
+
+        {hasReturned && (
+          <div>
+            <div style={{fontSize:12, fontWeight:700, color:"var(--ink-3)", textTransform:"uppercase", letterSpacing:"0.05em", marginBottom:8}}>Items Received Back</div>
+            <div className="grid-3">
+              <div className="field"><label>Towels</label><input type="number" min="0" value={receivedBack.towels} onChange={e => setReceivedBack({...receivedBack, towels: Number(e.target.value)})} /></div>
+              <div className="field"><label>Bed Sheets</label><input type="number" min="0" value={receivedBack.bedSheets} onChange={e => setReceivedBack({...receivedBack, bedSheets: Number(e.target.value)})} /></div>
+              <div className="field"><label>Pillow Covers</label><input type="number" min="0" value={receivedBack.pillowCovers} onChange={e => setReceivedBack({...receivedBack, pillowCovers: Number(e.target.value)})} /></div>
+            </div>
+            {(receivedBack.towels < sentOut.towels || receivedBack.bedSheets < sentOut.bedSheets || receivedBack.pillowCovers < sentOut.pillowCovers) && (
+              <div className="dispute-banner" style={{marginTop:10}}>
+                <Icon name="flag" color="#8B6300" size={14} />
+                <div style={{fontSize:12}}>
+                  <strong>Discrepancy detected:</strong>
+                  {receivedBack.towels < sentOut.towels && ` ${sentOut.towels - receivedBack.towels} towel(s) missing.`}
+                  {receivedBack.bedSheets < sentOut.bedSheets && ` ${sentOut.bedSheets - receivedBack.bedSheets} bed sheet(s) missing.`}
+                  {receivedBack.pillowCovers < sentOut.pillowCovers && ` ${sentOut.pillowCovers - receivedBack.pillowCovers} pillow cover(s) missing.`}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+/* ───────── STATISTICAL FORMA SHEET ───────── */
+function PageForma({ store, dispatch, onToast }) {
+  const [property, setProperty] = useStateC(PROPERTIES[0].id);
+  const [guestDetails, setGuestDetails] = useStateC({});
+  const [editRow, setEditRow] = useStateC(null);
+
+  const p = findProp(property);
+  const bookings = store.bookings.filter(b => b.property === property);
+
+  const formaRows = bookings.map(b => {
+    const details = guestDetails[b.id] || {};
+    return {
+      bookingId: b.id, checkIn: b.checkIn, checkOut: b.checkOut, nights: b.nights,
+      guest: b.guest, rooms: p.bedrooms, nightly: b.nightly, total: b.total,
+      guestsUpTo20:   details.guestsUpTo20 || 0,
+      guests21to40:   details.guests21to40 || b.guests,
+      guests41to60:   details.guests41to60 || 0,
+      guestsAbove61:  details.guestsAbove61 || 0,
+      country:        details.country || "India",
+      state:          details.state || "Goa",
+      maleGuests:     details.maleGuests || Math.ceil(b.guests / 2),
+      femaleGuests:   details.femaleGuests || Math.floor(b.guests / 2),
+      remark:         details.remark || "",
+      purpose:        details.purpose || "Leisure",
+    };
+  });
+
+  const totals = formaRows.reduce((a, r) => ({
+    nights: a.nights + r.nights,
+    guestsUpTo20: a.guestsUpTo20 + r.guestsUpTo20,
+    guests21to40: a.guests21to40 + r.guests21to40,
+    guests41to60: a.guests41to60 + r.guests41to60,
+    guestsAbove61: a.guestsAbove61 + r.guestsAbove61,
+    maleGuests: a.maleGuests + r.maleGuests,
+    femaleGuests: a.femaleGuests + r.femaleGuests,
+    total: a.total + r.total,
+  }), { nights:0, guestsUpTo20:0, guests21to40:0, guests41to60:0, guestsAbove61:0, maleGuests:0, femaleGuests:0, total:0 });
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">Statistical Forma Sheet</h2>
+          <div className="page__sub">Goa Tourism monthly return : auto-assembled from bookings. Click any row to edit guest details.</div>
+        </div>
+        <button className="btn btn--primary"><Icon name="download" /> Export</button>
+      </div>
+
+      <div style={{display:"flex", gap:10, marginBottom:14, alignItems:"center", flexWrap:"wrap"}}>
+        <span className="muted" style={{fontSize:12}}>Property</span>
+        <select className="btn" style={{padding:"7px 10px"}} value={property} onChange={e => setProperty(e.target.value)}>
+          {PROPERTIES.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <Tag tone="green" dot>Auto-filled from {bookings.length} bookings</Tag>
+      </div>
+
+      <div className="card" style={{background:"white"}}>
+        <div style={{padding:"20px 24px", borderBottom:"2px solid var(--ink)"}}>
+          <div style={{fontSize:11, fontWeight:700, color:"var(--ink-3)", textTransform:"uppercase", letterSpacing:"0.08em"}}>Monthly Return : Goa Tourism</div>
+          <div style={{fontSize:20, fontWeight:800, marginTop:4}}>{p.name}</div>
+          <div style={{fontSize:13, color:"var(--ink-2)", marginTop:2}}>{p.city} · Owner: {p.owner} · For the month of May 2026</div>
+        </div>
+        <div className="table-scroll" style={{padding:"16px 24px"}}>
+          <table className="table" style={{fontSize:12}}>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Arrival</th><th>Departure</th>
+                <th className="num">Rooms</th><th className="num">₹/night</th>
+                <th className="num">≤20y</th><th className="num">21-40y</th><th className="num">41-60y</th><th className="num">61+y</th>
+                <th>Country</th><th>State</th>
+                <th className="num">Male</th><th className="num">Female</th>
+                <th>Purpose</th><th>Remark</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {formaRows.map((r, i) => (
+                <tr key={r.bookingId} style={{cursor:"pointer"}} onClick={() => setEditRow(r)}>
+                  <td style={{color:"var(--ink-3)"}}>{i+1}</td>
+                  <td>{fmtDateLong(r.checkIn)}</td><td>{fmtDateLong(r.checkOut)}</td>
+                  <td className="num">{r.rooms}</td><td className="num">{INR(r.nightly)}</td>
+                  <td className="num">{r.guestsUpTo20}</td><td className="num">{r.guests21to40}</td><td className="num">{r.guests41to60}</td><td className="num">{r.guestsAbove61}</td>
+                  <td>{r.country}</td><td>{r.state}</td>
+                  <td className="num">{r.maleGuests}</td><td className="num">{r.femaleGuests}</td>
+                  <td>{r.purpose}</td><td className="muted">{r.remark || "-"}</td>
+                  <td><button className="btn btn--ghost btn--sm" onClick={(e) => { e.stopPropagation(); setEditRow(r); }}><Icon name="edit" size={12}/></button></td>
+                </tr>
+              ))}
+              {formaRows.length === 0 && <tr><td colSpan="16" className="empty">No bookings for this property in May 2026</td></tr>}
+              <tr style={{background:"var(--surface-2)", fontWeight:700}}>
+                <td colSpan="3">TOTALS</td>
+                <td></td><td></td>
+                <td className="num">{totals.guestsUpTo20}</td><td className="num">{totals.guests21to40}</td><td className="num">{totals.guests41to60}</td><td className="num">{totals.guestsAbove61}</td>
+                <td></td><td></td>
+                <td className="num">{totals.maleGuests}</td><td className="num">{totals.femaleGuests}</td>
+                <td></td><td></td><td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {editRow && (
+        <FormaEditModal row={editRow} onClose={() => setEditRow(null)} onSave={(details) => {
+          setGuestDetails({...guestDetails, [editRow.bookingId]: details});
+          setEditRow(null);
+          onToast("Guest details updated for " + editRow.guest);
+        }} />
+      )}
+    </div>
+  );
+}
+
+function FormaEditModal({ row, onClose, onSave }) {
+  const [form, setForm] = useStateC({
+    guestsUpTo20: row.guestsUpTo20, guests21to40: row.guests21to40,
+    guests41to60: row.guests41to60, guestsAbove61: row.guestsAbove61,
+    country: row.country, state: row.state,
+    maleGuests: row.maleGuests, femaleGuests: row.femaleGuests,
+    remark: row.remark, purpose: row.purpose,
+  });
+  return (
+    <Modal title={"Guest details : " + row.guest} onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn btn--primary" onClick={() => onSave(form)}><Icon name="check" size={13}/> Save</button></>}>
+      <div className="col" style={{gap:12}}>
+        <div style={{fontSize:12, color:"var(--ink-3)"}}>Booking: {fmtDateLong(row.checkIn)} → {fmtDateLong(row.checkOut)} · {row.nights} nights</div>
+        <div style={{fontSize:12, fontWeight:700, color:"var(--ink-3)", textTransform:"uppercase"}}>Guest age breakdown</div>
+        <div className="grid-4">
+          <div className="field"><label>≤ 20 years</label><input type="number" min="0" value={form.guestsUpTo20} onChange={e => setForm({...form, guestsUpTo20: Number(e.target.value)})} /></div>
+          <div className="field"><label>21–40 years</label><input type="number" min="0" value={form.guests21to40} onChange={e => setForm({...form, guests21to40: Number(e.target.value)})} /></div>
+          <div className="field"><label>41–60 years</label><input type="number" min="0" value={form.guests41to60} onChange={e => setForm({...form, guests41to60: Number(e.target.value)})} /></div>
+          <div className="field"><label>61+ years</label><input type="number" min="0" value={form.guestsAbove61} onChange={e => setForm({...form, guestsAbove61: Number(e.target.value)})} /></div>
+        </div>
+        <div style={{fontSize:12, fontWeight:700, color:"var(--ink-3)", textTransform:"uppercase"}}>Gender & origin</div>
+        <div className="grid-4">
+          <div className="field"><label>Male</label><input type="number" min="0" value={form.maleGuests} onChange={e => setForm({...form, maleGuests: Number(e.target.value)})} /></div>
+          <div className="field"><label>Female</label><input type="number" min="0" value={form.femaleGuests} onChange={e => setForm({...form, femaleGuests: Number(e.target.value)})} /></div>
+          <div className="field"><label>Country</label><input value={form.country} onChange={e => setForm({...form, country: e.target.value})} /></div>
+          <div className="field"><label>State</label><input value={form.state} onChange={e => setForm({...form, state: e.target.value})} /></div>
+        </div>
+        <div className="grid-2">
+          <div className="field"><label>Purpose of visit</label><input value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} /></div>
+          <div className="field"><label>Remark</label><input value={form.remark} onChange={e => setForm({...form, remark: e.target.value})} /></div>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+Object.assign(window, { PageCalendar, PageHousekeeping, PageForma });
+
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODULE 6 : ADMIN PAGES
+       Budgeting (FY planner with auto opening balances),
+       Settings (sources, categories, HK rules, data sync).
+       ═══════════════════════════════════════════════════════════ -->
+  <script type="text/babel">
+/* CurateMyStay v3 — Pages: Budgeting (admin only) + Settings + Backend Sync */
+const { useState: useStateD, useEffect: useEffectD, useRef: useRefD } = React;
+
+/* ───────── BUDGETING ───────── */
+function PageBudget({ store, settings, dispatch, onToast }) {
+  const [budgetData, setBudgetData] = useStateD(() => {
+    try { const raw = localStorage.getItem("cms_budget"); if (raw) return JSON.parse(raw); } catch(e) {}
+    return { ...DEFAULT_BUDGET };
+  });
+  const saveBudget = (d) => { setBudgetData(d); localStorage.setItem("cms_budget", JSON.stringify(d)); };
+  const getVal = (item, month) => budgetData[item + "|" + month] || 0;
+  const setVal = (item, month, val) => saveBudget({ ...budgetData, [item + "|" + month]: Number(val) || 0 });
+
+  // Manual opening balance for first month
+  const [openingBalanceApr, setOpeningBalanceApr] = useStateD(() => {
+    try { const v = localStorage.getItem("cms_opening_balance_apr"); if (v) return Number(v); } catch(e) {}
+    return 0;
+  });
+  const updateOpeningApr = (val) => {
+    const n = Number(val) || 0;
+    setOpeningBalanceApr(n);
+    localStorage.setItem("cms_opening_balance_apr", String(n));
+  };
+
+  // CMS revenue per month (20% of profit per property)
+  // For simplicity: all current bookings/expenses are attributed to May (index 1)
+  const cmsRevByMonth = BUDGET_MONTHS.map((m, i) => {
+    if (i === 1) { // May-26
+      const rev = store.bookings.reduce((s,b) => s + b.total, 0);
+      const exp = store.expenses.reduce((s,e) => s + e.amount, 0);
+      return Math.round((rev - exp) * 0.2);
+    }
+    return 0;
+  });
+
+  // Calculate opening/closing balances per month
+  const monthlyTotals = BUDGET_MONTHS.map((m, i) => {
+    const totalExpense = BUDGET_CATEGORIES.flatMap(c => c.items).reduce((s, item) => s + getVal(item, m), 0);
+    const cmsRev = cmsRevByMonth[i];
+    return { month: m, totalExpense, cmsRev };
+  });
+
+  const openingBalances = [];
+  const closingBalances = [];
+  for (let i = 0; i < BUDGET_MONTHS.length; i++) {
+    const opening = i === 0 ? openingBalanceApr : closingBalances[i - 1];
+    const closing = opening + monthlyTotals[i].cmsRev - monthlyTotals[i].totalExpense;
+    openingBalances.push(opening);
+    closingBalances.push(closing);
+  }
+
+  // PnL dashboard (top section)
+  const propPnL = PROPERTIES.map(p => {
+    const rev = store.bookings.filter(b => b.property === p.id).reduce((s,b) => s+b.total, 0);
+    const exp = store.expenses.filter(e => e.property === p.id).reduce((s,e) => s+e.amount, 0);
+    const profit = rev - exp;
+    return { ...p, rev, exp, profit, ownerShare: Math.round(profit * 0.8), cmsShare: Math.round(profit * 0.2) };
+  });
+  const totalRev = propPnL.reduce((s,p) => s+p.rev, 0);
+  const totalExp = propPnL.reduce((s,p) => s+p.exp, 0);
+  const totalProfit = totalRev - totalExp;
+  const totalOwner = propPnL.reduce((s,p) => s+p.ownerShare, 0);
+  const totalCMS = propPnL.reduce((s,p) => s+p.cmsShare, 0);
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">CMS Budgeting : FY 2026-27</h2>
+          <div className="page__sub">Financial planning view. Top: live portfolio P&L. Bottom: monthly company budget with editable cells. Opening balances auto-calculate from previous months.</div>
+        </div>
+      </div>
+
+      {/* Portfolio P&L summary */}
+      <div className="card" style={{marginBottom:14}}>
+        <div className="card__head"><div className="card__title">CurateMyStay : Portfolio P&L</div><div className="card__sub">Live from bookings & expenses</div></div>
+        <div className="card__body table-scroll" style={{padding:0}}>
+          <table className="table" style={{fontSize:12.5}}>
+            <thead>
+              <tr><th></th><th className="num">Costa Vista</th><th className="num">Saudaudes</th><th className="num">Risara 202</th><th className="num">Risara 203</th><th className="num">Ratan Exotica</th><th className="num" style={{fontWeight:800}}>TOTAL</th></tr>
+            </thead>
+            <tbody>
+              <tr style={{background:"var(--surface-2)"}}><td colSpan="7" style={{fontWeight:700, fontSize:11, textTransform:"uppercase", letterSpacing:"0.05em", color:"var(--ink-3)"}}>Gross Portfolio Revenue</td></tr>
+              <tr><td style={{fontWeight:600}}>Revenue</td>{propPnL.map(p => <td key={p.id} className="num">{INR(p.rev)}</td>)}<td className="num" style={{fontWeight:700}}>{INR(totalRev)}</td></tr>
+              <tr style={{background:"var(--surface-2)"}}><td colSpan="7" style={{fontWeight:700, fontSize:11, textTransform:"uppercase", letterSpacing:"0.05em", color:"var(--ink-3)"}}>Operating Expenses</td></tr>
+              <tr><td style={{fontWeight:600}}>Expenses</td>{propPnL.map(p => <td key={p.id} className="num">{INR(p.exp)}</td>)}<td className="num" style={{fontWeight:700}}>{INR(totalExp)}</td></tr>
+              <tr><td style={{fontWeight:600}}>Expense ratio</td>{propPnL.map(p => <td key={p.id} className="num">{p.rev > 0 ? Math.round(p.exp/p.rev*100) : 0}%</td>)}<td className="num" style={{fontWeight:700}}>{totalRev > 0 ? Math.round(totalExp/totalRev*100) : 0}%</td></tr>
+              <tr style={{background:"var(--surface-2)"}}><td colSpan="7" style={{fontWeight:700, fontSize:11, textTransform:"uppercase", letterSpacing:"0.05em", color:"var(--ink-3)"}}>Net Profit</td></tr>
+              <tr><td style={{fontWeight:700}}>Profit</td>{propPnL.map(p => <td key={p.id} className="num" style={{fontWeight:700, color: p.profit >= 0 ? "var(--green)" : "var(--brand)"}}>{INR(p.profit)}</td>)}<td className="num" style={{fontWeight:800, color: totalProfit >= 0 ? "var(--green)" : "var(--brand)"}}>{INR(totalProfit)}</td></tr>
+              <tr style={{background:"var(--surface-2)"}}><td colSpan="7" style={{fontWeight:700, fontSize:11, textTransform:"uppercase", letterSpacing:"0.05em", color:"var(--ink-3)"}}>Profit Distribution (80/20)</td></tr>
+              {propPnL.map(p => (
+                <tr key={"o"+p.id}><td style={{paddingLeft:14}}>Owner: {p.name}</td><td colSpan="5"></td><td className="num">{INR(p.ownerShare)}</td></tr>
+              ))}
+              <tr><td style={{fontWeight:600}}>Total to owners</td><td colSpan="5"></td><td className="num" style={{fontWeight:700}}>{INR(totalOwner)}</td></tr>
+              {propPnL.map(p => (
+                <tr key={"c"+p.id}><td style={{paddingLeft:14}}>CMS: {p.name}</td><td colSpan="5"></td><td className="num">{INR(p.cmsShare)}</td></tr>
+              ))}
+              <tr><td style={{fontWeight:600}}>Total CMS revenue</td><td colSpan="5"></td><td className="num" style={{fontWeight:700, color:"var(--green)"}}>{INR(totalCMS)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Company Budget */}
+      <div className="card">
+        <div className="card__head">
+          <div><div className="card__title">CMS Company Budget : Apr 2026 to Mar 2027</div><div className="card__sub">Click any cell to edit. Opening balance auto-populates from previous month. Set Apr opening balance manually.</div></div>
+        </div>
+        <div className="card__body table-scroll" style={{padding:0}}>
+          <table className="table" style={{fontSize:11.5, minWidth:1200}}>
+            <thead>
+              <tr>
+                <th style={{minWidth:220, position:"sticky", left:0, background:"var(--surface)", zIndex:2}}></th>
+                {BUDGET_MONTHS.map(m => <th key={m} className="num" style={{minWidth:80}}>{m}</th>)}
+                <th className="num" style={{fontWeight:800, minWidth:90}}>ANNUAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Cash position */}
+              <tr style={{background:"var(--surface-2)"}}><td colSpan={BUDGET_MONTHS.length + 2} style={{fontWeight:700, fontSize:11, textTransform:"uppercase", color:"var(--ink-3)", position:"sticky", left:0}}>CMS Cash Position</td></tr>
+              <tr>
+                <td style={{paddingLeft:14, position:"sticky", left:0, background:"white", fontWeight:600}}>Opening balance</td>
+                {BUDGET_MONTHS.map((m, i) => (
+                  <td key={m} className="num" style={{padding: i === 0 ? 0 : "8px 6px", fontWeight:600, color: openingBalances[i] >= 0 ? "var(--green)" : "var(--brand)"}}>
+                    {i === 0 ? (
+                      <input type="number" value={openingBalanceApr || ""} onChange={e => updateOpeningApr(e.target.value)}
+                        style={{width:"100%", border:"none", background:"#E6F4EA", padding:"8px 6px", textAlign:"right", fontSize:11.5, fontVariantNumeric:"tabular-nums"}} placeholder="0" title="Set April opening balance" />
+                    ) : INR(openingBalances[i])}
+                  </td>
+                ))}
+                <td className="num" style={{fontWeight:600}}>-</td>
+              </tr>
+              <tr>
+                <td style={{paddingLeft:14, position:"sticky", left:0, background:"white", fontWeight:500, color:"var(--ink-3)"}}>+ CMS revenue (20% share)</td>
+                {BUDGET_MONTHS.map((m, i) => (
+                  <td key={m} className="num" style={{color: cmsRevByMonth[i] > 0 ? "var(--green)" : "var(--ink-4)"}}>{cmsRevByMonth[i] > 0 ? INR(cmsRevByMonth[i]) : "-"}</td>
+                ))}
+                <td className="num" style={{fontWeight:600, color:"var(--green)"}}>{INR(cmsRevByMonth.reduce((s,v) => s+v, 0))}</td>
+              </tr>
+              <tr style={{background:"#F9F8F3"}}>
+                <td style={{paddingLeft:14, position:"sticky", left:0, background:"#F9F8F3", fontWeight:700}}>Closing balance</td>
+                {BUDGET_MONTHS.map((m, i) => (
+                  <td key={m} className="num" style={{fontWeight:700, color: closingBalances[i] >= 0 ? "var(--green)" : "var(--brand)"}}>{INR(closingBalances[i])}</td>
+                ))}
+                <td className="num" style={{fontWeight:800}}>{INR(closingBalances[closingBalances.length-1])}</td>
+              </tr>
+
+              {/* Budget categories */}
+              {BUDGET_CATEGORIES.map(cat => (
+                <React.Fragment key={cat.section}>
+                  <tr style={{background:"var(--surface-2)"}}>
+                    <td colSpan={BUDGET_MONTHS.length + 2} style={{fontWeight:700, fontSize:11, textTransform:"uppercase", color:"var(--ink-3)", position:"sticky", left:0}}>{cat.section}</td>
+                  </tr>
+                  {cat.items.map(item => {
+                    const annual = BUDGET_MONTHS.reduce((s, m) => s + getVal(item, m), 0);
+                    return (
+                      <tr key={item}>
+                        <td style={{paddingLeft:14, fontSize:12, position:"sticky", left:0, background:"white"}}>{item}</td>
+                        {BUDGET_MONTHS.map(m => (
+                          <td key={m} className="num" style={{padding:0}}>
+                            <input type="number" value={getVal(item, m) || ""} onChange={e => setVal(item, m, e.target.value)}
+                              style={{width:"100%", border:"none", background: getVal(item, m) > 0 ? "#FFF9E0" : "transparent", padding:"8px 6px", textAlign:"right", fontSize:11.5, fontVariantNumeric:"tabular-nums"}} placeholder="0" />
+                          </td>
+                        ))}
+                        <td className="num" style={{fontWeight:600}}>{annual > 0 ? INR(annual) : "-"}</td>
+                      </tr>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+
+              {/* Totals */}
+              <tr style={{background:"var(--surface-2)", borderTop:"2px solid var(--ink)"}}>
+                <td style={{fontWeight:800, position:"sticky", left:0, background:"var(--surface-2)"}}>TOTAL CMS EXPENSES</td>
+                {BUDGET_MONTHS.map((m, i) => {
+                  const t = monthlyTotals[i].totalExpense;
+                  return <td key={m} className="num" style={{fontWeight:700}}>{t > 0 ? INR(t) : "-"}</td>;
+                })}
+                <td className="num" style={{fontWeight:800}}>
+                  {INR(monthlyTotals.reduce((s, mt) => s + mt.totalExpense, 0))}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───────── SETTINGS ───────── */
+function PageSettings({ settings, onUpdateSettings, onToast, dispatch, store }) {
+  const [activeTab, setActiveTab] = useStateD("sources");
+  const fileInputRef = useRefD(null);
+  const [syncStatus, setSyncStatus] = useStateD("idle"); // idle, syncing, synced, error
+  const [lastSync, setLastSync] = useStateD(() => localStorage.getItem("cms_last_sync") || null);
+
+  const addItem = (key) => {
+    const val = prompt("Add new option:");
+    if (val && val.trim()) {
+      onUpdateSettings({ ...settings, [key]: [...settings[key], val.trim()] });
+      onToast("Added: " + val.trim());
+    }
+  };
+  const removeItem = (key, item) => {
+    onUpdateSettings({ ...settings, [key]: settings[key].filter(x => x !== item) });
+    onToast("Removed: " + item);
+  };
+
+  const listEditor = (label, key) => (
+    <div className="card" style={{marginBottom:14}}>
+      <div className="card__head">
+        <div className="card__title">{label}</div>
+        <button className="btn btn--sm btn--primary" onClick={() => addItem(key)}><Icon name="plus" size={13}/> Add</button>
+      </div>
+      <div className="card__body">
+        <div style={{display:"flex", flexWrap:"wrap", gap:8}}>
+          {settings[key].map(item => (
+            <span key={item} className="tag" style={{padding:"6px 12px", fontSize:13, gap:8}}>
+              {item}
+              <button style={{background:"none", border:"none", cursor:"pointer", padding:0, color:"var(--ink-3)"}} onClick={() => removeItem(key, item)}>
+                <Icon name="close" size={12}/>
+              </button>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Backend sync functions
+  const exportAllData = () => {
+    const data = {
+      version: "cms-v3",
+      exportedAt: new Date().toISOString(),
+      store: JSON.parse(localStorage.getItem(LS_KEY) || "{}"),
+      settings: JSON.parse(localStorage.getItem("cms_settings") || "{}"),
+      budget: JSON.parse(localStorage.getItem("cms_budget") || "{}"),
+      laundryOverrides: JSON.parse(localStorage.getItem("cms_laundry_overrides") || "{}"),
+      openingBalance: localStorage.getItem("cms_opening_balance_apr") || "0",
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "cms-data-" + new Date().toISOString().slice(0,10) + ".json";
+    a.click();
+    URL.revokeObjectURL(url);
+    const now = new Date().toLocaleString();
+    setLastSync(now);
+    localStorage.setItem("cms_last_sync", now);
+    onToast("Data exported successfully");
+  };
+
+  const importData = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.store) {
+          localStorage.setItem(LS_KEY, JSON.stringify(data.store));
+        }
+        if (data.settings) {
+          localStorage.setItem("cms_settings", JSON.stringify(data.settings));
+        }
+        if (data.budget) {
+          localStorage.setItem("cms_budget", JSON.stringify(data.budget));
+        }
+        if (data.laundryOverrides) {
+          localStorage.setItem("cms_laundry_overrides", JSON.stringify(data.laundryOverrides));
+        }
+        if (data.openingBalance !== undefined) {
+          localStorage.setItem("cms_opening_balance_apr", data.openingBalance);
+        }
+        const now = new Date().toLocaleString();
+        setLastSync(now);
+        localStorage.setItem("cms_last_sync", now);
+        setSyncStatus("synced");
+        onToast("Data imported! Refreshing...");
+        setTimeout(() => window.location.reload(), 800);
+      } catch(err) {
+        onToast("Import failed : invalid JSON file");
+        setSyncStatus("error");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div>
+          <h2 className="page__title">Settings</h2>
+          <div className="page__sub">Configure dropdown options, housekeeping rules, and laundry items. Changes apply everywhere instantly.</div>
+        </div>
+      </div>
+
+      <div style={{display:"flex", gap:10, marginBottom:14, flexWrap:"wrap"}}>
+        {[["sources","Booking Sources"],["expenses","Expense Categories"],["company","Company Expenses"],["concierge","Concierge"],["housekeeping","Housekeeping"],["data","Data & Backend"]].map(([id, label]) => (
+          <button key={id} className={"tag tag--" + (activeTab === id ? "brand" : "neutral")} style={{cursor:"pointer", padding:"6px 14px", fontSize:13}} onClick={() => setActiveTab(id)}>{label}</button>
+        ))}
+      </div>
+
+      {activeTab === "sources" && listEditor("Booking Sources", "bookingSources")}
+      {activeTab === "expenses" && listEditor("Property Expense Categories", "expenseCategories")}
+      {activeTab === "company" && listEditor("Company Expense Categories", "companyExpenseCategories")}
+      {activeTab === "concierge" && listEditor("Concierge Options", "conciergeOptions")}
+
+      {activeTab === "housekeeping" && (
+        <div className="grid-2">
+          <div className="card">
+            <div className="card__head"><div className="card__title">Housekeeping Rules</div></div>
+            <div className="card__body">
+              <div className="col" style={{gap:14}}>
+                <div className="field"><label>Post-checkout clean time</label>
+                  <input type="time" value={settings.hkCheckoutTime} onChange={e => onUpdateSettings({...settings, hkCheckoutTime: e.target.value})} />
+                  <div className="hint">Turnover clean triggers at this time on checkout day</div>
+                </div>
+                <div className="field"><label>Mid-stay cleaning starts from night #</label>
+                  <input type="number" min="2" value={settings.hkMidStayStartNight} onChange={e => onUpdateSettings({...settings, hkMidStayStartNight: Number(e.target.value)})} />
+                  <div className="hint">For "Alternate" schedule: clean on this night, then every 2 days.</div>
+                </div>
+                {listEditor("Cleaning Frequency Options", "cleaningFrequencies")}
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <div className="card__head"><div className="card__title">Laundry : Items per Room</div></div>
+            <div className="card__body">
+              <div className="col" style={{gap:14}}>
+                <div className="field"><label>Towels per room</label>
+                  <input type="number" min="0" value={(settings.laundryPerRoom || {}).towels || 2} onChange={e => onUpdateSettings({...settings, laundryPerRoom: {...(settings.laundryPerRoom || {}), towels: Number(e.target.value)}})} />
+                </div>
+                <div className="field"><label>Pillow covers per room</label>
+                  <input type="number" min="0" value={(settings.laundryPerRoom || {}).pillowCovers || 1} onChange={e => onUpdateSettings({...settings, laundryPerRoom: {...(settings.laundryPerRoom || {}), pillowCovers: Number(e.target.value)}})} />
+                </div>
+                <div className="field"><label>Bed sheets per room</label>
+                  <input type="number" min="0" value={(settings.laundryPerRoom || {}).bedSheets || 1} onChange={e => onUpdateSettings({...settings, laundryPerRoom: {...(settings.laundryPerRoom || {}), bedSheets: Number(e.target.value)}})} />
+                </div>
+                <div className="field"><label>Duvet cover wash frequency (every N nights)</label>
+                  <input type="number" min="1" value={settings.duvetFrequencyNights || 7} onChange={e => onUpdateSettings({...settings, duvetFrequencyNights: Number(e.target.value)})} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "data" && (
+        <div className="col" style={{gap:14}}>
+          {/* Sync status banner */}
+          <div className="card">
+            <div className="card__head"><div className="card__title">Backend Data Store</div></div>
+            <div className="card__body">
+              <div className="col" style={{gap:14}}>
+                <div style={{padding:"14px 16px", background:"var(--teal-soft)", borderRadius:10, fontSize:13, color:"#266076", display:"flex", gap:10, alignItems:"start"}}>
+                  <Icon name="spark" size={16} color="#266076" />
+                  <div>
+                    <strong>How it works:</strong> All dashboard data is saved locally in your browser. Use Export to create a JSON backup file that serves as your backend data store. Import it back anytime to restore or transfer data. Both operations are instant and create a complete snapshot of all modules.
+                  </div>
+                </div>
+
+                {lastSync && (
+                  <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--ink-3)"}}>
+                    <span style={{width:8, height:8, borderRadius:"50%", background:"var(--green)"}}></span>
+                    Last sync : {lastSync}
+                  </div>
+                )}
+
+                <div style={{display:"flex", gap:10, flexWrap:"wrap"}}>
+                  <button className="btn btn--primary" onClick={exportAllData}>
+                    <Icon name="download" size={14}/> Export all data (JSON)
+                  </button>
+                  <button className="btn" onClick={() => fileInputRef.current?.click()}>
+                    <Icon name="upload" size={14}/> Import from JSON
+                  </button>
+                  <input ref={fileInputRef} type="file" accept=".json" style={{display:"none"}} onChange={importData} />
+                </div>
+
+                <div className="divider" style={{margin:0}} />
+
+                <div style={{fontSize:12, fontWeight:700, color:"var(--ink-3)", textTransform:"uppercase", letterSpacing:"0.05em"}}>What gets exported / imported</div>
+                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8}}>
+                  {["Bookings & revenue", "Property expenses", "Company expenses", "Disputes & queries", "Budget data", "Settings & config", "Laundry overrides", "Opening balances"].map(item => (
+                    <div key={item} style={{display:"flex", alignItems:"center", gap:6, fontSize:12.5, padding:"6px 10px", background:"var(--surface-2)", borderRadius:6}}>
+                      <Icon name="check" size={12} color="var(--green)" /> {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Data management */}
+          <div className="card">
+            <div className="card__head"><div className="card__title">Data Management</div></div>
+            <div className="card__body">
+              <div className="col" style={{gap:14}}>
+                <div style={{padding:"14px 16px", background:"var(--surface-2)", borderRadius:10, fontSize:13, color:"var(--ink-2)"}}>
+                  <strong>For production deployment:</strong> Replace localStorage with a PostgreSQL or Firebase backend. Each module maps to a database table. API endpoints handle CRUD operations with role-based auth (JWT tokens). The frontend would fetch data via REST or GraphQL. The JSON export format is designed to be the schema seed.
+                </div>
+                <div className="grid-3">
+                  <button className="btn" style={{color:"var(--brand)"}} onClick={() => {
+                    if (confirm("This will CLEAR all bookings, expenses, and disputes. Settings and budget are preserved. Continue?")) {
+                      dispatch({ type: "reset" });
+                      onToast("All transaction data cleared");
+                    }
+                  }}><Icon name="trash" /> Clear all entries</button>
+                  <button className="btn" onClick={() => {
+                    if (confirm("Load sample data? This adds demo entries alongside any existing data.")) {
+                      SEED_BOOKINGS.forEach(b => dispatch({type:"add_booking", payload: {...b, id: b.id + "-" + Date.now()}}));
+                      SEED_EXPENSES.forEach(e => dispatch({type:"add_expense", payload: {...e, id: e.id + "-" + Date.now()}}));
+                      SEED_COMPANY_EXPENSES.forEach(c => dispatch({type:"add_company", payload: {...c, id: c.id + "-" + Date.now()}}));
+                      onToast("Sample data loaded");
+                    }
+                  }}><Icon name="upload" /> Load sample data</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+Object.assign(window, { PageBudget, PageSettings });
+
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODULE 7 : APP ENTRY POINT
+       Reducer, routing, session management, and root render.
+       ═══════════════════════════════════════════════════════════ -->
+  <script type="text/babel">
+/* ───────── APP ENTRY POINT ───────── */
+const { useState, useReducer, useEffect } = React;
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "add_booking":    return { ...state, bookings: [action.payload, ...state.bookings] };
+    case "update_booking": return { ...state, bookings: state.bookings.map(b => b.id === action.payload.id ? action.payload : b) };
+    case "delete_booking": return { ...state, bookings: state.bookings.filter(b => b.id !== action.id) };
+    case "add_expense":    return { ...state, expenses: [action.payload, ...state.expenses] };
+    case "update_expense": return { ...state, expenses: state.expenses.map(e => e.id === action.payload.id ? action.payload : e) };
+    case "delete_expense": return { ...state, expenses: state.expenses.filter(e => e.id !== action.id) };
+    case "add_company":    return { ...state, companyExpenses: [action.payload, ...state.companyExpenses] };
+    case "update_company": return { ...state, companyExpenses: state.companyExpenses.map(e => e.id === action.payload.id ? action.payload : e) };
+    case "delete_company": return { ...state, companyExpenses: state.companyExpenses.filter(e => e.id !== action.id) };
+    case "add_dispute":    return { ...state, disputes: [action.payload, ...state.disputes] };
+    case "reset":          return { bookings: [], expenses: [], companyExpenses: [], housekeeping: [], laundry: [], disputes: [] };
+    default: return state;
+  }
+}
+
+function getInit() {
+  return {
+    bookings: window.SEED_BOOKINGS || [],
+    expenses: window.SEED_EXPENSES || [],
+    companyExpenses: window.SEED_COMPANY_EXPENSES || [],
+    housekeeping: window.SEED_HOUSEKEEPING || [],
+    laundry: window.SEED_LAUNDRY || [],
+    disputes: window.SEED_DISPUTES || [],
+  };
+}
+
+const ROUTE_META = {
+  home:        { title: "Overview",          sub: "All properties, today" },
+  income:      { title: "Bookings & Income", sub: "Reservations & revenue" },
+  expense:     { title: "Property Expenses", sub: "Per-property operating cost" },
+  pnl:         { title: "P&L : Admin",       sub: "Live profit & loss" },
+  owner:       { title: "Owner Portal",      sub: "Statements & approvals" },
+  calendar:    { title: "Booking Calendar",  sub: "Consolidated channel view" },
+  housekeeping:{ title: "Housekeeping",      sub: "Rota & laundry tracker" },
+  forma:       { title: "Forma Sheet",       sub: "Monthly statistical return" },
+  company:     { title: "Company Expenses",  sub: "CurateMyStay overhead" },
+  budget:      { title: "Budgeting",         sub: "FY 2026-27 planning" },
+  settings:    { title: "Settings",          sub: "Configure categories & rules" },
+};
+
+const SETTINGS_KEY = "cms_settings";
+function loadSettings() {
+  try { const raw = localStorage.getItem(SETTINGS_KEY); if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }; } catch(e) {}
+  return { ...DEFAULT_SETTINGS };
+}
+
+function App() {
+  const [session, setSession] = useState(null);
+  const [route, setRoute] = useState("home");
+  const [state, dispatch] = useReducer(reducer, null, () => {
+    const saved = loadState();
+    return saved || getInit();
+  });
+  const [settings, setSettings] = useState(loadSettings);
+  const [toast, setToast] = useState("");
+
+  useEffect(() => { saveState(state); }, [state]);
+  useEffect(() => { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }, [settings]);
+  useEffect(() => {
+    if (session && session.role === "owner" && route !== "owner") setRoute("owner");
+  }, [session]);
+
+  const handleLogin = (s) => { setSession(s); setRoute(s.role === "owner" ? "owner" : "home"); };
+  const handleLogout = () => { setSession(null); setRoute("home"); };
+
+  if (!session) return <LoginScreen onLogin={handleLogin} />;
+
+  const meta = ROUTE_META[route] || ROUTE_META.home;
+
+  return (
+    <div className="app" data-screen-label={"persona-" + session.role + "-" + route}>
+      <Sidebar route={route} onRoute={setRoute} session={session} />
+      <main style={{minWidth:0}}>
+        <Topbar title={meta.title} sub={meta.sub} session={session} onLogout={handleLogout} />
+        {session.role === "admin" && route === "home"        && <PageHome    store={state} settings={settings} onRoute={setRoute} onToast={setToast} />}
+        {session.role === "admin" && route === "income"      && <PageIncome  store={state} settings={settings} dispatch={dispatch} onToast={setToast} />}
+        {session.role === "admin" && route === "expense"     && <PageExpense store={state} settings={settings} dispatch={dispatch} onToast={setToast} />}
+        {session.role === "admin" && route === "pnl"         && <PagePnL     store={state} settings={settings} dispatch={dispatch} onToast={setToast} />}
+        {session.role === "admin" && route === "owner"       && <PageOwner   store={state} settings={settings} dispatch={dispatch} onToast={setToast} session={session} />}
+        {session.role === "admin" && route === "calendar"    && <PageCalendar store={state} dispatch={dispatch} onToast={setToast} />}
+        {session.role === "admin" && route === "housekeeping"&& <PageHousekeeping store={state} settings={settings} dispatch={dispatch} onToast={setToast} />}
+        {session.role === "admin" && route === "forma"       && <PageForma   store={state} dispatch={dispatch} onToast={setToast} />}
+        {session.role === "admin" && route === "company"     && <PageCompany store={state} settings={settings} dispatch={dispatch} onToast={setToast} />}
+        {session.role === "admin" && route === "budget"      && <PageBudget  store={state} settings={settings} dispatch={dispatch} onToast={setToast} />}
+        {session.role === "admin" && route === "settings"    && <PageSettings settings={settings} onUpdateSettings={setSettings} onToast={setToast} dispatch={dispatch} store={state} />}
+        {session.role === "owner" && <PageOwner store={state} settings={settings} dispatch={dispatch} onToast={setToast} session={session} />}
+        <Toast msg={toast} onDone={() => setToast("")} />
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+
+</body>
+</html>

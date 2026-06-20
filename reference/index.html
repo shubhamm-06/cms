@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<!-- 
+  Curate My Stay - Owner Page
+  Clean Editable Version | June 2026
+  
+  IMAGES: All photos referenced from assets/photos/ and assets/logo-mark.png
+  FONTS: Figtree loaded from Google Fonts CDN
+  FRAMEWORK: React 18 + Babel (inline JSX) + Lucide icons
+  
+  To edit: modify the JSX code in the <script type="text/babel"> blocks below.
+  To host: serve this HTML file alongside the assets/ folder.
+-->
+
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curate My Stay : For Property Owners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rausch-50:#FFF1F1; --rausch-100:#FFE0E1; --rausch-300:#FF9295; --rausch-500:#FF5A5F;
+  --rausch-600:#E54B50; --rausch-700:#D63E43; --rausch-800:#B22F33;
+  --sunset-coral:#E98363; --sunset-orange:#E1914F; --sunset-amber:#E9AA4B;
+  --lagoon-50:#EAF3F5; --lagoon-300:#7FB3C2; --lagoon-500:#3C8399; --lagoon-700:#2C6478;
+  --ink:#222222; --ink-2:#484848; --gray-600:#717171; --gray-400:#B0B0B0; --gray-300:#DDDDDD;
+  --gray-200:#EBEBEB; --gray-100:#F7F7F7; --white:#FFFFFF;
+  --success:#1B8A5A; --warning:#E9AA4B; --error:#C13515; --info:#3C8399;
+  --primary:var(--rausch-500); --primary-hover:var(--rausch-600); --primary-press:var(--rausch-700); --on-primary:var(--white);
+  --accent:var(--lagoon-500);
+  --fg-1:var(--ink); --fg-2:var(--gray-600); --fg-3:var(--gray-400);
+  --bg:var(--white); --bg-subtle:var(--gray-100); --surface:var(--white);
+  --border:var(--gray-300); --border-subtle:var(--gray-200); --link:var(--rausch-500);
+  --grad-sunset:linear-gradient(135deg, var(--sunset-coral) 0%, var(--sunset-orange) 45%, var(--sunset-amber) 100%);
+  --grad-sunset-to-sea:linear-gradient(160deg, var(--sunset-coral) 0%, var(--sunset-amber) 55%, var(--lagoon-500) 100%);
+  --font-sans:'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fw-light:300; --fw-regular:400; --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-extrabold:800;
+  --text-xs:12px; --text-sm:14px; --text-base:16px; --text-lg:18px; --text-xl:22px; --text-2xl:28px;
+  --text-3xl:36px; --text-4xl:46px; --text-5xl:60px; --text-6xl:76px;
+  --leading-tight:1.1; --leading-snug:1.25; --leading-normal:1.5; --leading-relaxed:1.65;
+  --tracking-tight:-0.02em; --tracking-snug:-0.01em; --tracking-wide:0.04em;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:24px; --radius-pill:999px;
+  --shadow-xs:0 1px 2px rgba(0,0,0,0.06); --shadow-sm:0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md:0 6px 16px rgba(0,0,0,0.12); --shadow-lg:0 12px 32px rgba(0,0,0,0.16);
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+  --space-8:48px; --space-10:64px; --space-12:96px;
+  --band: #1B1714; --band-2: #241E19; --cream: #FBF7F1; --cream-line: rgba(255,255,255,0.12);
+}
+.eyebrow { font-weight:var(--fw-bold); font-size:var(--text-xs); line-height:1; letter-spacing:var(--tracking-wide); text-transform:uppercase; color:var(--primary); }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+a { -webkit-tap-highlight-color: transparent; color: inherit; }
+::selection { background: var(--rausch-100); color: var(--ink); }
+h1, h2, h3, h4, p { text-wrap: pretty; margin: 0; }
+input, select, button, textarea { font-family: inherit; }
+html { scroll-behavior: smooth; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 99px; border: 3px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+@media (max-width: 860px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; }
+  .hero-grid, .case-grid, .team-grid, .invest-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
+  .desk-nav { display: none !important; }
+  .mob-nav { display: flex !important; }
+  .sticky-bar { display: flex !important; }
+  section > div { padding-left: 22px !important; padding-right: 22px !important; }
+}
+@media (min-width: 861px) { .mob-nav { display: none !important; } }
+@media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr !important; } }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+/* ===== primitives.jsx ===== */
+/* Curate My Stay : Owner Page · shared primitives
+   All components exported to window for cross-file use.
+   Brand: Figtree + Airbnb coral-red/white (colors_and_type.css). */
+
+function Icon({ name, size = 20, color = 'currentColor', stroke = 2, style }) {
+  const ref = React.useRef(null);
+  React.useLayoutEffect(() => {
+    const host = ref.current;
+    if (!host || !window.lucide) return;
+    host.innerHTML = `<i data-lucide="${name}"></i>`;
+    window.lucide.createIcons({ attrs: { width: size, height: size, stroke: color, 'stroke-width': stroke } });
+  });
+  return <span ref={ref} aria-hidden="true" style={{ display: 'inline-flex', width: size, height: size, flex: 'none', ...style }} />;
+}
+
+function Logo({ size = 36, showWord = true, word = 'Curate My Stay', light = false }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+      <img src={(window.CMS_IMG && window.CMS_IMG['logo-mark.png']) || 'assets/logo-mark.png'} alt="Curate My Stay" style={{ width: size, height: size, objectFit: 'contain' }} />
+      {showWord && (
+        <span style={{ fontWeight: 800, fontSize: size * 0.46, letterSpacing: '-0.02em', color: light ? '#fff' : 'var(--ink)', lineHeight: 1, whiteSpace: 'nowrap' }}>
+          {word}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function Button({ children, variant = 'primary', size = 'md', icon, iconRight, onClick, full, type = 'button', style }) {
+  const [pressed, setPressed] = React.useState(false);
+  const [hover, setHover] = React.useState(false);
+  const pad = size === 'lg' ? '16px 28px' : size === 'sm' ? '9px 15px' : '13px 22px';
+  const fs = size === 'lg' ? 17 : size === 'sm' ? 14 : 16;
+  const base = {
+    fontFamily: 'inherit', fontWeight: 600, fontSize: fs, padding: pad,
+    borderRadius: 'var(--radius-md)', border: '1px solid transparent', cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+    transition: 'all .16s ease', width: full ? '100%' : 'auto',
+    transform: pressed ? 'scale(0.98)' : 'none', whiteSpace: 'nowrap', lineHeight: 1.1,
+  };
+  const variants = {
+    primary: { background: pressed ? 'var(--primary-press)' : 'var(--primary)', color: '#fff', boxShadow: hover ? 'var(--shadow-md)' : 'var(--shadow-xs)' },
+    secondary: { background: '#fff', color: 'var(--ink)', borderColor: 'var(--border)' },
+    ghost: { background: 'transparent', color: 'var(--ink)' },
+    onDark: { background: '#fff', color: 'var(--ink)' },
+    outlineDark: { background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.45)' },
+  };
+  const hoverStyle = hover ? (
+    variant === 'primary' ? { background: 'var(--primary-hover)' } :
+    variant === 'secondary' || variant === 'ghost' ? { background: 'var(--gray-100)' } :
+    variant === 'outlineDark' ? { background: 'rgba(255,255,255,0.10)', borderColor: 'rgba(255,255,255,0.7)' } :
+    { background: '#fff', boxShadow: 'var(--shadow-md)' }
+  ) : {};
+  return (
+    <button type={type} onClick={onClick}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => { setHover(false); setPressed(false); }}
+      onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)}
+      style={{ ...base, ...variants[variant], ...hoverStyle, ...style }}>
+      {icon && <Icon name={icon} size={fs + 2} />}
+      {children}
+      {iconRight && <Icon name={iconRight} size={fs + 1} />}
+    </button>
+  );
+}
+
+function Pill({ children, tone = 'neutral', dot, style }) {
+  const tones = {
+    neutral: { bg: '#fff', fg: 'var(--ink)', border: 'var(--border)', dot: 'var(--gray-400)' },
+    soft: { bg: 'var(--gray-100)', fg: 'var(--ink-2)', border: 'transparent', dot: 'var(--gray-400)' },
+    ok: { bg: '#E6F4EC', fg: 'var(--success)', border: 'transparent', dot: 'var(--success)' },
+    info: { bg: 'var(--lagoon-50)', fg: 'var(--lagoon-700)', border: 'transparent', dot: 'var(--lagoon-500)' },
+    coral: { bg: 'var(--rausch-50)', fg: 'var(--primary-press)', border: 'transparent', dot: 'var(--primary)' },
+    onDark: { bg: 'rgba(255,255,255,0.10)', fg: '#fff', border: 'rgba(255,255,255,0.22)', dot: 'var(--sunset-amber)' },
+  };
+  const t = tones[tone];
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 13px', borderRadius: 999, fontSize: 13, fontWeight: 600, background: t.bg, color: t.fg, border: `1px solid ${t.border}`, ...style }}>
+      {dot && <span style={{ width: 7, height: 7, borderRadius: '50%', background: t.dot }} />}
+      {children}
+    </span>
+  );
+}
+
+function Eyebrow({ children, light = false, style }) {
+  return (
+    <div className="eyebrow" style={{ color: light ? 'var(--sunset-amber)' : 'var(--primary)', ...style }}>{children}</div>
+  );
+}
+
+/* Real photography. Warm, lightly-polished grade. */
+function Img({ src, height, radius = 16, cover = true, alt = '', overlay = false, position = 'center', grade = true, style, children }) {
+  return (
+    <div style={{ height, borderRadius: radius, overflow: 'hidden', position: 'relative', background: 'var(--gray-100)', ...style }}>
+      <img src={(window.CMS_IMG && window.CMS_IMG[src]) || `assets/photos/${src}`} alt={alt} loading="lazy"
+        style={{ width: '100%', height: '100%', objectFit: cover ? 'cover' : 'contain', objectPosition: position, display: 'block',
+                 filter: grade ? 'saturate(1.06) contrast(1.03) brightness(1.02)' : 'none' }} />
+      {overlay && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(24,15,9,0.62) 0%, rgba(24,15,9,0.12) 42%, rgba(24,15,9,0) 64%)' }} />}
+      {children}
+    </div>
+  );
+}
+
+/* Fade-up on scroll. Calm: 8px translate, 520ms, once. */
+function Reveal({ children, delay = 0, y = 14, style, as = 'div' }) {
+  const ref = React.useRef(null);
+  const [shown, setShown] = React.useState(false);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver((es) => {
+      es.forEach(e => { if (e.isIntersecting) { setShown(true); io.disconnect(); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const Tag = as;
+  return (
+    <Tag ref={ref} style={{
+      opacity: shown ? 1 : 0,
+      transform: shown ? 'none' : `translateY(${y}px)`,
+      transition: `opacity .55s cubic-bezier(0.2,0,0,1) ${delay}ms, transform .55s cubic-bezier(0.2,0,0,1) ${delay}ms`,
+      ...style,
+    }}>{children}</Tag>
+  );
+}
+
+/* Section shell : consistent vertical rhythm + max width. */
+function Section({ children, bg = 'var(--bg)', dark = false, pad = '104px 32px', id, full = false, style }) {
+  return (
+    <section id={id} data-screen-label={id} style={{ background: bg, color: dark ? '#fff' : 'var(--ink)', position: 'relative', ...style }}>
+      <div style={{ maxWidth: full ? 'none' : 1180, margin: '0 auto', padding: pad }}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/* Section heading block (eyebrow + h2 + lead), centered or left. */
+function Heading({ eyebrow, title, lead, align = 'center', dark = false, max = 720, style }) {
+  return (
+    <div style={{ textAlign: align, maxWidth: align === 'center' ? max : 'none', margin: align === 'center' ? '0 auto' : 0, ...style }}>
+      {eyebrow && <Eyebrow light={dark} style={{ marginBottom: 16 }}>{eyebrow}</Eyebrow>}
+      <h2 style={{ fontSize: 'clamp(30px, 4vw, 44px)', fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.08, margin: 0, color: dark ? '#fff' : 'var(--ink)' }}>{title}</h2>
+      {lead && <p style={{ fontSize: 19, lineHeight: 1.6, color: dark ? 'rgba(255,255,255,0.74)' : 'var(--fg-2)', margin: '18px auto 0', maxWidth: align === 'center' ? 640 : 'none' }}>{lead}</p>}
+    </div>
+  );
+}
+
+Object.assign(window, { Icon, Logo, Button, Pill, Eyebrow, Img, Reveal, Section, Heading });
+
+  </script>
+  <script type="text/babel" data-presets="react">
+/* ===== calculator.jsx ===== */
+/* Curate My Stay : ROI Calculator (Section 3)
+   Real client-side implementation of the spec's server-side math.
+   Multi-step lead-capture form → instant on-screen forecast. */
+
+const CMS_LOCATIONS = ['Panjim','Margao','Saligao','Assagao','Anjuna','Vagator','Candolim','Calangute','Baga','Morjim','Ashvem','Mandrem','Arambol','Varca','Cavelossim','Colva','Loutolim','Other South Goa','Other North Goa'];
+const APT_PREMIUM = ['Panjim','Margao','Anjuna','Assagao'];
+const SOUTH_COASTAL = ['Varca','Cavelossim','Colva','Loutolim','Other South Goa'];
+
+const fmtINR = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+// Short lakh/crore label for big numbers
+function lakhLabel(n) {
+  if (n >= 10000000) return '₹' + (n / 10000000).toFixed(2).replace(/\.00$/, '') + ' Cr';
+  if (n >= 100000) return '₹' + (n / 100000).toFixed(2).replace(/\.00$/, '') + ' L';
+  return fmtINR(n);
+}
+
+/* --- The math (anchors from the spec; not shown on screen) --- */
+function computeForecast(input) {
+  const { type, config, location, distance, pool } = input;
+  const isVilla = type === 'Villa';
+
+  // Step 2 : base ADR
+  let base;
+  if (isVilla) {
+    base = ({ 'Studio': 7500, '1 BHK': 7500, '2 BHK': 7500, '3 BHK': 11000, '4 BHK': 14000, '5 BHK+': 18000 })[config] || 9000;
+  } else { // Apartment / Studio
+    base = ({ 'Studio': 4000, '1 BHK': 4000, '2 BHK': 6500, '3 BHK': 9000, '4 BHK': 12000, '5 BHK+': 15000 })[config] || 5500;
+  }
+
+  // multipliers
+  let m = 1;
+  if (isVilla) {
+    if (pool === 'Private') m *= 1.20;
+    if (SOUTH_COASTAL.includes(location)) m *= 1.15;
+  } else {
+    if (APT_PREMIUM.includes(location)) m *= 1.15;
+    if (pool === 'Private' || pool === 'Society') m *= 1.10;
+  }
+  if (distance === '<500m') m *= 1.10;
+  const adr = base * m;
+
+  // Step 3 : seasonal occupancy
+  const buckets = [
+    { nights: 88, mult: 1.40 }, // Peak  (Nov–Feb)
+    { nights: 32, mult: 1.00 }, // Shoulder (Oct, Mar)
+    { nights: 30, mult: 0.85 }, // Low (Apr, May, Sep)
+    { nights: 21, mult: 0.70 }, // Monsoon (Jun–Aug)
+  ];
+  const gross = buckets.reduce((s, b) => s + b.nights * adr * b.mult, 0);
+  const nights = buckets.reduce((s, b) => s + b.nights, 0);
+  const opex = gross * 0.15;
+  const net = gross - opex;
+  const ownerShare = net * 0.80;
+
+  // LTR comparison
+  let ltrMonthly;
+  if (isVilla) ltrMonthly = ({ '2 BHK': 40000, '3 BHK': 60000, '4 BHK': 85000, '5 BHK+': 110000 })[config] || 45000;
+  else ltrMonthly = ({ 'Studio': 12000, '1 BHK': 15000, '2 BHK': 30000, '3 BHK': 45000, '4 BHK': 65000, '5 BHK+': 80000 })[config] || 22000;
+  const ltrAnnual = ltrMonthly * 11;
+
+  return { adr, nights, gross, opex, net, ownerShare, ltrAnnual, multiple: ownerShare / ltrAnnual };
+}
+
+/* --- Small form atoms --- */
+function Field({ label, children, hint, required }) {
+  return (
+    <label style={{ display: 'block' }}>
+      <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--ink-2)', marginBottom: 7 }}>
+        {label}{required && <span style={{ color: 'var(--primary)' }}> *</span>}
+      </span>
+      {children}
+      {hint && <span style={{ display: 'block', fontSize: 12.5, color: 'var(--fg-3)', marginTop: 5 }}>{hint}</span>}
+    </label>
+  );
+}
+const inputStyle = {
+  width: '100%', padding: '12px 14px', fontSize: 15.5, color: 'var(--ink)',
+  background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
+  outline: 'none', transition: 'border-color .15s, box-shadow .15s', appearance: 'none',
+};
+function TextInput(props) {
+  const [f, setF] = React.useState(false);
+  return <input {...props} onFocus={() => setF(true)} onBlur={() => setF(false)}
+    style={{ ...inputStyle, borderColor: f ? 'var(--primary)' : (props.invalid ? 'var(--error)' : 'var(--border)'), boxShadow: f ? '0 0 0 3px var(--rausch-100)' : 'none' }} />;
+}
+function Select({ value, onChange, options, placeholder, invalid }) {
+  const [f, setF] = React.useState(false);
+  return (
+    <div style={{ position: 'relative' }}>
+      <select value={value} onChange={onChange} onFocus={() => setF(true)} onBlur={() => setF(false)}
+        style={{ ...inputStyle, paddingRight: 38, cursor: 'pointer', color: value ? 'var(--ink)' : 'var(--fg-3)',
+                 borderColor: f ? 'var(--primary)' : (invalid ? 'var(--error)' : 'var(--border)'), boxShadow: f ? '0 0 0 3px var(--rausch-100)' : 'none' }}>
+        <option value="" disabled>{placeholder}</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+        <Icon name="chevron-down" size={18} color="var(--fg-2)" />
+      </span>
+    </div>
+  );
+}
+function Segmented({ value, onChange, options }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      {options.map(o => {
+        const on = value === o;
+        return (
+          <button key={o} type="button" onClick={() => onChange(o)}
+            style={{ flex: '1 1 0', minWidth: 88, padding: '11px 12px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer',
+                     borderRadius: 'var(--radius-md)', border: `1px solid ${on ? 'var(--primary)' : 'var(--border)'}`,
+                     background: on ? 'var(--rausch-50)' : '#fff', color: on ? 'var(--primary-press)' : 'var(--ink-2)',
+                     transition: 'all .14s ease' }}>{o}</button>
+        );
+      })}
+    </div>
+  );
+}
+function Check({ checked, onChange, children }) {
+  return (
+    <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', cursor: 'pointer', padding: '4px 0' }}>
+      <span style={{ width: 22, height: 22, flex: 'none', borderRadius: 7, border: `1.5px solid ${checked ? 'var(--primary)' : 'var(--border)'}`,
+                     background: checked ? 'var(--primary)' : '#fff', display: 'grid', placeItems: 'center', marginTop: 1, transition: 'all .14s' }}>
+        {checked && <Icon name="check" size={15} color="#fff" stroke={3} />}
+      </span>
+      <span style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--ink-2)' }}>{children}</span>
+      <input type="checkbox" checked={checked} onChange={onChange} style={{ display: 'none' }} />
+    </label>
+  );
+}
+
+function Dots({ step, total = 3 }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      {Array.from({ length: total }).map((_, i) => (
+        <span key={i} style={{ width: i === step ? 22 : 8, height: 8, borderRadius: 99,
+          background: i === step ? 'var(--primary)' : i < step ? 'var(--rausch-300)' : 'var(--gray-300)', transition: 'all .2s' }} />
+      ))}
+    </div>
+  );
+}
+
+/* --- Output --- */
+function NumCard({ label, value, sub, accent }) {
+  return (
+    <div style={{ background: '#fff', border: `1px solid ${accent ? 'var(--rausch-300)' : 'var(--border-subtle)'}`, borderRadius: 'var(--radius-lg)', padding: '22px 24px', boxShadow: 'var(--shadow-xs)' }}>
+      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: accent ? 'var(--primary)' : 'var(--fg-2)' }}>{label}</div>
+      <div style={{ fontSize: 34, fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 13.5, color: 'var(--fg-2)', marginTop: 7 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function CompareBar({ label, value, pct, tone }) {
+  const [w, setW] = React.useState(0);
+  React.useEffect(() => { const t = setTimeout(() => setW(pct), 80); return () => clearTimeout(t); }, [pct]);
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+        <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--ink-2)' }}>{label}</span>
+        <span style={{ fontSize: 16, fontWeight: 800, color: tone === 'coral' ? 'var(--primary)' : 'var(--ink)' }}>{lakhLabel(value)}</span>
+      </div>
+      <div style={{ height: 16, borderRadius: 99, background: 'var(--gray-100)', overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: w + '%', borderRadius: 99,
+          background: tone === 'coral' ? 'var(--grad-sunset)' : 'var(--gray-300)',
+          transition: 'width 1s cubic-bezier(0.2,0,0,1)' }} />
+      </div>
+    </div>
+  );
+}
+
+function Forecast({ input, result, onReset }) {
+  const summary = `${input.config} ${input.type} · ${input.location} · ${input.area ? input.area + ' sqft · ' : ''}${input.pool} pool`;
+  const maxV = Math.max(result.ownerShare, result.ltrAnnual);
+  return (
+    <Reveal>
+      <div style={{ background: 'var(--cream)', border: '1px solid var(--rausch-300)', borderRadius: 'var(--radius-xl)', padding: 'clamp(24px, 4vw, 40px)', boxShadow: 'var(--shadow-md)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
+          <Pill tone="ok" dot>Forecast ready</Pill>
+          <span style={{ fontSize: 13.5, color: 'var(--fg-2)' }}>Pitch deck on its way to your inbox</span>
+        </div>
+        <h3 style={{ fontSize: 'clamp(24px,3vw,32px)', fontWeight: 800, letterSpacing: '-0.02em', margin: '8px 0 4px', color: 'var(--ink)' }}>Here's what your property could earn.</h3>
+        <p style={{ fontSize: 15, color: 'var(--fg-2)', margin: '0 0 24px', fontWeight: 600 }}>{summary}</p>
+
+        <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <NumCard label="Estimated annual revenue" value={lakhLabel(result.gross)} sub={`~${result.nights} nights · ₹${Math.round(result.adr).toLocaleString('en-IN')} avg/night`} />
+          <NumCard label="Estimated operating cost" value={lakhLabel(result.opex)} sub="15% : cleaning, ops, listings" />
+          <NumCard label="Estimated net profit" value={lakhLabel(result.net)} sub="After all operating costs" />
+          <NumCard label="Your share (80%)" value={lakhLabel(result.ownerShare)} sub="Paid to you, monthly" accent />
+        </div>
+
+        <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: 'clamp(20px,3vw,28px)', marginTop: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--fg-2)' }}>You earn, vs a long-term lease</span>
+            <Pill tone="coral">{result.multiple.toFixed(1)}× more</Pill>
+          </div>
+          <CompareBar label="Long-term rental (estimate)" value={result.ltrAnnual} pct={(result.ltrAnnual / maxV) * 100} />
+          <CompareBar label="Short-term with CMS" value={result.ownerShare} pct={(result.ownerShare / maxV) * 100} tone="coral" />
+        </div>
+
+        <p style={{ fontSize: 12.5, fontStyle: 'italic', color: 'var(--fg-3)', lineHeight: 1.5, margin: '18px 0 22px' }}>
+          These are estimates based on our experience managing comparable Goa properties. Actual results depend on property condition, location, season, and market dynamics. The detailed pitch deck on its way to your inbox includes the assumptions behind these numbers.
+        </p>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Button variant="primary" size="lg" iconRight="arrow-right" onClick={() => window.cmsBookCall && window.cmsBookCall()}>Book a discovery call</Button>
+          <Button variant="secondary" size="lg" icon="mail">Email me the full pitch deck</Button>
+          <Button variant="ghost" size="lg" icon="rotate-ccw" onClick={onReset}>Start over</Button>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+function Calculator() {
+  const [step, setStep] = React.useState(0);
+  const [data, setData] = React.useState({
+    type: '', config: '', area: '', location: '', mapLink: '', distance: '', pool: '', amenities: '',
+    furnishing: '', rented: '', listingUrl: '',
+    name: '', phone: '', email: '', residency: '',
+    wantDeck: true, wantCall: false,
+  });
+  const [result, setResult] = React.useState(null);
+  const [touched, setTouched] = React.useState(false);
+  const set = (k, v) => setData(d => ({ ...d, [k]: v }));
+
+  const step1ok = data.type && data.config && data.location && data.distance && data.pool && data.furnishing;
+  const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email);
+  const step2ok = data.name.trim() && data.phone.trim().length >= 7 && emailOk && data.residency;
+
+  const next = () => { setTouched(true); if ((step === 0 && step1ok) || (step === 1 && step2ok)) { setTouched(false); setStep(s => s + 1); } };
+  const submit = () => { setResult(computeForecast(data)); };
+  const reset = () => { setResult(null); setStep(0); setTouched(false);
+    setData({ type: '', config: '', area: '', location: '', mapLink: '', distance: '', pool: '', amenities: '', furnishing: '', rented: '', listingUrl: '', name: '', phone: '', email: '', residency: '', wantDeck: true, wantCall: false }); };
+
+  if (result) return <Forecast input={data} result={result} onReset={reset} />;
+
+  const showAirbnbUrl = data.rented === 'Yes, on Airbnb (self-managed)';
+
+  return (
+    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: 'clamp(24px, 4vw, 44px)', boxShadow: 'var(--shadow-sm)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--primary)' }}>Step {step + 1} of 3</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--ink)', marginTop: 4 }}>
+            {['Tell us about your property', 'How do we reach you?', 'Confirm & generate'][step]}
+          </div>
+        </div>
+        <Dots step={step} />
+      </div>
+
+      {step === 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }} className="grid-2">
+          <Field label="Property type" required><Segmented value={data.type} onChange={v => set('type', v)} options={['Apartment', 'Villa', 'Studio']} /></Field>
+          <Field label="Configuration" required><Select value={data.config} onChange={e => set('config', e.target.value)} placeholder="Select size" options={['Studio', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK+']} invalid={touched && !data.config} /></Field>
+          <Field label="Built-up area (sq.ft.)" hint="Rough is fine"><TextInput type="number" placeholder="e.g. 1800" value={data.area} onChange={e => set('area', e.target.value)} /></Field>
+          <Field label="Location" required><Select value={data.location} onChange={e => set('location', e.target.value)} placeholder="Select area" options={CMS_LOCATIONS} invalid={touched && !data.location} /></Field>
+          <Field label="Distance from beach" required><Select value={data.distance} onChange={e => set('distance', e.target.value)} placeholder="Select distance" options={['<500m', '500m-1km', '1-2km', '2-5km', '5km+']} invalid={touched && !data.distance} /></Field>
+          <Field label="Pool" required><Segmented value={data.pool} onChange={v => set('pool', v)} options={['Private', 'Society', 'None']} /></Field>
+          <Field label="Furnishing status" required><Select value={data.furnishing} onChange={e => set('furnishing', e.target.value)} placeholder="Select status" options={['Fully furnished & ready', 'Mostly furnished, needs minor work', 'Needs significant work', 'Empty']} invalid={touched && !data.furnishing} /></Field>
+          <Field label="Currently being rented?"><Select value={data.rented} onChange={e => set('rented', e.target.value)} placeholder="Select" options={['No, idle', 'Yes, long-term', 'Yes, on Airbnb (self-managed)', 'Yes, with another agency']} /></Field>
+          {showAirbnbUrl && <div style={{ gridColumn: '1 / -1' }}><Field label="Your Airbnb listing URL" hint="Optional : lets us run a free listing audit"><TextInput type="url" placeholder="https://airbnb.com/rooms/…" value={data.listingUrl} onChange={e => set('listingUrl', e.target.value)} /></Field></div>}
+          {touched && !step1ok && <div style={{ gridColumn: '1 / -1', fontSize: 13.5, color: 'var(--error)' }}>Please complete the required fields above.</div>}
+        </div>
+      )}
+
+      {step === 1 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }} className="grid-2">
+          <Field label="Full name" required><TextInput placeholder="Your name" value={data.name} onChange={e => set('name', e.target.value)} invalid={touched && !data.name.trim()} /></Field>
+          <Field label="Phone" required hint="Default +91 : change for international">
+            <div style={{ display: 'flex', gap: 8 }}>
+              <span style={{ ...inputStyle, width: 64, flex: 'none', display: 'grid', placeItems: 'center', fontWeight: 600, background: 'var(--gray-100)' }}>+91</span>
+              <TextInput type="tel" placeholder="98765 43210" value={data.phone} onChange={e => set('phone', e.target.value)} invalid={touched && data.phone.trim().length < 7} />
+            </div>
+          </Field>
+          <Field label="Email" required><TextInput type="email" placeholder="you@email.com" value={data.email} onChange={e => set('email', e.target.value)} invalid={touched && !emailOk} /></Field>
+          <Field label="Where are you based?" required hint="Helps us route your follow-up"><Select value={data.residency} onChange={e => set('residency', e.target.value)} placeholder="Select" options={['In Goa', 'In India (outside Goa)', 'Abroad (NRI)']} invalid={touched && !data.residency} /></Field>
+          {touched && !step2ok && <div style={{ gridColumn: '1 / -1', fontSize: 13.5, color: 'var(--error)' }}>Please enter your name, a valid phone & email, and where you're based.</div>}
+        </div>
+      )}
+
+      {step === 2 && (
+        <div style={{ display: 'grid', gap: 14 }}>
+          <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: 18 }}>
+            <Check checked={data.wantDeck} onChange={e => set('wantDeck', e.target.checked)}>Email me a custom pitch deck and ROI projection for my property.</Check>
+            <div style={{ height: 1, background: 'var(--border-subtle)', margin: '8px 0' }} />
+            <Check checked={data.wantCall} onChange={e => set('wantCall', e.target.checked)}>I'd like to book a 30-min discovery call with the founder.</Check>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'var(--fg-2)' }}>
+            <Icon name="shield-check" size={18} color="var(--success)" /> No spam. Your details stay private. We reply within minutes.
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 28, gap: 12 }}>
+        {step > 0 ? <Button variant="ghost" icon="arrow-left" onClick={() => setStep(s => s - 1)}>Back</Button> : <span />}
+        {step < 2
+          ? <Button variant="primary" size="lg" iconRight="arrow-right" onClick={next}>Continue</Button>
+          : <Button variant="primary" size="lg" iconRight="sparkles" onClick={submit}>Generate my forecast</Button>}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { Calculator, computeForecast, fmtINR, lakhLabel });
+
+  </script>
+  <script type="text/babel" data-presets="react">
+/* ===== sections-top.jsx ===== */
+/* Curate My Stay  :  top sections: Header, Hero (with carousel), Math anchor, Calculator, Services */
+
+const NAV_LINKS = [
+  ['How it works', 'services'],
+  ['Earnings', 'calculator'],
+  ['Proof', 'proof'],
+  ['FAQ', 'risk'],
+  ['Pricing', 'tiers'],
+];
+
+function scrollToId(id) {
+  const el = document.getElementById(id);
+  if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64, behavior: 'smooth' });
+}
+
+function Header() {
+  const [scrolled, setScrolled] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <header style={{ position: 'sticky', top: 0, zIndex: 60,
+      background: scrolled ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0)',
+      backdropFilter: scrolled ? 'blur(12px)' : 'none', WebkitBackdropFilter: scrolled ? 'blur(12px)' : 'none',
+      borderBottom: scrolled ? '1px solid var(--border-subtle)' : '1px solid transparent', transition: 'all .22s ease' }}>
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '15px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+        <a href="#" onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ textDecoration: 'none' }}><Logo size={36} /></a>
+        <nav className="desk-nav" style={{ display: 'flex', gap: 30 }}>
+          {NAV_LINKS.map(([label, id]) => (
+            <a key={id} href={'#' + id} onClick={e => { e.preventDefault(); scrollToId(id); }}
+              style={{ textDecoration: 'none', color: 'var(--ink-2)', fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap' }}>{label}</a>
+          ))}
+        </nav>
+        <div className="desk-nav" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Button variant="ghost" size="sm" onClick={() => { window.location.href = 'booking.html'; }}>Book a property</Button>
+          <Button variant="primary" size="md" iconRight="arrow-right" onClick={() => { window.location.href = 'dashboard.html'; }}>Dashboard</Button>
+        </div>
+        <button className="mob-nav" onClick={() => setOpen(o => !o)} style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 6 }}>
+          <Icon name={open ? 'x' : 'menu'} size={26} />
+        </button>
+      </div>
+      {open && (
+        <div className="mob-nav" style={{ display: 'none', padding: '8px 24px 20px', background: 'rgba(255,255,255,0.97)', borderBottom: '1px solid var(--border-subtle)' }}>
+          {NAV_LINKS.map(([label, id]) => (
+            <a key={id} href={'#' + id} onClick={e => { e.preventDefault(); setOpen(false); scrollToId(id); }}
+              style={{ display: 'block', padding: '12px 0', textDecoration: 'none', color: 'var(--ink)', fontSize: 17, fontWeight: 600, borderBottom: '1px solid var(--border-subtle)' }}>{label}</a>
+          ))}
+          <div style={{ marginTop: 16, display: 'grid', gap: 10 }}>
+            <Button variant="secondary" full size="lg" onClick={() => { setOpen(false); window.location.href = 'booking.html'; }}>Book a property</Button>
+            <Button variant="primary" full size="lg" onClick={() => { setOpen(false); window.location.href = 'dashboard.html'; }}>Dashboard</Button>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}
+
+/* Hero photo carousel */
+const CAROUSEL_PHOTOS = [
+  'IMG_0524.jpg','IMG_0375.jpg','IMG_0532.jpg','IMG_0600.jpg',
+  'IMG_1541.jpg','IMG_1548.jpg','IMG_1569.jpg','IMG_1581.jpg',
+  'IMG_1941.jpg','IMG_2017.jpg','IMG_2023.jpg','IMG_2098.jpg',
+  'IMG_2161.jpg','IMG_2166.jpg','IMG_2173.jpg','IMG_2685.jpg',
+  'IMG_2687.jpg','IMG_2693.jpg','IMG_2708.jpg',
+];
+
+function HeroCarousel() {
+  const [idx, setIdx] = React.useState(0);
+  React.useEffect(() => {
+    const iv = setInterval(() => setIdx(i => (i + 1) % CAROUSEL_PHOTOS.length), 4000);
+    return () => clearInterval(iv);
+  }, []);
+  return (
+    <div style={{ position: 'relative', height: 'min(70vh, 540px)', borderRadius: 24, overflow: 'hidden', boxShadow: 'var(--shadow-lg)', background: 'var(--gray-100)' }}>
+      {CAROUSEL_PHOTOS.map((src, i) => (
+        <img key={src}
+          src={(window.CMS_IMG && window.CMS_IMG[src]) || ('assets/photos/' + src)}
+          alt={'Curate My Stay property ' + (i + 1)}
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            objectFit: 'cover', objectPosition: 'center',
+            opacity: i === idx ? 1 : 0,
+            transition: 'opacity 1.2s ease-in-out',
+            filter: 'saturate(1.06) contrast(1.03) brightness(1.02)',
+          }} />
+      ))}
+      {/* dots */}
+      <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', gap: 6, zIndex: 2 }}>
+        {CAROUSEL_PHOTOS.map((_, i) => (
+          <button key={i} onClick={() => setIdx(i)}
+            style={{ width: i === idx ? 20 : 8, height: 8, borderRadius: 99, border: 'none', cursor: 'pointer',
+              background: i === idx ? '#fff' : 'rgba(255,255,255,0.5)',
+              transition: 'all .3s ease', padding: 0 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Hero() {
+  const trust = [
+    ['star', '4.98 / 5 on Airbnb'],
+    ['award', 'Superhost'],
+    ['file-check', 'Monthly P&L, owner-approved'],
+  ];
+  return (
+    <Section bg="var(--cream)" pad="56px 32px 80px" id="top">
+      <div className="hero-grid grid-2" style={{ display: 'grid', gridTemplateColumns: '1.06fr 0.94fr', gap: 56, alignItems: 'center' }}>
+        <Reveal>
+          <Eyebrow style={{ marginBottom: 18 }}>Goa · Short-term rental management</Eyebrow>
+          <h1 style={{ fontSize: 'clamp(38px, 5.2vw, 60px)', fontWeight: 800, lineHeight: 1.04, letterSpacing: '-0.03em', margin: 0, color: 'var(--ink)' }}>
+            Your Property. Professionally Managed. <span style={{ color: 'var(--primary)' }}>For Higher Returns.</span>
+          </h1>
+          <p style={{ fontSize: 'clamp(18px,2vw,22px)', lineHeight: 1.55, color: 'var(--ink-2)', maxWidth: 540, margin: '24px 0 28px' }}>
+            We help Goa homeowners earn more through fully managed short-term rentals, with complete financial transparency.
+          </p>
+          <div style={{ display: 'flex', gap: 13, flexWrap: 'wrap', marginBottom: 26 }}>
+            <Button variant="primary" size="lg" iconRight="arrow-right" onClick={() => window.cmsBookCall()}>Book a discovery call</Button>
+            <Button variant="secondary" size="lg" icon="file-text" onClick={() => scrollToId('calculator')}>Get my custom pitch deck</Button>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 22px', marginBottom: 16 }}>
+            {trust.map(([ic, t]) => (
+              <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14.5, fontWeight: 600, color: 'var(--ink-2)' }}>
+                <Icon name={ic} size={17} color="var(--primary)" />{t}
+              </span>
+            ))}
+          </div>
+          <p style={{ fontSize: 13.5, color: 'var(--fg-2)', margin: 0 }}>No commitment. 30-min call. We'll tell you upfront if your property is a fit.</p>
+        </Reveal>
+
+        <Reveal delay={90}>
+          <div style={{ position: 'relative' }}>
+            <HeroCarousel />
+            <div style={{ position: 'absolute', bottom: -24, left: -20, background: '#fff', borderRadius: 18, padding: '16px 20px', boxShadow: 'var(--shadow-lg)', width: 224 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.02em', lineHeight: 1 }}>150+</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink-2)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ color: 'var(--primary)', fontSize: 16 }}>★</span> 5-star reviews
+              </div>
+              <div style={{ height: 1, background: 'var(--border-subtle)', margin: '8px 0' }} />
+              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.02em' }}>200+</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', marginTop: 2 }}>successful stays</div>
+            </div>
+            <div style={{ position: 'absolute', top: 18, right: 18 }}><Pill tone="neutral">★ 4.98 average</Pill></div>
+          </div>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
+/* SECTION 2  :  STR vs LTR anchor (dark band) */
+function MathAnchor() {
+  const rows = [
+    ['ROI', '3-4%', 'Upwards of 6%'],
+    ['Maintenance', 'Tenant call, tenant terms', 'Daily care, deep cleans, restocking'],
+    ['Condition over 12 months', 'Wears down', 'Hotel-grade'],
+    ['Control', 'Locked in 11 months', 'Block dates anytime, use it yourself'],
+    ['Vacancy risk', '1-2 month gaps', 'Spread across 100+ guests / year'],
+    ['Seasonality', 'Fixed rent regardless of demand', 'Higher earnings during peak tourism months'],
+    ['Guest quality', 'Single tenant dependency', 'Verified guests & reviews'],
+  ];
+  return (
+    <Section bg="var(--band)" dark pad="100px 32px" id="math">
+      <Reveal>
+        <Heading dark align="center" max={760}
+          eyebrow="The math that changes everything"
+          title="Same property. A different operating model."
+          lead="Most owners in Goa lease long-term and accept the rental yield they're given. Here's what the same property looks like under short-term rental management." />
+      </Reveal>
+      <Reveal delay={80}>
+        <div style={{ overflowX: 'auto', marginTop: 52, paddingBottom: 4 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1.15fr', gap: 0, minWidth: 620, borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid var(--cream-line)' }}>
+          {/* header row */}
+          <div style={{ padding: '20px 24px', background: 'rgba(255,255,255,0.03)' }} />
+          <div style={{ padding: '20px 24px', background: 'rgba(255,255,255,0.03)', borderLeft: '1px solid var(--cream-line)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Long-term rental</div>
+          </div>
+          <div style={{ padding: '20px 24px', background: 'rgba(255,90,95,0.14)', borderLeft: '2px solid var(--primary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Logo size={22} showWord={false} />
+              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase', color: 'var(--sunset-amber)' }}>Short-term with CMS</div>
+            </div>
+          </div>
+          {/* rows */}
+          {rows.map(([label, ltr, cms], i) => (
+            <React.Fragment key={label}>
+              <div style={{ padding: '18px 24px', borderTop: '1px solid var(--cream-line)', fontSize: 14.5, fontWeight: 600, color: 'rgba(255,255,255,0.82)' }}>{label}</div>
+              <div style={{ padding: '18px 24px', borderTop: '1px solid var(--cream-line)', borderLeft: '1px solid var(--cream-line)', fontSize: 14.5, color: 'rgba(255,255,255,0.6)' }}>{ltr}</div>
+              <div style={{ padding: '18px 24px', borderTop: '1px solid var(--cream-line)', borderLeft: '2px solid var(--primary)', background: 'rgba(255,90,95,0.07)', fontSize: 14.5, fontWeight: 600, color: '#fff' }}>{cms}</div>
+            </React.Fragment>
+          ))}
+        </div>
+        </div>
+      </Reveal>
+      <Reveal delay={120}>
+        <div style={{ textAlign: 'center', marginTop: 44 }}>
+          <p style={{ fontSize: 'clamp(20px,2.6vw,28px)', fontStyle: 'italic', fontWeight: 700, color: 'var(--sunset-amber)', letterSpacing: '-0.01em', margin: '0 auto 24px', maxWidth: 680 }}>
+            "Same property. Different operating model. Better cash flow."
+          </p>
+          <a href="#calculator" onClick={e => { e.preventDefault(); scrollToId('calculator'); }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#fff', fontWeight: 700, fontSize: 16, textDecoration: 'none', borderBottom: '2px solid var(--primary)', paddingBottom: 3 }}>
+            See the full numbers for your property <Icon name="arrow-right" size={18} color="#fff" />
+          </a>
+        </div>
+      </Reveal>
+    </Section>
+  );
+}
+
+/* SECTION 3  :  Calculator */
+function CalculatorSection() {
+  return (
+    <Section bg="var(--bg)" pad="100px 32px" id="calculator">
+      <Reveal>
+        <Heading align="center"
+          eyebrow="The ROI calculator"
+          title="What could your property actually earn?"
+          lead="Tell us about your property. We'll show you a transparent forecast : gross revenue, expenses, your share, and how it compares to a long-term rental. We'll also email you a custom pitch deck within 24 hours." />
+      </Reveal>
+      <Reveal delay={80} style={{ maxWidth: 880, margin: '48px auto 0' }}>
+        <Calculator />
+      </Reveal>
+    </Section>
+  );
+}
+
+/* SECTION 4  :  What we do */
+function Services() {
+  const cards = [
+    ['bed-double', 'Property operations', ['Guest coordination : pre, in & post-stay', 'Check-in & check-out (or self check-in)', 'Housekeeping & deep cleans between stays', 'Linen, toiletries & consumables restocking', 'Minor repairs and on-call maintenance', '24/7 guest support by our team']],
+    ['trending-up', 'Booking & revenue', ['Listed on Airbnb, Booking.com, MMT & direct', "Dynamic pricing tuned for Goa's seasons", 'Calendar sync : no double-bookings, ever', 'Guest screening & ID verification', 'Photography, listing copy & review management', 'Marketing pushes during low season']],
+    ['shield-check', 'Compliance & care', ['Tourism / homestay registration (in your name)', 'Statistic Forma Reporting for every guest', 'Fire NOC, trade license, GST registration', 'House rules drafted, enforced, documented', 'Damage recovery via deposits & AirCover', 'Society & neighbour liaison']],
+  ];
+  return (
+    <Section bg="var(--bg)" pad="56px 32px 104px" id="services">
+      <Reveal>
+        <Heading align="center"
+          eyebrow="What we actually do"
+          title="What you hand over. What we handle."
+          lead="End-to-end management. You stay informed; we handle execution." />
+      </Reveal>
+      <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 22, marginTop: 52 }}>
+        {cards.map(([icon, title, items], i) => (
+          <Reveal key={title} delay={i * 80}>
+            <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: 28, height: '100%', boxShadow: 'var(--shadow-xs)' }}>
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--grad-sunset)', display: 'grid', placeItems: 'center', marginBottom: 18 }}>
+                <Icon name={icon} size={26} color="#fff" />
+              </div>
+              <h3 style={{ fontSize: 21, fontWeight: 800, letterSpacing: '-0.01em', margin: '0 0 16px', color: 'var(--ink)' }}>{title}</h3>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 11 }}>
+                {items.map(it => (
+                  <li key={it} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14.5, lineHeight: 1.45, color: 'var(--ink-2)' }}>
+                    <Icon name="check" size={17} color="var(--primary)" stroke={2.5} style={{ marginTop: 1 }} />{it}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+      <Reveal>
+        <p style={{ textAlign: 'center', fontSize: 'clamp(20px,2.4vw,26px)', fontStyle: 'italic', fontWeight: 700, color: 'var(--primary)', margin: '52px auto 0', maxWidth: 620, letterSpacing: '-0.01em' }}>
+          "You don't need to lift a finger. Unless you want to."
+        </p>
+      </Reveal>
+    </Section>
+  );
+}
+
+Object.assign(window, { Header, Hero, MathAnchor, CalculatorSection, Services, scrollToId });
+
+  </script>
+  <script type="text/babel" data-presets="react">
+/* ===== sections-mid.jsx ===== */
+/* Curate My Stay : mid sections: Tiers, Transparency + Owner Portal, Approvals */
+
+/* SECTION 5 : Tier system */
+function Tiers() {
+  const tiers = [
+    { name: 'Signature', tag: 'For market-ready homes that are ready to start hosting immediately.', split: '80 / 20', splitNote: 'Owner / CMS on net profit',
+      forWhom: ['Existing Airbnb properties with a proven track record', 'Fully furnished and guest-ready homes', 'Recently renovated properties', 'Homes requiring little to no setup work'],
+      gets: ['End-to-end property operations', 'Multi-platform listing & revenue management', 'Guest communication & support', 'Monthly owner reporting & approvals', 'Compliance assistance & recurring oversight'], featured: false },
+    { name: 'Curated', tag: 'For homes that need activation before they can perform as professional short-term rentals.', split: '70 / 30', splitNote: 'Owner / CMS on net profit',
+      forWhom: ['First-time Airbnb owners', 'Furnished homes entering the STR market', 'Properties requiring repositioning or branding', 'Homes needing compliance and operational readiness support'],
+      gets: ['Everything in Signature, plus:', 'Professional photography & listing creation', 'Property positioning & launch strategy', 'Styling and presentation recommendations', 'Assistance with licenses, registrations & NOCs', 'Safety, compliance & operational readiness guidance', 'Ongoing liaison support for approvals and renewals'], featured: true },
+    { name: 'Bespoke', tag: 'For properties that require complete transformation before launch.', split: 'Custom', splitNote: 'Structured around the scope of work',
+      forWhom: ['Newly purchased properties', 'Empty or partially furnished homes', 'Properties requiring fit-out or furnishing', 'Owners building a hospitality asset from the ground up'],
+      gets: ['Everything in Curated, plus:', 'Architect & design partner coordination', 'Furniture, d\u00e9cor & procurement support', 'End-to-end fit-out project management', 'Property branding & positioning', 'Launch strategy from concept to first booking'], featured: false },
+  ];
+  return (
+    <Section bg="var(--cream)" pad="100px 32px" id="tiers">
+      <Reveal>
+        <Heading align="center" eyebrow="The tier system"
+          title="Choose the partnership model that fits your property."
+          lead="Every property is different. Some are ready to generate revenue immediately, while others need repositioning, compliance support, or a complete setup before launch. We will recommend the most suitable model after assessing your property." />
+      </Reveal>
+      <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 22, marginTop: 56, alignItems: 'start' }}>
+        {tiers.map((t, i) => (
+          <Reveal key={t.name} delay={i * 80}>
+            <div style={{ position: 'relative', background: '#fff', borderRadius: 'var(--radius-xl)', padding: '32px 28px',
+              border: t.featured ? '2px solid var(--primary)' : '1px solid var(--border)',
+              boxShadow: t.featured ? 'var(--shadow-md)' : 'var(--shadow-xs)',
+              transform: t.featured ? 'translateY(-8px)' : 'none' }}>
+              {t.featured && <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: 'var(--primary)', color: '#fff', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '6px 16px', borderRadius: 99, whiteSpace: 'nowrap' }}>Most chosen</div>}
+              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.01em' }}>{t.name}</div>
+              <p style={{ fontSize: 14.5, color: 'var(--fg-2)', margin: '6px 0 22px', minHeight: 42, lineHeight: 1.4 }}>{t.tag}</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontSize: 34, fontWeight: 800, color: t.featured ? 'var(--primary)' : 'var(--ink)', letterSpacing: '-0.02em' }}>{t.split}</span>
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--fg-2)', marginTop: 4 }}>{t.splitNote}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--fg-3)', margin: '24px 0 12px' }}>Best suited for</div>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 9 }}>
+                {t.forWhom.map(f => <li key={f} style={{ display: 'flex', gap: 9, fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.4 }}><Icon name="dot" size={18} color="var(--fg-3)" style={{ marginTop: 0 }} />{f}</li>)}
+              </ul>
+              <div style={{ height: 1, background: 'var(--border-subtle)', margin: '22px 0' }} />
+              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--fg-3)', marginBottom: 12 }}>Includes</div>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }}>
+                {t.gets.map(g => <li key={g} style={{ display: 'flex', gap: 9, fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.4 }}><Icon name="check" size={16} color="var(--primary)" stroke={2.5} style={{ marginTop: 1 }} />{g}</li>)}
+              </ul>
+              <div style={{ marginTop: 26 }}>
+                <Button variant={t.featured ? 'primary' : 'secondary'} full size="md" iconRight="arrow-right" onClick={() => window.cmsBookCall()}>Choose {t.name}</Button>
+              </div>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+      <Reveal>
+        <div style={{ textAlign: 'center', marginTop: 48 }}>
+          <p style={{ fontSize: 16, color: 'var(--fg-2)', margin: '0 0 22px' }}>Not sure which model fits? Tell us about your property in the calculator above and we will recommend one in your custom pitch deck.</p>
+          <div style={{ display: 'inline-flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Button variant="primary" size="lg" iconRight="arrow-right" onClick={() => window.cmsBookCall()}>Book a discovery call</Button>
+            <Button variant="secondary" size="lg" onClick={() => scrollToId('calculator')}>See how we calculate your share</Button>
+          </div>
+        </div>
+      </Reveal>
+    </Section>
+  );
+}
+
+/* SECTION 6 : Transparency & owner portal */
+function PortalMock() {
+  return (
+    <div style={{ background: '#fff', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-lg)', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+      <div style={{ background: 'var(--gray-100)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border-subtle)' }}>
+        <Logo size={22} showWord={false} />
+        <span style={{ fontWeight: 700, fontSize: 14 }}>Owner dashboard</span>
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+          <span style={{ width: 9, height: 9, borderRadius: 99, background: 'var(--gray-300)' }} />
+          <span style={{ width: 9, height: 9, borderRadius: 99, background: 'var(--gray-300)' }} />
+        </span>
+      </div>
+      <div style={{ padding: 18, display: 'grid', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ background: 'var(--cream)', borderRadius: 12, padding: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--fg-2)' }}>Revenue YTD</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--ink)', marginTop: 4 }}>₹8.5 L</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--success)', marginTop: 2 }}>78% to target</div>
+            <div style={{ height: 6, borderRadius: 99, background: 'var(--gray-200)', marginTop: 8, overflow: 'hidden' }}><div style={{ width: '78%', height: '100%', background: 'var(--grad-sunset)' }} /></div>
+          </div>
+          <div style={{ background: 'var(--cream)', borderRadius: 12, padding: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--fg-2)' }}>This month</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--ink)', marginTop: 4 }}>3 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-2)' }}>confirmed</span></div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--warning)', marginTop: 2 }}>1 pending approval</div>
+            <div style={{ display: 'flex', gap: 4, marginTop: 9 }}>{[1,1,1,0].map((b,i)=><span key={i} style={{flex:1,height:6,borderRadius:99,background:b?'var(--lagoon-500)':'var(--gray-200)'}}/>)}</div>
+          </div>
+        </div>
+        <div style={{ border: '1px solid var(--border-subtle)', borderRadius: 12, padding: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--fg-2)' }}>Calendar · peak season</span>
+            <Pill tone="coral" style={{ padding: '3px 9px', fontSize: 11 }}>Nov–Feb</Pill>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(14,1fr)', gap: 3 }}>
+            {Array.from({length:28}).map((_,i)=>{const booked=[2,3,4,8,9,10,11,15,16,17,22,23,24,25].includes(i);return <span key={i} style={{aspectRatio:'1',borderRadius:3,background:booked?'var(--primary)':'var(--gray-100)'}}/>;})}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {['P&L · Dec.pdf', 'P&L · Nov.pdf', 'License.pdf'].map(d => (
+            <span key={d} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--ink-2)', background: 'var(--gray-100)', padding: '7px 11px', borderRadius: 8 }}><Icon name="file-text" size={14} color="var(--primary)" />{d}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Transparency() {
+  const steps = [
+    ['Monthly P&L statement', 'A detailed sheet with every booking, every expense, and the final profit : shared by the 5th of every month for the month prior.'],
+    ['Owner approval', 'No payout is made until you review and approve. If something looks off, we discuss it. Full control stays with you.'],
+    ['Bank transfer in 3 days', 'Once you approve, your share is transferred within 3 working days. TDS handled. UTR confirmation shared.'],
+    ['Audit access anytime', 'All bills, receipts, ID copies and booking records are kept centrally. Verify any expense, any time.'],
+  ];
+  return (
+    <Section bg="var(--band)" dark pad="100px 32px" id="transparency">
+      <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1.02fr 0.98fr', gap: 64, alignItems: 'center' }}>
+        <Reveal>
+          <Eyebrow light style={{ marginBottom: 16 }}>No black box</Eyebrow>
+          <h2 style={{ fontSize: 'clamp(28px,3.6vw,42px)', fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.1, margin: 0 }}>Every booking. Every expense. Every month. In your inbox.</h2>
+          <p style={{ fontSize: 18, lineHeight: 1.6, color: 'rgba(255,255,255,0.74)', margin: '20px 0 36px' }}>
+            The biggest reason owners hesitate to hand over their property is fear of the unknown : inflated expenses, mystery deductions, surprise charges. We built CMS specifically to eliminate that fear.
+          </p>
+          <div style={{ display: 'grid', gap: 4 }}>
+            {steps.map(([t, d], i) => (
+              <div key={t} style={{ display: 'flex', gap: 18, padding: '18px 0', borderTop: i ? '1px solid var(--cream-line)' : 'none' }}>
+                <span style={{ width: 44, height: 44, flex: 'none', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid var(--cream-line)', display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 800, color: 'var(--sunset-amber)' }}>{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>{t}</div>
+                  <div style={{ fontSize: 14.5, lineHeight: 1.55, color: 'rgba(255,255,255,0.66)', marginTop: 4 }}>{d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+        <Reveal delay={90}>
+          <PortalMock />
+          <p style={{ fontSize: 13.5, fontStyle: 'italic', color: 'var(--sunset-amber)', textAlign: 'center', margin: '18px 0 0' }}>
+            Coming Q2 2026: real-time owner portal. Until then, P&Ls and updates are shared on a fixed monthly cadence.
+          </p>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
+/* SECTION 7 : Approval mechanisms */
+function Approvals() {
+  const approve = ['Monthly P&L statement, before any payout', 'Any expense above ₹5,000 outside standard ops', 'Any furnishing, repair or upgrade above ₹10,000', 'Pricing strategy review (quarterly, optional)', 'Long-stay (30+ night) guest bookings', 'Any deviation from the agreed tier model'];
+  const handle = ['Day-to-day guest communication', 'Cleaning, restocking, minor repairs (under ₹5,000)', 'Standard seasonal pricing adjustments', 'Compliance filings (Statistic Forma, TDS returns, etc.)', 'Marketing and listing optimisations', 'Routine owner reporting'];
+  return (
+    <Section bg="var(--bg)" pad="100px 32px" id="approvals">
+      <Reveal>
+        <Heading align="center" eyebrow="You stay in control"
+          title="You stay in control. We just do the work."
+          lead="Every meaningful decision still passes through you. Here's what you sign off on, and what we handle without bothering you." />
+      </Reveal>
+      <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, marginTop: 52 }}>
+        <Reveal>
+          <div style={{ background: 'var(--cream)', border: '1px solid var(--rausch-300)', borderRadius: 'var(--radius-xl)', padding: 30, height: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+              <span style={{ width: 40, height: 40, borderRadius: 11, background: 'var(--primary)', display: 'grid', placeItems: 'center' }}><Icon name="check-check" size={22} color="#fff" /></span>
+              <h3 style={{ fontSize: 21, fontWeight: 800, margin: 0, color: 'var(--ink)' }}>You approve</h3>
+            </div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 13 }}>
+              {approve.map(a => <li key={a} style={{ display: 'flex', gap: 11, fontSize: 15, lineHeight: 1.45, color: 'var(--ink-2)' }}><Icon name="check" size={18} color="var(--primary)" stroke={2.5} style={{ marginTop: 1 }} />{a}</li>)}
+            </ul>
+          </div>
+        </Reveal>
+        <Reveal delay={80}>
+          <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: 30, height: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+              <span style={{ width: 40, height: 40, borderRadius: 11, background: 'var(--lagoon-500)', display: 'grid', placeItems: 'center' }}><Icon name="zap" size={21} color="#fff" /></span>
+              <h3 style={{ fontSize: 21, fontWeight: 800, margin: 0, color: 'var(--ink)' }}>We handle, no need to ask</h3>
+            </div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 13 }}>
+              {handle.map(a => <li key={a} style={{ display: 'flex', gap: 11, fontSize: 15, lineHeight: 1.45, color: 'var(--ink-2)' }}><Icon name="arrow-right" size={17} color="var(--lagoon-500)" style={{ marginTop: 1 }} />{a}</li>)}
+            </ul>
+          </div>
+        </Reveal>
+      </div>
+      <Reveal>
+        <p style={{ textAlign: 'center', fontSize: 'clamp(20px,2.4vw,26px)', fontStyle: 'italic', fontWeight: 700, color: 'var(--primary)', margin: '48px auto 0', maxWidth: 620, letterSpacing: '-0.01em' }}>
+          "Authority where it matters. Speed where it doesn't."
+        </p>
+      </Reveal>
+    </Section>
+  );
+}
+
+Object.assign(window, { Tiers, Transparency, Approvals });
+
+  </script>
+  <script type="text/babel" data-presets="react">
+/* ===== sections-proof.jsx ===== */
+/* Curate My Stay  :  proof sections: stats, case studies, testimonials, team */
+
+/* SECTION 8A  :  numbers strip */
+function Stats() {
+  const stats = [['4.98 / 5', 'Airbnb rating across all listings'], ['150+', 'Five-star guest reviews'], ['200+', 'Successful stays delivered'], ['Superhost', '11+ months running']];
+  return (
+    <Section bg="var(--cream)" pad="84px 32px 40px" id="proof">
+      <Reveal>
+        <Heading align="center" eyebrow="Track record & proof"
+          title="The numbers behind the promise."
+          lead="We lead with real figures, not adjectives. Here's what the portfolio looks like today." />
+      </Reveal>
+      <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20, marginTop: 48 }}>
+        {stats.map(([v, l], i) => (
+          <Reveal key={l} delay={i * 70}>
+            <div style={{ textAlign: 'center', background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '30px 18px', boxShadow: 'var(--shadow-xs)' }}>
+              <div style={{ fontSize: 'clamp(34px,4vw,46px)', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.02em', lineHeight: 1 }}>{v}</div>
+              <div style={{ fontSize: 14, color: 'var(--ink-2)', marginTop: 12, lineHeight: 1.4, fontWeight: 500 }}>{l}</div>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* Revenue ramp chart */
+function RampChart({ data }) {
+  const w = 360, h = 130, pad = 8;
+  const max = Math.max(...data.map(d => d.v));
+  const step = (w - pad * 2) / (data.length - 1);
+  const pts = data.map((d, i) => [pad + i * step, h - pad - (d.v / max) * (h - pad - 22)]);
+  const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const area = line + ` L ${pts[pts.length - 1][0].toFixed(1)} ${h - pad} L ${pts[0][0].toFixed(1)} ${h - pad} Z`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', display: 'block' }}>
+      <defs>
+        <linearGradient id="rampfill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--sunset-coral)" stopOpacity="0.28" />
+          <stop offset="1" stopColor="var(--sunset-coral)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#rampfill)" />
+      <path d={line} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {pts.map((p, i) => {
+        const peak = data[i].v === max;
+        return <circle key={i} cx={p[0]} cy={p[1]} r={peak ? 4.5 : 3} fill={peak ? 'var(--primary)' : '#fff'} stroke="var(--primary)" strokeWidth="2" />;
+      })}
+      {data.map((d, i) => <text key={i} x={pts[i][0]} y={h - 1} fontSize="9" fill="var(--fg-3)" textAnchor="middle" fontWeight="600">{d.m}</text>)}
+    </svg>
+  );
+}
+
+function CaseStudy({ photos, photoPos, reverse, eyebrow, title, subtitle, body, stats, chart }) {
+  const [idx, setIdx] = React.useState(0);
+  React.useEffect(() => {
+    if (!photos || photos.length <= 1) return;
+    const iv = setInterval(() => setIdx(i => (i + 1) % photos.length), 4000);
+    return () => clearInterval(iv);
+  }, []);
+  const img = (
+    <div style={{ position: 'relative', height: 'min(56vh, 440px)', borderRadius: 20, overflow: 'hidden', boxShadow: 'var(--shadow-md)', background: 'var(--gray-100)' }}>
+      {photos && photos.map((src, i) => (
+        <img key={src}
+          src={(window.CMS_IMG && window.CMS_IMG[src]) || ('assets/photos/' + src)}
+          alt={title} loading="lazy"
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            objectFit: 'cover', objectPosition: photoPos || 'center',
+            opacity: i === (idx % photos.length) ? 1 : 0,
+            transition: 'opacity 1s ease-in-out',
+            filter: 'saturate(1.06) contrast(1.03) brightness(1.02)',
+          }} />
+      ))}
+      {photos && photos.length > 1 && (
+        <div style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 5, zIndex: 2 }}>
+          {photos.map((_, i) => (
+            <button key={i} onClick={() => setIdx(i)}
+              style={{ width: i === (idx % photos.length) ? 18 : 7, height: 7, borderRadius: 99, border: 'none', cursor: 'pointer',
+                background: i === (idx % photos.length) ? '#fff' : 'rgba(255,255,255,0.5)',
+                transition: 'all .3s ease', padding: 0 }} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+  const copy = (
+    <div>
+      <Eyebrow style={{ marginBottom: 14 }}>{eyebrow}</Eyebrow>
+      <h3 style={{ fontSize: 'clamp(24px,2.8vw,32px)', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.12, margin: '0 0 6px', color: 'var(--ink)' }}>{title}</h3>
+      {subtitle && <p style={{ fontSize: 17, fontWeight: 600, color: 'var(--fg-2)', margin: '0 0 16px' }}>{subtitle}</p>}
+      <p style={{ fontSize: 16.5, lineHeight: 1.6, color: 'var(--ink-2)', margin: '0 0 24px' }}>{body}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+        {stats.map(([l, v], i) => (
+          <div key={l} style={{ background: '#fff', padding: '16px 18px' }}>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.03em', textTransform: 'uppercase', color: 'var(--fg-2)' }}>{l}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: i === 3 ? 'var(--primary)' : 'var(--ink)', marginTop: 5, letterSpacing: '-0.01em' }}>{v}</div>
+          </div>
+        ))}
+      </div>
+      {chart && (
+        <div style={{ marginTop: 18, background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '16px 18px 8px' }}>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.03em', textTransform: 'uppercase', color: 'var(--fg-2)', marginBottom: 6 }}>Monthly revenue progression (first month = 1.0x)</div>
+          <RampChart data={chart} />
+        </div>
+      )}
+    </div>
+  );
+  return (
+    <Reveal>
+      <div className="grid-2 case-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 52, alignItems: 'center' }}>
+        {reverse ? <React.Fragment>{copy}{img}</React.Fragment> : <React.Fragment>{img}{copy}</React.Fragment>}
+      </div>
+    </Reveal>
+  );
+}
+
+function CaseStudies() {
+  return (
+    <Section bg="var(--cream)" pad="40px 32px 64px">
+      <div style={{ display: 'grid', gap: 72 }}>
+        <CaseStudy
+          photos={['panjim-1.jpg','panjim-2.jpg','panjim-3.jpg','panjim-4.jpg']} photoPos="center"
+          eyebrow="Case study · Managed since November 2025"
+          title="Designed for Short-Term Rentals from Day One"
+          subtitle="Modern 2 BHK Apartment in Panjim"
+          body="Rather than adapting a residential apartment for short-term rentals, this property was designed from day one with guests in mind. From workcation-friendly interiors and fully air-conditioned spaces to a furnished balcony, modern kitchen, pool access, and a central Panjim location, every element was optimized to maximize guest appeal and occupancy throughout the year."
+          stats={[['Average occupancy', '77%'], ['Location average occupancy', '28.7%'], ['Guest rating', '5 ★'], ['Expense ratio', '9.9%']]}
+          chart={[{ m: "Nov '25", v: 1 }, { m: "Dec '25", v: 1.73 }, { m: "Jan '26", v: 1.38 }, { m: "Feb '26", v: 1.18 }, { m: "Mar '26", v: 1.16 }]} />
+        <CaseStudy
+          reverse
+          photos={['varca-1.jpg','varca-2.jpg','varca-3.jpg']} photoPos="center"
+          eyebrow="Case study · Managed since September 2025"
+          title="From Underperforming Asset to Proven Performer"
+          subtitle="Private 3 BHK Villa in Varca, South Goa"
+          body="When we took over this 3 BHK villa in Varca, the property was not operationally ready for the short-term rental market. We invested in setup, operational improvements, and guest-readiness during the first month. The investment was recovered the very next month, with revenue doubling shortly thereafter : transforming the villa into a high-performing holiday home just 700 metres from the beach."
+          stats={[['Average occupancy', '65.4%'], ['Location average occupancy', '31.2%'], ['Guest rating', '4.95 ★'], ['Expense ratio', '15.5%']]}
+          chart={[{ m: "Oct '25", v: 1 }, { m: "Nov '25", v: 1.36 }, { m: "Dec '25", v: 2.11 }, { m: "Jan '26", v: 1.81 }, { m: "Feb '26", v: 1.29 }, { m: "Mar '26", v: 1.37 }]} />
+      </div>
+    </Section>
+  );
+}
+
+/* SECTION 8D  :  testimonials (keep the 3 cards but update with real data where available) */
+function Testimonials() {
+  const items = [
+    { q: "Aravind has been managing several of our rental properties and has been a dependable partner throughout. He is professional, responsive, and has a great attention to detail. He strives hard to ensure both great guest experience and adequate property care, making day-to-day hosting much easier.", who: 'Ayushi Chand', prop: 'Owner · Varca 3 BHK Villa', photo: 'ayushi.png' },
+    { q: "Aravind has been an outstanding host. He is extremely honest, responsible, disciplined, and punctual in managing the Airbnb. The house is always kept clean, guests are well cared for, and he handles everything with great sincerity. Highly appreciated and fully trusted.", who: 'Sadhna S.', prop: 'Owner · Majorda 3 BHK Villa', photo: 'sadhna.png' },
+    { q: "Working with Aravind has made hosting our property far more seamless and stress-free. He is proactive, communicates clearly, and genuinely cares about maintaining the home to a high standard. Guests have consistently had smooth experiences, and we have appreciated the level of reliability and transparency throughout.", who: 'Venu Chand', prop: 'Owner · Panjim 2 BHK Apartment', photo: null },
+  ];
+  return (
+    <Section bg="var(--cream)" pad="24px 32px 100px">
+      <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 22 }}>
+        {items.map((t, i) => (
+          <Reveal key={t.who} delay={i * 80}>
+            <figure style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: 30, margin: 0, height: '100%', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-xs)' }}>
+              <Icon name="quote" size={26} color="var(--rausch-300)" />
+              <blockquote style={{ margin: '14px 0 0', fontSize: 16.5, lineHeight: 1.55, fontStyle: 'italic', color: 'var(--ink)', flex: 1 }}>"{t.q}"</blockquote>
+              <figcaption style={{ marginTop: 22, display: 'flex', alignItems: 'center', gap: 12 }}>
+                {t.photo ? (
+                  <img src={(window.CMS_IMG && window.CMS_IMG[t.photo]) || ('assets/photos/' + t.photo)} alt={t.who} style={{ width: 42, height: 42, borderRadius: 99, objectFit: 'cover', flex: 'none' }} />
+                ) : (
+                  <span style={{ width: 42, height: 42, borderRadius: 99, background: 'var(--grad-sunset)', display: 'grid', placeItems: 'center', color: '#fff', fontWeight: 800, fontSize: 16, flex: 'none' }}>{t.who[0]}</span>
+                )}
+                <span>
+                  <span style={{ display: 'block', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{t.who}</span>
+                  <span style={{ display: 'block', fontSize: 13, color: 'var(--fg-2)' }}>{t.prop}</span>
+                </span>
+              </figcaption>
+            </figure>
+          </Reveal>
+        ))}
+      </div>
+      <Reveal>
+        <div style={{ textAlign: 'center', marginTop: 44 }}>
+          <Button variant="primary" size="lg" iconRight="arrow-right" onClick={() => window.cmsBookCall()}>Book a discovery call</Button>
+        </div>
+      </Reveal>
+    </Section>
+  );
+}
+
+/* SECTION 9  :  who we are (with founder photo) */
+function Team() {
+  const mini = [
+    ['rocket', 'Founded 2025', 'In active growth mode'],
+    ['map-pin', 'Based in Goa', 'Operational team on the ground'],
+    ['briefcase', 'Cross-domain expertise', '20+ yrs facility management (Dubai) · Investment advisory & Fortune 500 background'],
+  ];
+  return (
+    <Section bg="var(--bg)" pad="100px 32px" id="about">
+      <div className="grid-2 team-grid" style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 60, alignItems: 'center' }}>
+        <Reveal>
+          <Img src="founder.jpg" height="auto" radius={24} cover={false} alt="The Curate My Stay family" style={{ boxShadow: 'var(--shadow-md)', maxHeight: 560 }} />
+        </Reveal>
+        <Reveal delay={80}>
+          <Eyebrow style={{ marginBottom: 16 }}>Who we are</Eyebrow>
+          <h2 style={{ fontSize: 'clamp(28px,3.4vw,40px)', fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.12, margin: 0, color: 'var(--ink)' }}>A Family-Run Approach to Property Management</h2>
+          <p style={{ fontSize: 16.5, lineHeight: 1.65, color: 'var(--ink-2)', margin: '20px 0 0' }}>
+            Curate My Stay is a Goa-based property management firm run by a family with two complementary backgrounds : facility management and investment-side thinking. We currently manage 5 properties and we are scaling deliberately.
+          </p>
+          <p style={{ fontSize: 16.5, lineHeight: 1.65, color: 'var(--ink-2)', margin: '16px 0 0' }}>
+            We approach property management the way a wealth manager approaches a portfolio : every property is an asset with an ROI, an operational P&L, and a strategy attached to it. That framing is what consistently delivers strong returns for our owners without compromising the property itself.
+          </p>
+          <p style={{ fontSize: 16.5, lineHeight: 1.65, color: 'var(--ink-2)', margin: '16px 0 0' }}>
+            Communication stays direct, operations stay hands-on, and every property is managed with long-term value in mind.
+          </p>
+          <p style={{ fontSize: 16.5, lineHeight: 1.65, color: 'var(--ink-2)', margin: '16px 0 0', fontWeight: 600, color: 'var(--ink)' }}>
+            It is how we built a 4.98 rating. It is how we plan to scale.
+          </p>
+          <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 28 }}>
+            {mini.map(([ic, t, d]) => (
+              <div key={t} style={{ background: 'var(--cream)', borderRadius: 'var(--radius-lg)', padding: 18, border: '1px solid var(--border-subtle)' }}>
+                <Icon name={ic} size={22} color="var(--primary)" />
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)', marginTop: 10 }}>{t}</div>
+                <div style={{ fontSize: 13, color: 'var(--fg-2)', marginTop: 3, lineHeight: 1.4 }}>{d}</div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
+Object.assign(window, { Stats, CaseStudies, Testimonials, Team });
+
+  </script>
+  <script type="text/babel" data-presets="react">
+/* ===== sections-bottom.jsx ===== */
+/* Curate My Stay  :  bottom sections: Collapsible extras, Risk/FAQ, Investment, Final CTA, Footer */
+/* Comparison section REMOVED per June 6 change doc */
+
+/* Collapsible wrapper for secondary sections */
+function CollapsibleSection({ icon, title, summary, children }) {
+  const [open, setOpen] = React.useState(false);
+  const bodyRef = React.useRef(null);
+  return (
+    <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden', marginBottom: 16, boxShadow: 'var(--shadow-xs)' }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 16, padding: '22px 26px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+        <span style={{ width: 46, height: 46, flex: 'none', borderRadius: 13, background: 'var(--rausch-50)', display: 'grid', placeItems: 'center' }}>
+          <Icon name={icon} size={22} color="var(--primary)" />
+        </span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.01em' }}>{title}</div>
+          <div style={{ fontSize: 14.5, color: 'var(--fg-2)', marginTop: 3, lineHeight: 1.4 }}>{summary}</div>
+        </div>
+        <span style={{ flex: 'none', width: 34, height: 34, borderRadius: 99, background: open ? 'var(--primary)' : 'var(--gray-100)', display: 'grid', placeItems: 'center', transition: 'all .2s', transform: open ? 'rotate(180deg)' : 'none' }}>
+          <Icon name="chevron-down" size={20} color={open ? '#fff' : 'var(--ink-2)'} />
+        </span>
+      </button>
+      <div style={{ maxHeight: open ? 2000 : 0, overflow: 'hidden', transition: 'max-height .5s ease' }}>
+        <div ref={bodyRef} style={{ padding: '0 26px 26px' }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* The three collapsible extras: No Black Box, You Stay in Control, Buying in Goa */
+function CollapsibleExtras() {
+  return (
+    <Section bg="var(--cream)" pad="80px 32px" id="extras">
+      <Reveal>
+        <Heading align="center" eyebrow="Dig deeper" title="More about how we work." lead="Everything you'd want to know before signing." />
+      </Reveal>
+      <div style={{ maxWidth: 860, margin: '40px auto 0' }}>
+        <CollapsibleSection icon="eye" title="No black box" summary="Every booking, every expense, every month. Full transparency on how your money moves.">
+          <TransparencyInline />
+        </CollapsibleSection>
+        <CollapsibleSection icon="shield-check" title="You stay in control" summary="What you sign off on, and what we handle without bothering you.">
+          <ApprovalsInline />
+        </CollapsibleSection>
+        <CollapsibleSection icon="building" title="Thinking of buying in Goa?" summary="The math on a Goa STR investment : rental yield, appreciation, and combined IRR.">
+          <InvestmentInline />
+        </CollapsibleSection>
+      </div>
+    </Section>
+  );
+}
+
+/* Inline content for collapsible: Transparency */
+function TransparencyInline() {
+  const steps = [
+    ['Monthly P&L statement', 'A detailed sheet with every booking, every expense, and the final profit : shared by the 5th of every month for the month prior.'],
+    ['Owner approval', 'No payout is made until you review and approve. If something looks off, we discuss it. Full control stays with you.'],
+    ['Bank transfer in 3 days', 'Once you approve, your share is transferred within 3 working days. TDS handled. UTR confirmation shared.'],
+    ['Audit access anytime', 'All bills, receipts, ID copies and booking records are kept centrally. Verify any expense, any time.'],
+  ];
+  return (
+    <div>
+      <p style={{ fontSize: 16, lineHeight: 1.6, color: 'var(--ink-2)', margin: '0 0 22px' }}>
+        The biggest reason owners hesitate to hand over their property is fear of the unknown : inflated expenses, mystery deductions, surprise charges. We built CMS specifically to eliminate that fear.
+      </p>
+      <div style={{ display: 'grid', gap: 4 }}>
+        {steps.map(([t, d], i) => (
+          <div key={t} style={{ display: 'flex', gap: 16, padding: '14px 0', borderTop: i ? '1px solid var(--border-subtle)' : 'none' }}>
+            <span style={{ width: 36, height: 36, flex: 'none', borderRadius: 10, background: 'var(--rausch-50)', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, color: 'var(--primary)' }}>{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>{t}</div>
+              <div style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--fg-2)', marginTop: 3 }}>{d}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Inline content for collapsible: Approvals */
+function ApprovalsInline() {
+  const approve = ['Monthly P&L statement, before any payout', 'Any expense above ₹5,000 outside standard ops', 'Any furnishing, repair or upgrade above ₹10,000', 'Pricing strategy review (quarterly, optional)', 'Long-stay (30+ night) guest bookings', 'Any deviation from the agreed tier model'];
+  const handle = ['Day-to-day guest communication', 'Cleaning, restocking, minor repairs (under ₹5,000)', 'Standard seasonal pricing adjustments', 'Compliance filings (Statistic Forma, TDS returns, etc.)', 'Marketing and listing optimisations', 'Routine owner reporting'];
+  return (
+    <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ background: 'var(--cream)', border: '1px solid var(--rausch-300)', borderRadius: 'var(--radius-lg)', padding: 22 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <Icon name="check-check" size={20} color="var(--primary)" />
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)' }}>You approve</span>
+        </div>
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }}>
+          {approve.map(a => <li key={a} style={{ display: 'flex', gap: 9, fontSize: 14, lineHeight: 1.4, color: 'var(--ink-2)' }}><Icon name="check" size={16} color="var(--primary)" stroke={2.5} style={{ marginTop: 1 }} />{a}</li>)}
+        </ul>
+      </div>
+      <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: 22 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <Icon name="zap" size={20} color="var(--lagoon-500)" />
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)' }}>We handle</span>
+        </div>
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }}>
+          {handle.map(a => <li key={a} style={{ display: 'flex', gap: 9, fontSize: 14, lineHeight: 1.4, color: 'var(--ink-2)' }}><Icon name="arrow-right" size={15} color="var(--lagoon-500)" style={{ marginTop: 1 }} />{a}</li>)}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/* Inline content for collapsible: Investment */
+function InvestmentInline() {
+  const [scenario, setScenario] = React.useState(0);
+  const scenarios = [
+    { label: '2 BHK Apartment in Panjim',
+      groups: [
+        { title: 'Investment', rows: [['Property purchase price', '\u20B91.80 Cr'], ['Stamp duty & registration (~4\u20136%)', '\u20B97.2\u201310.8 L'], ['Total investment', '~\u20B91.87\u20131.91 Cr', true]] },
+        { title: 'Annual Returns', rows: [['Annual gross STR revenue', '\u20B915 L'], ['Operational expenses (~15%)', '\u20B92.25 L'], ['Net operating income', '\u20B912.75 L'], ['Owner share (80%)', '\u20B910.2 L', true]] },
+        { title: 'Yield Profile', rows: [['Gross rental yield (on total investment)', '~7.8\u20138.0% p.a.'], ['Net rental yield (post ops + management)', '~5.3\u20135.5% p.a.'], ['Estimated asset appreciation', '4\u20136% p.a.'], ['Potential combined return profile', '~9\u201311.5% p.a.', true]] },
+      ]},
+    { label: '3 BHK Villa in South Goa',
+      groups: [
+        { title: 'Investment', rows: [['Property purchase price', '\u20B92.25 Cr'], ['Stamp duty & registration (~4\u20136%)', '\u20B99\u201313.5 L'], ['Total investment', '~\u20B92.34\u20132.39 Cr', true]] },
+        { title: 'Annual Returns', rows: [['Annual gross STR revenue', '\u20B915 L'], ['Operational expenses (~15%)', '\u20B92.25 L'], ['Net operating income', '\u20B912.75 L'], ['Owner share (80%)', '\u20B910.2 L', true]] },
+        { title: 'Yield Profile', rows: [['Gross rental yield (on total investment)', '~6.3\u20136.4% p.a.'], ['Net rental yield (post ops + management)', '~4.2\u20134.4% p.a.'], ['Estimated asset appreciation', '6\u201310% p.a.'], ['Potential combined return profile', '~10\u201314% p.a.', true]] },
+      ]},
+  ];
+  const s = scenarios[scenario];
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        {scenarios.map((sc, i) => (
+          <button key={i} onClick={() => setScenario(i)}
+            style={{ flex: 1, padding: '12px 14px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all .14s',
+              border: '1px solid ' + (scenario === i ? 'var(--primary)' : 'var(--border)'),
+              background: scenario === i ? 'var(--rausch-50)' : '#fff',
+              color: scenario === i ? 'var(--primary-press)' : 'var(--ink-2)' }}>{sc.label}</button>
+        ))}
+      </div>
+      {s.groups.map((g) => (
+        <div key={g.title} style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 14 }}>
+          <div style={{ padding: '10px 20px', background: 'var(--band)', color: '#fff', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{g.title}</div>
+          {g.rows.map(([l, v, hi], i) => (
+            <div key={l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 20px', borderTop: i ? '1px solid var(--border-subtle)' : 'none', background: hi ? 'rgba(255,90,95,0.06)' : 'transparent' }}>
+              <span style={{ fontSize: 14, color: 'var(--ink-2)', fontWeight: hi ? 700 : 500 }}>{l}</span>
+              <span style={{ fontSize: 14.5, fontWeight: 800, color: hi ? 'var(--primary)' : 'var(--ink)', whiteSpace: 'nowrap' }}>{v}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+      <p style={{ fontSize: 12.5, fontStyle: 'italic', color: 'var(--fg-3)', margin: '8px 0 18px', lineHeight: 1.5 }}>
+        These are illustrative scenarios based on current Goa market data. Actual returns depend on property specifics, location, season, and market dynamics.
+      </p>
+      <Button variant="primary" full size="lg" iconRight="arrow-right" onClick={() => window.cmsBookCall()}>Thinking of buying? Get a custom analysis</Button>
+    </div>
+  );
+}
+
+/* SECTION 12  :  risk & objections accordion */
+function AccordionItem({ q, a, open, onToggle }) {
+  const bodyRef = React.useRef(null);
+  return (
+    <div style={{ borderRadius: 'var(--radius-lg)', border: `1px solid ${open ? 'var(--rausch-300)' : 'var(--border-subtle)'}`, background: '#fff', overflow: 'hidden', transition: 'border-color .18s' }}>
+      <button onClick={onToggle} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '18px 20px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+        <span style={{ flex: 1, fontSize: 16, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.35 }}>{q}</span>
+        <span style={{ flex: 'none', width: 30, height: 30, borderRadius: 99, background: open ? 'var(--primary)' : 'var(--gray-100)', display: 'grid', placeItems: 'center', transition: 'all .18s', transform: open ? 'rotate(180deg)' : 'none' }}>
+          <Icon name="chevron-down" size={18} color={open ? '#fff' : 'var(--ink-2)'} />
+        </span>
+      </button>
+      <div style={{ maxHeight: open ? (bodyRef.current ? bodyRef.current.scrollHeight + 8 : 400) : 0, overflow: 'hidden', transition: 'max-height .28s ease' }}>
+        <p ref={bodyRef} style={{ margin: 0, padding: '0 20px 20px', fontSize: 15, lineHeight: 1.6, color: 'var(--ink-2)', whiteSpace: 'pre-line' }}>{a}</p>
+      </div>
+    </div>
+  );
+}
+
+function RiskSection() {
+  const faqs = [
+    ['\u201CWhat if I lose control of my property?\u201D', 'You retain 100% ownership. The Leave & License agreement is a standard legal instrument that creates no tenancy rights. You can exit after the lock-in with 2 months\' notice. We never take a stake in the property itself.'],
+    ['\u201CWhat if you inflate expenses?\u201D', 'Every expense is itemised in your monthly P&L with a receipt or invoice attached. You approve the statement before any payout. You have audit access to the underlying receipts any time. If you disagree with anything, we discuss it before payment.'],
+    ['\u201CWhat if guests damage my property?\u201D', 'Every booking goes through ID verification and a security deposit. House rules are explicit and enforced, and property condition is photographed before and after every stay. Airbnb\'s Host Protection adds cover. Damages get a documented recovery plan within 48 hours.'],
+    ['\u201CWhat happens during monsoon with no bookings?\u201D', 'Monsoon is part of the Goa rental cycle, and we actively plan for it. We use dynamic pricing, flexible stay strategies, offline agents, third-party partners, and a strong repeat guest network to maintain occupancy through the season.\n\nWe also have a growing contact base of 200+ past guests and enquiries who often return during off-season months for longer stays at value pricing. At the same time, monsoon is used for preventive maintenance and upgrades so the property is fully peak-season ready.'],
+    ['\u201CWhat if I want to use my own property?\u201D', 'You get personal-use days every year (5-7 depending on tier), plus anything we mutually agree. Just give advance notice so we can block the dates. It\'s still your home.'],
+    ['\u201CWhat if I\'m not happy and want to exit?\u201D', 'After the 6-8 month lock-in, either party can exit with 2 months\' written notice. There are no hidden exit fees.\n\nThat said, Goa is a highly seasonal market, and properties typically perform best when evaluated across a full 12-month cycle. Staying through the full year gives a far more accurate picture of occupancy, cash flow, and overall returns.'],
+    ['\u201CIs this fully legal? Do I need permissions?\u201D', 'Yes. The tourism license / homestay registration goes in your name (we handle the paperwork). Statistic Forma Reporting is filed for every guest. The Leave & License agreement is the same instrument used across India for short-stay arrangements.'],
+    ['\u201CWhat if you misrepresent earnings?\u201D', 'Every OTA booking carries a complete platform paper trail, and revenue is fully verifiable from the platform records themselves. We also share supporting screenshots and booking-level details in the monthly P&L.\n\nFor offline or direct bookings, entries are backed by payment proofs, guest records, and internal invoices/logs; so all revenue remains trackable and transparent. There is no scenario where one number is shown internally and another exists on the actual booking source.'],
+    ['\u201CWhat about TDS and tax compliance?\u201D', 'We deduct 10% TDS on your share, deposit it with the government monthly, and share quarterly TDS filings ready for your CA. NRIs receive Form 16A on request. Your accountant gets everything they need.'],
+    ['\u201CWhat if you can\'t fill the property?\u201D', 'We share occupancy projections in your custom pitch deck before you sign. If actuals fall materially below projection for two consecutive months, we trigger a joint review : pricing, listing, or operations : at no cost.'],
+  ];
+  const [open, setOpen] = React.useState(0);
+  const half = Math.ceil(faqs.length / 2);
+  const cols = [faqs.slice(0, half), faqs.slice(half)];
+  return (
+    <Section bg="var(--cream)" pad="100px 32px" id="risk">
+      <Reveal>
+        <Heading align="center" eyebrow="Risk & objections"
+          title="What could go wrong. And what we've already done about it."
+          lead="We don't pretend property management is risk-free. Here's a frank list of what owners worry about : and exactly how each is handled." />
+      </Reveal>
+      <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 48, alignItems: 'start' }}>
+        {cols.map((col, ci) => (
+          <div key={ci} style={{ display: 'grid', gap: 12 }}>
+            {col.map((f, i) => {
+              const idx = ci * half + i;
+              return <AccordionItem key={f[0]} q={f[0]} a={f[1]} open={open === idx} onToggle={() => setOpen(open === idx ? -1 : idx)} />;
+            })}
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* SECTION 13  :  final CTA */
+function FinalCTA() {
+  return (
+    <Section bg="var(--band)" dark pad="104px 32px" id="contact">
+      <Reveal>
+        <div style={{ textAlign: 'center', maxWidth: 820, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 'clamp(30px,4.2vw,50px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08, margin: 0 }}>
+            The math is simple. The execution is the hard part. <span style={{ color: 'var(--sunset-amber)' }}>We've already done it.</span>
+          </h2>
+          <p style={{ fontSize: 18.5, lineHeight: 1.6, color: 'rgba(255,255,255,0.74)', margin: '22px auto 36px', maxWidth: 640 }}>
+            Book a 30-minute discovery call. We'll look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move for you. If it's not, we'll say so.
+          </p>
+          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Button variant="onDark" size="lg" icon="calendar" onClick={() => window.cmsBookCall()}>Book a discovery call</Button>
+            <Button variant="outlineDark" size="lg" icon="message-circle" onClick={() => window.cmsWhatsApp()}>WhatsApp us directly</Button>
+          </div>
+        </div>
+      </Reveal>
+      <Reveal delay={100}>
+        <div style={{ maxWidth: 640, margin: '52px auto 0', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--cream-line)', borderRadius: 'var(--radius-xl)', padding: 32, display: 'flex', gap: 24, alignItems: 'center' }}>
+          <img src={(window.CMS_IMG && window.CMS_IMG['aravind.jpg']) || 'assets/photos/aravind.jpg'} alt="Aravind" style={{ width: 96, height: 96, flex: 'none', borderRadius: 20, objectFit: 'cover', objectPosition: 'top' }} />
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#fff' }}>Aravind <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 600, fontSize: 14 }}> : Founder, Curate My Stay</span></div>
+            <p style={{ fontSize: 14.5, lineHeight: 1.55, color: 'rgba(255,255,255,0.72)', margin: '8px 0 0', fontStyle: 'italic' }}>
+              "Every property we take on is still personally overseen by me. That level of involvement is a big part of how we maintain consistency, trust, and attention to detail across every stay."
+            </p>
+          </div>
+        </div>
+      </Reveal>
+    </Section>
+  );
+}
+
+/* SECTION 14  :  footer */
+function Footer() {
+  const site = ['For Owners', 'For Guests / Book a Stay', 'About', 'Case Studies', 'Blog (soon)'];
+  const resources = ['Sample P&L Statement (PDF)', 'Standard L&L Agreement (PDF)', 'Tier System One-Pager', 'ROI Calculator'];
+  return (
+    <footer style={{ background: 'var(--band-2)', color: 'rgba(255,255,255,0.7)' }}>
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '72px 32px 32px' }}>
+        <div className="grid-3 footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 40 }}>
+          <div>
+            <Logo size={36} light />
+            <p style={{ fontSize: 15, fontStyle: 'italic', color: 'var(--sunset-amber)', margin: '16px 0 18px' }}>"Wealth managers for property."</p>
+            <div style={{ display: 'grid', gap: 9, fontSize: 14.5 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}><Icon name="map-pin" size={16} color="rgba(255,255,255,0.55)" />Goa, India</span>
+              <a href="mailto:hello@curatemystay.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}><Icon name="mail" size={16} color="rgba(255,255,255,0.55)" />hello@curatemystay.com</a>
+              <a href="#" onClick={e => { e.preventDefault(); window.cmsWhatsApp(); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}><Icon name="message-circle" size={16} color="rgba(255,255,255,0.55)" />WhatsApp us</a>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 16 }}>Site</div>
+            <div style={{ display: 'grid', gap: 11 }}>{site.map(s => <a key={s} href="#" onClick={e => e.preventDefault()} style={{ fontSize: 14.5, textDecoration: 'none', color: 'rgba(255,255,255,0.7)' }}>{s}</a>)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 16 }}>Resources</div>
+            <div style={{ display: 'grid', gap: 11 }}>{resources.map(s => <a key={s} href={s.includes('Calculator') ? '#calculator' : '#'} onClick={e => { if (!s.includes('Calculator')) e.preventDefault(); else { e.preventDefault(); scrollToId('calculator'); } }} style={{ fontSize: 14.5, textDecoration: 'none', color: 'rgba(255,255,255,0.7)' }}>{s}</a>)}</div>
+          </div>
+        </div>
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.12)', margin: '44px 0 22px' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, fontSize: 13.5, color: 'rgba(255,255,255,0.5)' }}>
+          <span>© Curate My Stay 2026 · Privacy · Terms · Cookies</span>
+          <div style={{ display: 'flex', gap: 16 }}>
+            {['camera', 'globe', 'message-circle'].map(s => <a key={s} href="#" onClick={e => e.preventDefault()} aria-label={s}><Icon name={s} size={19} color="rgba(255,255,255,0.6)" /></a>)}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+Object.assign(window, { CollapsibleExtras, RiskSection, FinalCTA, Footer });
+
+  </script>
+  <script type="text/babel" data-presets="react">
+/* ===== app.jsx ===== */
+/* Curate My Stay  :  app shell: composition, booking modal, sticky mobile CTA */
+/* Section order per June 6 change doc:
+   Hero → Math → Calculator → Services → Proof (Stats+Cases+Testimonials) → Risk → Tiers → Who We Are → Collapsible Extras → Final CTA → Footer */
+
+function BookingModal({ open, onClose }) {
+  React.useEffect(() => {
+    const onKey = e => { if (e.key === 'Escape') onClose(); };
+    if (open) document.addEventListener('keydown', onKey);
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+  }, [open]);
+  if (!open) return null;
+  const calUrl = 'https://calendar.google.com/calendar/appointments/schedules/?add=curatemystay@gmail.com';
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(20,12,8,0.55)', backdropFilter: 'blur(4px)', display: 'grid', placeItems: 'center', padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 'var(--radius-xl)', width: 'min(560px, 100%)', maxHeight: '90vh', overflow: 'auto', boxShadow: 'var(--shadow-lg)' }}>
+        <div style={{ padding: '26px 30px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Logo size={30} showWord={false} /><span style={{ fontWeight: 800, fontSize: 19 }}>Book a discovery call</span></div>
+            <p style={{ fontSize: 14.5, color: 'var(--fg-2)', margin: '10px 0 0', lineHeight: 1.5 }}>30 minutes with the founder. We'll look at your property, talk numbers, and tell you honestly if STR is the right move.</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'var(--gray-100)', border: 'none', borderRadius: 99, width: 36, height: 36, cursor: 'pointer', display: 'grid', placeItems: 'center', flex: 'none' }}><Icon name="x" size={19} /></button>
+        </div>
+        <div style={{ padding: '24px 30px' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--fg-2)', marginBottom: 14 }}>Pick a slot</div>
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <Button variant="primary" full size="lg" icon="calendar" onClick={() => window.open(calUrl, '_blank')}>Book via Google Calendar</Button>
+            <p style={{ fontSize: 12.5, color: 'var(--fg-3)', margin: '12px 0 0' }}>Calendar: curatemystay@gmail.com</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--fg-2)', margin: '20px 0 18px' }}>
+            <span style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} /> or <span style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+          </div>
+          <Button variant="secondary" full size="lg" icon="message-circle" onClick={() => window.cmsWhatsApp()}>WhatsApp us directly</Button>
+          <p style={{ fontSize: 12.5, color: 'var(--fg-3)', textAlign: 'center', margin: '16px 0 0' }}>Slots powered by Google Calendar. Update the scheduling link in the code above.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StickyBar() {
+  const [show, setShow] = React.useState(false);
+  React.useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 700);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <div className="sticky-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 80, display: 'none',
+      padding: '12px 16px calc(12px + env(safe-area-inset-bottom))', background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)',
+      borderTop: '1px solid var(--border-subtle)', transform: show ? 'translateY(0)' : 'translateY(110%)', transition: 'transform .3s ease', gap: 10 }}>
+      <Button variant="secondary" size="md" icon="message-circle" onClick={() => window.cmsWhatsApp()} style={{ flex: 'none' }} />
+      <Button variant="primary" full size="md" iconRight="arrow-right" onClick={() => window.cmsBookCall()}>Book a discovery call</Button>
+    </div>
+  );
+}
+
+function App() {
+  const [booking, setBooking] = React.useState(false);
+  React.useEffect(() => {
+    window.cmsBookCall = () => setBooking(true);
+    window.cmsWhatsApp = () => window.open('https://wa.me/916282627601?text=' + encodeURIComponent("Hi CMS : I'm interested in property management for my property in Goa. Can we talk?"), '_blank');
+  }, []);
+  return (
+    <React.Fragment>
+      <Header />
+      <main>
+        <Hero />
+        <MathAnchor />
+        <CalculatorSection />
+        <Services />
+        <Stats />
+        <CaseStudies />
+        <Testimonials />
+        <RiskSection />
+        <Tiers />
+        <Team />
+        <CollapsibleExtras />
+        <FinalCTA />
+      </main>
+      <Footer />
+      <StickyBar />
+      <BookingModal open={booking} onClose={() => setBooking(false)} />
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+  </script>
+
+  
+
+</body></html>
