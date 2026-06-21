@@ -164,3 +164,29 @@
 - Verified the proposal route normalizes success to flat `{ ok: true, pdfDownloadUrl, pdfViewUrl }` JSON used directly by the client ready state.
 - Removed all temporary server and client response logs after diagnosis.
 - Left the forecast calculator and all unrelated flows unchanged.
+
+## Forecast Loader and Owner Email
+
+- Added a cream-and-coral Tailwind loader card while the initial forecast submission is being prepared.
+- Kept the forecast result independent from the longer-running pitch-deck request.
+- Added a link-only owner email after successful PDF generation using the existing Resend configuration.
+- Kept admin email timing after the generation attempt and send it before the conditional owner email.
+- Added `ownerEmailSent` to the safe proposal response so the ready message can confirm email delivery.
+- Owner-email failure is logged server-side and never disables a successful PDF download.
+- No owner email is sent when pitch-deck generation fails.
+
+## Homepage Mobile Responsiveness
+
+- Added mobile-first section spacing and breakpoint typography across the public homepage.
+- Simplified the narrow header, stacked hero/final CTAs, constrained carousel overlays, and improved footer/modal/sticky action sizing.
+- Replaced the wide comparison table with stacked comparison cards below tablet width.
+- Made proof, testimonial, portal, pricing, team, accordion, and FAQ layouts safe at 320px widths.
+- Refined the owner forecast card, segmented controls, phone row, navigation, loader, result cards, and download actions for small screens.
+- Kept desktop styling and all backend/calculator behavior unchanged.
+
+## Mobile Navigation Cleanup
+
+- Removed the fixed bottom mobile CTA buttons.
+- Added a touch-friendly hamburger menu for mobile and tablet navigation.
+- Moved homepage links, booking action, and dashboard access inside the mobile menu while preserving the desktop navbar.
+- Refined the menu with Lucide icons, stronger typography, cream/coral surfaces, grouped actions, improved touch targets, and Escape-key dismissal.

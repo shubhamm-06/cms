@@ -1,5 +1,8 @@
 import { calculateOwnerForecast } from "@/src/features/owner-forecast/forecast-calculator";
-import { sendOwnerForecastAdminEmail } from "@/src/features/owner-forecast/forecast-email";
+import {
+  sendOwnerForecastAdminEmail,
+  sendOwnerForecastOwnerEmail,
+} from "@/src/features/owner-forecast/forecast-email";
 import { generatePitchDeck } from "@/src/features/owner-forecast/proposal-generator";
 import { ownerForecastSchema } from "@/src/lib/validators/owner-forecast";
 
@@ -21,10 +24,17 @@ export async function POST(request: Request) {
         message: "Pitch deck temporarily unavailable.",
         pdfDownloadUrl: pitchDeck.pdfDownloadUrl,
         pdfViewUrl: pitchDeck.pdfViewUrl,
+        ownerEmailSent: false,
       },
       { status: 503 },
     );
   }
 
-  return Response.json(pitchDeck);
+  const ownerEmailSent = await sendOwnerForecastOwnerEmail(
+    parsed.data,
+    forecast,
+    pitchDeck.pdfDownloadUrl,
+  );
+
+  return Response.json({ ...pitchDeck, ownerEmailSent });
 }

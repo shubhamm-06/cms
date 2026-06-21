@@ -145,3 +145,78 @@ export async function sendOwnerForecastAdminEmail(
     console.error("Owner forecast internal email failed.");
   }
 }
+
+function buildOwnerEmail(
+  input: OwnerForecastRequest,
+  forecast: ForecastResult,
+  pdfDownloadUrl: string,
+) {
+  const whatsappUrl = buildWhatsAppUrl(input);
+  const property = `${input.configuration} ${input.propertyCategory} in ${input.location}`;
+  const text = [
+    `Hi ${cleanText(input.name)},`,
+    "",
+    "Thank you for sharing your property details with CurateMyStay.",
+    "",
+    "Your custom property forecast and pitch deck are ready.",
+    "",
+    "Property:",
+    property,
+    "",
+    "Estimated annual revenue:",
+    formatCurrency(forecast.annualRevenue),
+    "",
+    "Estimated operating cost:",
+    formatCurrency(forecast.annualOperatingCost),
+    "",
+    "Estimated net profit:",
+    formatCurrency(forecast.annualNetProfit),
+    "",
+    "Download your pitch deck:",
+    pdfDownloadUrl,
+    "",
+    "You can also WhatsApp us here:",
+    whatsappUrl,
+    "",
+    "Regards,",
+    "CurateMyStay Team",
+  ].join("\n");
+
+  const linkedValues = [pdfDownloadUrl, whatsappUrl]
+    .filter((value) => value !== "Unavailable")
+    .map((value) => [escapeHtml(value), `<a href="${escapeHtml(value)}">${escapeHtml(value)}</a>`] as const);
+  let html = escapeHtml(text).replaceAll("\n", "<br>");
+  linkedValues.forEach(([plain, link]) => {
+    html = html.replaceAll(plain, link);
+  });
+
+  return { html: `<div style="font-family:Arial,sans-serif;line-height:1.55">${html}</div>`, text };
+}
+
+export async function sendOwnerForecastOwnerEmail(
+  input: OwnerForecastRequest,
+  forecast: ForecastResult,
+  pdfDownloadUrl: string,
+) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!apiKey || !from || !input.email) {
+    console.error("Owner forecast recipient email is not configured.");
+    return false;
+  }
+
+  try {
+    const resend = new Resend(apiKey);
+    const result = await resend.emails.send({
+      from,
+      to: input.email,
+      subject: "Your CurateMyStay Property Forecast & Pitch Deck",
+      ...buildOwnerEmail(input, forecast, pdfDownloadUrl),
+    });
+    if (result.error) throw new Error("Resend rejected the owner email.");
+    return true;
+  } catch {
+    console.error("Owner forecast recipient email failed.");
+    return false;
+  }
+}

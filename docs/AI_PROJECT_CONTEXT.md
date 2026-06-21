@@ -370,8 +370,8 @@ File: `src/features/payouts/payout-actions.ts`
   - Public POST used after the forecast is visible.
   - Revalidates the same payload, recalculates the forecast server-side, and calls Apps Script to generate the custom PDF.
   - Sends one internal CurateMyStay email only after pitch-deck generation finishes. Successful emails include view/download links; failed attempts are marked unavailable.
+  - After successful generation with a download URL, sends the prospective owner a link-only forecast email. Owner-email failure is logged but does not change the successful PDF response.
   - Returns safe PDF links on success or a generic temporary-unavailability response on failure. It never exposes raw Apps Script or email errors.
-  - Never emails the prospective owner.
 
 # 12. UI and Styling System
 
@@ -395,7 +395,12 @@ File: `src/features/payouts/payout-actions.ts`
   - `proxy.ts` skips only `/` so the public homepage can load without Supabase session refresh; protected dashboard/owner/auth routes still use the normal guards and proxy flow.
   - The custom Supabase contact form was removed from the homepage in favor of the reference-style booking modal, calendar link, WhatsApp CTA, proof sections, and ROI calculator.
   - The hero uses a timed fading photo carousel with clickable dots, matching the behavior in `reference/index.html`.
+  - The homepage uses mobile-first Tailwind breakpoints from 320px upward: compact section spacing, simplified mobile header actions, stacked CTAs/cards, constrained images, and touch-friendly controls. The comparison table becomes stacked cards below tablet width.
+  - On mobile/tablet, the header exposes navigation and dashboard actions through a single hamburger menu. The previous fixed bottom CTA bar has been removed.
+  - The mobile menu uses the existing Lucide/Tailwind stack with icon-led navigation rows, clear type hierarchy, coral interaction states, full-width actions, and Escape-key dismissal; no additional UI library is required.
   - The owner forecast funnel follows the reference three-step visual flow, posts to `/api/owner-forecast`, and displays only server-returned annual revenue, 15% operating cost, and net profit.
+  - Initial forecast submission replaces the form with a Tailwind-only cream/coral preparation loader. The loader clears as soon as the forecast response is ready and does not wait for pitch-deck generation.
+  - The owner forecast form, loader, and result are mobile-first: controls stay within narrow cards, the phone row uses a shrink-safe input, navigation and result actions become full-width, and financial cards stack vertically.
   - `src/features/owner-forecast/forecast-calculator.ts` is the single authoritative calculator. It applies the specified seasonal rate midpoints, location rate/occupancy modifiers, Panjim beach floor, pool uplift/occupancy rules, area bands, capped amenity multiplier, monthly occupancy clamp, and 15% operating cost.
   - Furnishing and current-rental status do not alter revenue. Furnishing produces only a setup-investment/launch-time note.
   - The forecast renders before pitch-deck generation begins. The download action shows generating, ready, or temporarily unavailable while the forecast remains visible, and becomes active only when `pdfDownloadUrl` is returned.
@@ -504,7 +509,7 @@ Not implemented / Later:
 - The app depends on correct Supabase env variables and configured auth providers.
 - Owner pitch-deck download requires configured `APPS_SCRIPT_WEBHOOK_URL` and `APPS_SCRIPT_SECRET`; forecast results render first and remain available when the webhook is unavailable.
 - Apps Script proposal generation can take longer than 30 seconds. The proposal helper intentionally does not apply a shorter local abort timeout, allowing the route/platform request lifecycle to receive the completed PDF response.
-- Internal forecast-lead delivery requires `RESEND_API_KEY` and a verified `RESEND_FROM_EMAIL`. No email is sent to the prospective owner.
+- Admin and owner forecast-email delivery require `RESEND_API_KEY` and a verified `RESEND_FROM_EMAIL`. Owner delivery occurs only after successful PDF generation and contains links rather than an attachment.
 - Forecast lead storage requires a real Supabase service-role/secret key when anonymous `contact_submissions` inserts are blocked by RLS. A publishable key in `SUPABASE_SERVICE_ROLE_KEY` is invalid and the route deliberately will not treat it as admin credentials.
 - Git status may fail in this environment due to dubious ownership/safe-directory settings.
 - Hidden background dev server launch had issues on this Windows environment, but foreground `node node_modules\next\dist\bin\next dev -p 3000` works.
@@ -614,6 +619,9 @@ Only add placeholders if requested. Keep them disabled/read-only and document th
 - [ ] Forecast submission returns the forecast without waiting for Apps Script.
 - [ ] Proposal generation success enables the PDF download; failure leaves the forecast visible and disables the button with a safe message.
 - [ ] Internal forecast email is sent to CurateMyStay only after proposal generation and includes final PDF links or failed/unavailable status.
+- [ ] Forecast preparation loader appears only while the initial forecast request is pending.
+- [ ] Successful proposal generation emails the owner a download link; failed generation sends no owner email.
+- [ ] Owner-email failure does not disable an otherwise successful pitch-deck download.
 - [ ] Forecast result contains revenue, 15% operating cost, and net profit only.
 - [ ] Contact API still validates/saves if reused later.
 - [ ] `npm run lint` passes.
@@ -807,4 +815,32 @@ Change: Fixed successful owner pitch decks being shown as unavailable by removin
 Files touched: `src/features/owner-forecast/proposal-generator.ts`, `docs/CHANGELOG.md`, `docs/AI_PROJECT_CONTEXT.md`.  
 Reason: Apps Script could finish Drive PDF creation at or after the helper timeout, causing the browser to receive a false failure despite a valid generated file.  
 Security impact: No calculator, permission, schema, or credential exposure changes; temporary response logs were removed.  
+Follow-up needed: None.
+
+Date: 2026-06-22  
+Change: Refined the mobile hamburger navigation with improved typography, icon-led rows, branded interaction states, clearer action grouping, and keyboard dismissal.  
+Files touched: `components/home/reference-home.tsx`, `docs/CHANGELOG.md`, `docs/AI_PROJECT_CONTEXT.md`.  
+Reason: Make mobile navigation feel more polished and consistent with the CurateMyStay homepage style.  
+Security impact: None; link destinations and access rules are unchanged.  
+Follow-up needed: None.
+
+Date: 2026-06-21  
+Change: Added a reference-styled forecast preparation loader and link-only owner email delivery after successful pitch-deck generation.  
+Files touched: `components/home/reference-home.tsx`, `app/api/owner-forecast/proposal/route.ts`, `src/features/owner-forecast/forecast-email.ts`, `docs/CHANGELOG.md`, `docs/AI_PROJECT_CONTEXT.md`.  
+Reason: Make the initial forecast wait feel intentional and deliver the finished proposal directly to the submitting owner.  
+Security impact: Resend credentials remain server-only; owner email is sent only to the validated form address after PDF success, and email failure does not expose errors or block the PDF response.  
+Follow-up needed: Verify owner-recipient delivery with the deployment's verified Resend sender/domain.
+
+Date: 2026-06-21  
+Change: Completed a mobile-first responsiveness pass across the public homepage and owner forecast funnel for 320px phones through tablet sizes while preserving desktop layouts.  
+Files touched: `components/home/reference-home.tsx`, `docs/CHANGELOG.md`, `docs/AI_PROJECT_CONTEXT.md`.  
+Reason: Improve the main acquisition experience on mobile with overflow-safe navigation, typography, cards, forms, images, CTAs, result actions, modal, footer, and sticky controls.  
+Security impact: None; no backend, calculator, Apps Script, email, auth, permission, or database behavior changed.  
+Follow-up needed: Browser screenshot QA when the in-app browser connection is available.
+
+Date: 2026-06-22  
+Change: Replaced directly visible mobile navbar actions with a hamburger menu and removed the fixed bottom mobile CTA buttons.  
+Files touched: `components/home/reference-home.tsx`, `docs/CHANGELOG.md`, `docs/AI_PROJECT_CONTEXT.md`.  
+Reason: Simplify the mobile navigation and remove persistent bottom-screen controls.  
+Security impact: None; navigation destinations and backend behavior are unchanged.  
 Follow-up needed: None.

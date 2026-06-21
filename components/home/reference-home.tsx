@@ -15,8 +15,10 @@ import {
   FileCheck2,
   FileText,
   Globe,
+  LoaderCircle,
   Mail,
   MapPin,
+  Menu,
   MessageCircle,
   Quote,
   Rocket,
@@ -41,6 +43,14 @@ const navLinks = [
   ["FAQ", "risk"],
   ["Pricing", "tiers"],
 ];
+
+const mobileNavIcons: Record<string, LucideIcon> = {
+  calculator: TrendingUp,
+  proof: Award,
+  risk: ShieldCheck,
+  services: BedDouble,
+  tiers: Banknote,
+};
 
 const carouselPhotos = [
   "IMG_0524.jpg",
@@ -125,6 +135,7 @@ type ForecastApiResponse = {
 
 type ProposalApiResponse = {
   ok: boolean;
+  ownerEmailSent: boolean;
   pdfDownloadUrl: string | null;
   pdfViewUrl: string | null;
 };
@@ -160,11 +171,11 @@ function formatINR(value: number) {
 
 function Logo({ light = false }: { light?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-3">
-      <Image alt="Curate My Stay" className="h-9 w-9 rounded-xl object-contain" height={36} src="/logo.png" width={36} />
-      <span className="leading-none">
-        <span className={`block text-base font-extrabold tracking-tight ${light ? "text-white" : "text-[#222222]"}`}>Curate My Stay</span>
-        <span className={`mt-1 block text-xs font-bold ${light ? "text-white/50" : "text-[#717171]"}`}>For Property Owners</span>
+    <span className="inline-flex min-w-0 items-center gap-2.5 sm:gap-3">
+      <Image alt="Curate My Stay" className="h-8 w-8 shrink-0 rounded-lg object-contain sm:h-9 sm:w-9 sm:rounded-xl" height={36} src="/logo.png" width={36} />
+      <span className="min-w-0 leading-none">
+        <span className={`block whitespace-nowrap text-sm font-extrabold sm:text-base ${light ? "text-white" : "text-[#222222]"}`}>Curate My Stay</span>
+        <span className={`mt-1 hidden text-xs font-bold sm:block ${light ? "text-white/50" : "text-[#717171]"}`}>For Property Owners</span>
       </span>
     </span>
   );
@@ -192,9 +203,9 @@ function ButtonLink({
   variant?: "primary" | "secondary" | "ghost" | "onDark" | "outlineDark";
 }) {
   const sizes = {
-    sm: "px-[15px] py-[9px] text-sm",
-    md: "px-[22px] py-[13px] text-base",
-    lg: "px-7 py-4 text-[17px]",
+    sm: "px-3.5 py-2.5 text-sm sm:px-[15px]",
+    md: "px-4 py-3 text-[15px] sm:px-[22px] sm:text-base",
+    lg: "px-5 py-3.5 text-base sm:px-7 sm:py-4 sm:text-[17px]",
   };
   const variants = {
     ghost: "border-transparent bg-transparent !text-[#222222] hover:bg-[#f7f7f7]",
@@ -203,7 +214,7 @@ function ButtonLink({
     primary: "border-transparent bg-[#ff5a5f] !text-white shadow-[0_1px_2px_rgba(0,0,0,0.06)] hover:bg-[#e54b50] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)]",
     secondary: "border-[#dddddd] bg-white !text-[#222222] hover:bg-[#f7f7f7]",
   };
-  const classes = `inline-flex items-center justify-center gap-[9px] rounded-xl border font-semibold leading-[1.1] whitespace-nowrap transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${sizes[size]} ${variants[variant]} ${className}`;
+  const classes = `inline-flex min-h-11 max-w-full items-center justify-center gap-[9px] rounded-xl border text-center font-semibold leading-[1.2] whitespace-normal transition-all duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${sizes[size]} ${variants[variant]} ${className}`;
 
   if (href) {
     return (
@@ -243,7 +254,7 @@ function Section({
 
   return (
     <section className={`${tones[tone]} ${className}`} id={id}>
-      <div className="mx-auto max-w-[1180px] px-[22px] py-20 md:px-8 md:py-[104px]">{children}</div>
+      <div className="mx-auto max-w-[1180px] px-4 py-12 sm:px-6 sm:py-16 md:px-8 md:py-[104px]">{children}</div>
     </section>
   );
 }
@@ -264,8 +275,8 @@ function Heading({
   return (
     <div className={align === "center" ? "mx-auto max-w-3xl text-center" : ""}>
       <Eyebrow light={dark}>{eyebrow}</Eyebrow>
-      <h2 className="mt-4 text-[clamp(30px,4vw,44px)] font-extrabold leading-[1.08] tracking-[-0.025em]">{title}</h2>
-      {lead ? <p className={`mt-[18px] max-w-2xl text-[19px] leading-[1.6] ${align === "center" ? "mx-auto" : ""} ${dark ? "text-white/70" : "text-[#717171]"}`}>{lead}</p> : null}
+      <h2 className="mt-4 text-[28px] font-extrabold leading-[1.12] sm:text-4xl md:text-[44px] md:leading-[1.08]">{title}</h2>
+      {lead ? <p className={`mt-4 max-w-2xl text-base leading-7 sm:mt-[18px] sm:text-[18px] sm:leading-[1.6] md:text-[19px] ${align === "center" ? "mx-auto" : ""} ${dark ? "text-white/70" : "text-[#717171]"}`}>{lead}</p> : null}
     </div>
   );
 }
@@ -275,9 +286,20 @@ function Photo({ alt, className = "", src }: { alt: string; className?: string; 
 }
 
 function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-white/70 bg-white/85 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-6 py-4 md:px-8">
+    <header className="sticky top-0 z-50 border-b border-white/70 bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-[68px] max-w-[1180px] items-center justify-between gap-2 px-4 py-2.5 sm:min-h-[76px] sm:gap-5 sm:px-6 sm:py-3 md:px-8">
         <Link aria-label="Curate My Stay home" href="/">
           <Logo />
         </Link>
@@ -288,15 +310,57 @@ function Header() {
             </a>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
-          <ButtonLink className="hidden sm:inline-flex" href="#contact" size="sm" variant="ghost">
+        <div className="hidden items-center gap-2 lg:flex">
+          <ButtonLink href="#contact" size="sm" variant="ghost">
             Book a property
           </ButtonLink>
-          <ButtonLink href="/dashboard">
-            Dashboard <ArrowRight className="h-4 w-4" />
+          <ButtonLink href="/dashboard" size="sm">
+            Dashboard <ArrowRight className="h-4 w-4 shrink-0" />
           </ButtonLink>
         </div>
+        <button
+          aria-expanded={menuOpen}
+          aria-controls="mobile-navigation"
+          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border transition lg:hidden ${menuOpen ? "border-[#ff9295] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#222222] hover:border-[#ffb1b3] hover:bg-[#fff8f8]"}`}
+          onClick={() => setMenuOpen((current) => !current)}
+          type="button"
+        >
+          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
+      {menuOpen ? (
+        <nav className="border-t border-[#ebebeb] bg-white/95 px-3 pb-4 pt-3 shadow-[0_16px_32px_rgba(0,0,0,0.12)] sm:px-6 lg:hidden" id="mobile-navigation">
+          <div className="mx-auto max-w-[1180px]">
+            <div className="ml-auto max-w-md overflow-hidden rounded-2xl border border-[#ebebeb] bg-[#fbf7f1] p-2 shadow-sm">
+              <div className="px-3 pb-2 pt-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#9a7770]">Explore</div>
+              <div className="grid gap-1">
+                {navLinks.map(([label, id]) => {
+                  const Icon = mobileNavIcons[id];
+                  return (
+                    <a className="group flex min-h-12 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] font-bold text-[#332c28] transition hover:bg-white hover:text-[#d63e43]" href={`#${id}`} key={id} onClick={() => setMenuOpen(false)}>
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#ffd6d7] bg-[#fff1f1] text-[#d63e43] transition group-hover:border-[#ff9295]">
+                        <Icon className="h-[18px] w-[18px]" />
+                      </span>
+                      <span className="min-w-0 flex-1">{label}</span>
+                      <ArrowRight className="h-4 w-4 shrink-0 text-[#b0a29d] transition group-hover:translate-x-0.5 group-hover:text-[#d63e43]" />
+                    </a>
+                  );
+                })}
+              </div>
+              <div className="my-2 h-px bg-[#eadfd8]" />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <a className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-sm font-bold text-[#332c28] transition hover:border-[#ffb1b3] hover:bg-[#fff8f8]" href="#contact" onClick={() => setMenuOpen(false)}>
+                  <Calendar className="h-4 w-4 text-[#d63e43]" /> Book a property
+                </a>
+                <a className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ff5a5f] px-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#e54b50]" href="/dashboard" onClick={() => setMenuOpen(false)}>
+                  Dashboard <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 }
@@ -313,7 +377,7 @@ function HeroCarousel() {
   }, []);
 
   return (
-    <div className="relative h-[min(70vh,540px)] min-h-[380px] overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
+    <div className="relative h-80 overflow-hidden rounded-[20px] bg-[#f7f7f7] shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:h-[min(70vh,540px)] sm:min-h-[380px] sm:rounded-[24px]">
       {carouselPhotos.map((src, photoIndex) => (
         <Image
           alt={`Curate My Stay property ${photoIndex + 1}`}
@@ -343,21 +407,21 @@ function HeroCarousel() {
 
 function Hero() {
   return (
-    <Section className="overflow-hidden [&>div]:py-14 md:[&>div]:pb-20 md:[&>div]:pt-14" id="top" tone="cream">
-      <div className="grid items-center gap-14 lg:grid-cols-[1.02fr_0.98fr]">
-        <div>
+    <Section className="overflow-hidden [&>div]:pb-16 [&>div]:pt-10 sm:[&>div]:py-14 md:[&>div]:pb-20 md:[&>div]:pt-14" id="top" tone="cream">
+      <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.02fr_0.98fr]">
+        <div className="min-w-0">
           <Eyebrow>Goa - Short-term rental management</Eyebrow>
-          <h1 className="mt-[18px] max-w-3xl text-[clamp(38px,5.2vw,60px)] font-extrabold leading-[1.04] tracking-[-0.03em]">
+          <h1 className="mt-4 max-w-3xl text-[34px] font-extrabold leading-[1.08] sm:mt-[18px] sm:text-[44px] lg:text-[60px] lg:leading-[1.04]">
             Your Property. Professionally Managed. <span className="text-[#ff5a5f]">For Higher Returns.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-[clamp(18px,2vw,22px)] leading-[1.55] text-[#484848]">
+          <p className="mt-5 max-w-xl text-[17px] leading-7 text-[#484848] sm:mt-6 sm:text-xl sm:leading-[1.55] lg:text-[22px]">
             We help Goa homeowners earn more through fully managed short-term rentals, with complete financial transparency.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="#contact" size="lg">
+          <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
+            <ButtonLink className="w-full sm:w-auto" href="#contact" size="lg">
               Book a discovery call <ArrowRight className="h-4 w-4" />
             </ButtonLink>
-            <ButtonLink href="#calculator" size="lg" variant="secondary">
+            <ButtonLink className="w-full sm:w-auto" href="#calculator" size="lg" variant="secondary">
               <FileText className="h-4 w-4" /> Get my custom pitch deck
             </ButtonLink>
           </div>
@@ -368,9 +432,9 @@ function Hero() {
           </div>
           <p className="mt-4 text-[13.5px] font-medium text-[#717171]">No commitment. 30-min call. We&apos;ll tell you upfront if your property is a fit.</p>
         </div>
-        <div className="relative">
+        <div className="relative min-w-0">
           <HeroCarousel />
-          <div className="absolute -bottom-6 left-4 w-56 rounded-[18px] bg-white px-5 py-4 shadow-[0_12px_32px_rgba(0,0,0,0.16)] md:-left-5">
+          <div className="absolute -bottom-6 left-3 w-48 rounded-[16px] bg-white px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:left-4 sm:w-56 sm:rounded-[18px] sm:px-5 sm:py-4 md:-left-5">
             <div className="text-[28px] font-extrabold leading-none tracking-[-0.02em]">150+</div>
             <div className="mt-1 flex items-center gap-1 text-sm font-semibold text-[#484848]">
               <Star className="h-4 w-4 fill-[#ff5a5f] text-[#ff5a5f]" /> 5-star reviews
@@ -379,7 +443,7 @@ function Hero() {
             <div className="text-[22px] font-extrabold tracking-[-0.02em]">200+</div>
             <div className="mt-0.5 text-[13px] font-semibold text-[#484848]">successful stays</div>
           </div>
-          <div className="absolute right-[18px] top-[18px] rounded-full border border-[#dddddd] bg-white px-[13px] py-1.5 text-[13px] font-semibold shadow-sm">
+          <div className="absolute right-3 top-3 rounded-full border border-[#dddddd] bg-white px-3 py-1.5 text-[13px] font-semibold shadow-sm sm:right-[18px] sm:top-[18px] sm:px-[13px]">
             <Star className="mr-1 inline h-4 w-4 fill-[#ff5a5f] text-[#ff5a5f]" />
             4.98 average
           </div>
@@ -407,7 +471,24 @@ function MathAnchor() {
         lead="Most owners in Goa lease long-term and accept the rental yield they are given. Here is what the same property looks like under short-term rental management."
         title="Same property. A different operating model."
       />
-      <div className="mt-12 overflow-x-auto rounded-[24px] border border-white/10">
+      <div className="mt-8 grid gap-3 md:hidden">
+        {rows.map(([label, ltr, cms]) => (
+          <div className="overflow-hidden rounded-2xl border border-white/10" key={label}>
+            <div className="bg-white/[0.06] px-4 py-3 text-sm font-extrabold text-white">{label}</div>
+            <div className="grid grid-cols-2">
+              <div className="min-w-0 border-r border-white/10 p-3">
+                <div className="text-[11px] font-extrabold uppercase text-white/45">Long-term</div>
+                <div className="mt-1 break-words text-[13px] leading-5 text-white/65">{ltr}</div>
+              </div>
+              <div className="min-w-0 bg-[#ff5a5f]/10 p-3">
+                <div className="text-[11px] font-extrabold uppercase text-[#e9aa4b]">With CMS</div>
+                <div className="mt-1 break-words text-[13px] font-bold leading-5 text-white">{cms}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-12 hidden rounded-[24px] border border-white/10 md:block">
         <div className="grid min-w-[650px] grid-cols-[1.25fr_1fr_1.15fr]">
           <div className="bg-white/[0.03] p-5" />
           <div className="border-l border-white/10 bg-white/[0.03] p-5 text-xs font-extrabold uppercase tracking-[0.14em] text-white/60">Long-term rental</div>
@@ -502,12 +583,12 @@ function Segmented({
   value: string;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex min-w-0 flex-wrap gap-2">
       {options.map((option) => {
         const active = value === option;
         return (
           <button
-            className={`min-w-[88px] flex-1 rounded-xl border px-3 py-[11px] text-[14.5px] font-semibold transition ${active ? "border-[#ff5a5f] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#484848] hover:bg-[#f7f7f7]"}`}
+            className={`min-h-11 min-w-0 flex-[1_1_88px] rounded-xl border px-2.5 py-2.5 text-[14px] font-semibold transition sm:px-3 sm:py-[11px] sm:text-[14.5px] ${active ? "border-[#ff5a5f] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#484848] hover:bg-[#f7f7f7]"}`}
             key={option}
             onClick={() => onChange(option)}
             type="button"
@@ -532,10 +613,33 @@ function Dots({ step, total = 3 }: { step: number; total?: number }) {
 
 function ForecastCard({ label, sub, value }: { label: string; sub?: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[#ebebeb] bg-white px-6 py-[22px] shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
+    <div className="min-w-0 rounded-2xl border border-[#ebebeb] bg-white px-5 py-5 shadow-[0_1px_2px_rgba(0,0,0,0.06)] sm:px-6 sm:py-[22px]">
       <div className="text-xs font-bold uppercase tracking-[0.05em] text-[#484848]">{label}</div>
-      <div className="mt-2 text-[clamp(26px,3vw,34px)] font-extrabold leading-none tracking-[-0.02em] text-[#222222]">{value}</div>
+      <div className="mt-2 break-words text-[26px] font-extrabold leading-none text-[#222222] sm:text-[30px] md:text-[34px]">{value}</div>
       {sub ? <div className="mt-[7px] text-[13.5px] text-[#484848]">{sub}</div> : null}
+    </div>
+  );
+}
+
+function ForecastLoader() {
+  return (
+    <div aria-live="polite" className="min-w-0 rounded-[20px] border border-[#ffb1b3] bg-[#fbf7f1] p-5 text-center shadow-[0_6px_16px_rgba(0,0,0,0.1)] sm:rounded-[24px] sm:p-9 md:p-[52px]">
+      <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#fff1f1] text-[#ff5a5f]">
+        <LoaderCircle aria-hidden="true" className="h-7 w-7 animate-spin" />
+      </div>
+      <h3 className="mt-5 text-[22px] font-extrabold leading-tight text-[#222222] sm:text-[26px] md:text-[30px]">Preparing your property forecast</h3>
+      <p className="mx-auto mt-2 max-w-[570px] text-[15px] leading-6 text-[#484848]">
+        We are calculating your revenue estimate and preparing your proposal details.
+      </p>
+      <div className="mx-auto mt-7 h-1.5 max-w-[440px] overflow-hidden rounded-full bg-[#f0dfd8]">
+        <div className="h-full w-2/3 animate-pulse rounded-full bg-[#ff5a5f]" />
+      </div>
+      <div aria-hidden="true" className="mt-4 flex items-center justify-center gap-1.5">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-[#ff5a5f]" />
+        <span className="h-2 w-2 animate-pulse rounded-full bg-[#ff8b8f] [animation-delay:150ms]" />
+        <span className="h-2 w-2 animate-pulse rounded-full bg-[#ffb1b3] [animation-delay:300ms]" />
+      </div>
+      <p className="mt-4 text-[13px] font-semibold text-[#6b625e]">Applying Goa location and seasonal performance factors...</p>
     </div>
   );
 }
@@ -543,12 +647,14 @@ function ForecastCard({ label, sub, value }: { label: string; sub?: string; valu
 function ForecastResult({
   data,
   onReset,
+  ownerEmailSent,
   pdfDownloadUrl,
   pitchDeckStatus,
   response,
 }: {
   data: CalculatorData;
   onReset: () => void;
+  ownerEmailSent: boolean;
   pdfDownloadUrl: string | null;
   pitchDeckStatus: PitchDeckStatus;
   response: ForecastApiResponse;
@@ -559,35 +665,37 @@ function ForecastResult({
   const summary = `${data.configuration} ${data.propertyCategory} - ${data.location} - ${data.areaSqft} sq.ft.`;
 
   return (
-    <div className="rounded-[24px] border border-[#ff9295] bg-[#fbf7f1] p-[clamp(24px,4vw,40px)] shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
+    <div className="min-w-0 rounded-[20px] border border-[#ff9295] bg-[#fbf7f1] p-4 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:rounded-[24px] sm:p-7 md:p-10">
       <div className="mb-1 flex flex-wrap items-center gap-2.5">
         <span className="inline-flex items-center gap-2 rounded-full bg-[#e6f4ec] px-[13px] py-1.5 text-[13px] font-semibold text-[#1b8a5a]">
           <span className="h-[7px] w-[7px] rounded-full bg-[#1b8a5a]" />
           Forecast ready
         </span>
-        <span className="text-[13.5px] text-[#484848]">
+        <span className="min-w-0 break-words text-[13.5px] leading-5 text-[#484848]">
           {pitchDeckStatus === "ready"
-            ? "Your forecast and full pitch deck are ready."
+            ? ownerEmailSent
+              ? "Your pitch deck is ready. We have also emailed you a copy."
+              : "Your forecast and full pitch deck are ready."
             : pitchDeckStatus === "failed"
               ? "Your forecast is ready. The pitch-deck download is temporarily unavailable."
               : "Your forecast is ready. Your pitch deck is being prepared."}
         </span>
       </div>
-      <h3 className="mt-2 text-[clamp(24px,3vw,32px)] font-extrabold leading-tight tracking-[-0.02em]">Here&apos;s what your property could earn.</h3>
-      <p className="mt-1 text-[15px] font-semibold text-[#484848]">{summary}</p>
+      <h3 className="mt-3 text-[24px] font-extrabold leading-tight sm:text-[28px] md:text-[32px]">Here&apos;s what your property could earn.</h3>
+      <p className="mt-1 break-words text-[15px] font-semibold text-[#484848]">{summary}</p>
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <ForecastCard label="Estimated annual revenue" value={formatINR(response.forecast.annualRevenue)} />
         <ForecastCard label="Estimated operating cost" sub="15% of revenue" value={formatINR(response.forecast.annualOperatingCost)} />
         <ForecastCard label="Estimated net profit" sub="After operating costs" value={formatINR(response.forecast.annualNetProfit)} />
       </div>
-      <div className="mt-5 rounded-2xl border border-[#ebebeb] bg-white p-5 text-sm leading-6 text-[#484848]">
+      <div className="mt-5 min-w-0 break-words rounded-2xl border border-[#ebebeb] bg-white p-4 text-sm leading-6 text-[#484848] sm:p-5">
         <p>{response.forecast.setup.note}</p>
         <p className="mt-2 font-semibold text-[#222222]">Commercial terms are discussed after reviewing your property.</p>
       </div>
       <p className="my-[18px] text-[12.5px] italic leading-normal text-[#b0b0b0]">
         These are estimates based on comparable Goa properties. Actual results depend on property condition, location, season, and market dynamics.
       </p>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap [&>*]:w-full sm:[&>*]:w-auto">
         {whatsappUrl ? (
           <ButtonLink href={whatsappUrl} rel="noreferrer" size="lg" target="_blank">
             <MessageCircle className="h-4 w-4" /> WhatsApp us now
@@ -734,19 +842,22 @@ function CalculatorSection() {
         lead="Tell us about your property. We'll generate a transparent annual revenue, operating-cost, and net-profit forecast, plus a downloadable custom pitch deck."
         title="What could your property actually earn?"
       />
-      <div className="mx-auto mt-12 max-w-[880px]">
+      <div className="mx-auto mt-8 min-w-0 max-w-[880px] sm:mt-12">
         {result ? (
           <ForecastResult
             data={data}
             onReset={reset}
+            ownerEmailSent={proposal?.ownerEmailSent === true}
             pdfDownloadUrl={proposal?.pdfDownloadUrl || null}
             pitchDeckStatus={pitchDeckStatus}
             response={result}
           />
+        ) : isSubmitting ? (
+          <ForecastLoader />
         ) : (
-          <div className="rounded-[24px] border border-[#dddddd] bg-[#fbf7f1] p-[clamp(24px,4vw,44px)] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-              <div>
+          <div className="min-w-0 rounded-[20px] border border-[#dddddd] bg-[#fbf7f1] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)] sm:rounded-[24px] sm:p-7 md:p-11">
+            <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+              <div className="min-w-0">
                 <div className="text-[13px] font-bold uppercase tracking-[0.04em] text-[#ff5a5f]">Step {step + 1} of 3</div>
                 <h3 className="mt-1 text-xl font-extrabold text-[#222222]">{["Tell us about your property", "How do we reach you?", "Confirm & generate"][step]}</h3>
               </div>
@@ -823,9 +934,11 @@ function CalculatorSection() {
                   <TextInput invalid={touched && !data.name.trim()} onChange={(event) => setField("name", event.target.value)} placeholder="Your name" value={data.name} />
                 </Field>
                 <Field hint="Default +91: change for international" label="Phone" required>
-                  <div className="flex gap-2">
-                    <span className="grid h-12 w-16 shrink-0 place-items-center rounded-xl border border-[#dddddd] bg-[#f7f7f7] text-[15.5px] font-semibold">+91</span>
-                    <TextInput invalid={touched && data.phone.trim().length < 7} onChange={(event) => setField("phone", event.target.value)} placeholder="98765 43210" type="tel" value={data.phone} />
+                  <div className="flex min-w-0 gap-2">
+                    <span className="grid h-12 w-14 shrink-0 place-items-center rounded-xl border border-[#dddddd] bg-[#f7f7f7] text-[15px] font-semibold sm:w-16 sm:text-[15.5px]">+91</span>
+                    <div className="min-w-0 flex-1">
+                      <TextInput invalid={touched && data.phone.trim().length < 7} onChange={(event) => setField("phone", event.target.value)} placeholder="98765 43210" type="tel" value={data.phone} />
+                    </div>
                   </div>
                 </Field>
                 <Field label="Email" required>
@@ -849,27 +962,27 @@ function CalculatorSection() {
                     <span className="text-[15px] leading-normal text-[#484848]">I&apos;d like to discuss this on WhatsApp.</span>
                   </label>
                 </div>
-                <div className="flex items-center gap-2.5 text-[13.5px] text-[#484848]">
-                  <ShieldCheck className="h-[18px] w-[18px] text-[#1b8a5a]" /> Your details stay private and are used only to prepare this forecast and follow up.
+                <div className="flex items-start gap-2.5 text-[13.5px] leading-5 text-[#484848]">
+                  <ShieldCheck className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[#1b8a5a]" /> Your details stay private and are used only to prepare this forecast and follow up.
                 </div>
                 {submitError ? <div className="text-[13.5px] font-semibold text-[#c13515]">{submitError}</div> : null}
               </div>
             ) : null}
 
-            <div className="mt-7 flex items-center justify-between gap-3">
+            <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
               {step > 0 ? (
-                <ButtonLink onClick={() => setStep((current) => current - 1)} variant="ghost">
+                <ButtonLink className="w-full sm:w-auto" onClick={() => setStep((current) => current - 1)} variant="ghost">
                   Back
                 </ButtonLink>
               ) : (
                 <span />
               )}
               {step < 2 ? (
-                <ButtonLink onClick={nextStep} size="lg">
+                <ButtonLink className="w-full sm:w-auto" onClick={nextStep} size="lg">
                   Continue <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
               ) : (
-                <ButtonLink disabled={isSubmitting} onClick={submitForecast} size="lg">
+                <ButtonLink className="w-full sm:w-auto" disabled={isSubmitting} onClick={submitForecast} size="lg">
                   {isSubmitting ? "Generating your forecast..." : "Generate my forecast"} <Sparkles className="h-4 w-4" />
                 </ButtonLink>
               )}
@@ -923,7 +1036,7 @@ function Services() {
           );
         })}
       </div>
-      <p className="mx-auto mt-[52px] max-w-2xl text-center text-[clamp(20px,2.4vw,26px)] font-bold italic tracking-[-0.01em] text-[#ff5a5f]">&quot;You don&apos;t need to lift a finger. Unless you want to.&quot;</p>
+      <p className="mx-auto mt-10 max-w-2xl text-center text-xl font-bold italic text-[#ff5a5f] sm:mt-[52px] sm:text-2xl md:text-[26px]">&quot;You don&apos;t need to lift a finger. Unless you want to.&quot;</p>
     </Section>
   );
 }
@@ -932,20 +1045,20 @@ function StatsAndProof() {
   return (
     <Section id="proof" tone="cream">
       <Heading eyebrow="Track record and proof" lead="We lead with real figures, not adjectives. Here is what the portfolio looks like today." title="The numbers behind the promise." />
-      <div className="mt-12 grid gap-5 md:grid-cols-4">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 md:mt-12 md:grid-cols-4 md:gap-5">
         {[
           ["4.98 / 5", "Airbnb rating across all listings"],
           ["150+", "Five-star guest reviews"],
           ["200+", "Successful stays delivered"],
           ["Superhost", "11+ months running"],
         ].map(([value, label]) => (
-          <div className="rounded-2xl border border-[#ebebeb] bg-white p-7 text-center shadow-sm" key={label}>
-            <div className="text-4xl font-extrabold tracking-tight text-[#ff5a5f]">{value}</div>
+          <div className="rounded-2xl border border-[#ebebeb] bg-white p-5 text-center shadow-sm sm:p-7" key={label}>
+            <div className="text-3xl font-extrabold text-[#ff5a5f] sm:text-4xl">{value}</div>
             <div className="mt-3 text-sm font-semibold leading-5 text-[#484848]">{label}</div>
           </div>
         ))}
       </div>
-      <div className="mt-16 grid gap-8 lg:grid-cols-2">
+      <div className="mt-12 grid gap-6 sm:mt-16 sm:gap-8 lg:grid-cols-2">
         <CaseCard photos={["panjim-1.jpg", "panjim-2.jpg", "panjim-3.jpg", "panjim-4.jpg"]} title="Panjim apartment portfolio" />
         <CaseCard photos={["varca-1.jpg", "varca-2.jpg", "varca-3.jpg"]} title="Varca villa relaunch" />
       </div>
@@ -957,14 +1070,14 @@ function StatsAndProof() {
 function CaseCard({ photos, title }: { photos: string[]; title: string }) {
   return (
     <div className="overflow-hidden rounded-[24px] border border-[#ebebeb] bg-white shadow-sm">
-      <div className="grid h-64 grid-cols-2 grid-rows-2 gap-1 bg-[#ebebeb]">
+      <div className="grid h-52 grid-cols-2 grid-rows-2 gap-1 bg-[#ebebeb] sm:h-64">
         {photos.slice(0, 3).map((src, index) => (
           <Photo alt={title} className={index === 0 ? "row-span-2" : ""} key={src} src={src} />
         ))}
       </div>
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Eyebrow>Case study</Eyebrow>
-        <h3 className="mt-3 text-2xl font-extrabold tracking-tight">{title}</h3>
+        <h3 className="mt-3 break-words text-xl font-extrabold sm:text-2xl">{title}</h3>
         <p className="mt-3 text-sm leading-6 text-[#484848]">Professional operations, stronger pricing, transparent reporting, and owner-approved monthly statements.</p>
         <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-2xl border border-[#ebebeb] bg-[#ebebeb]">
           {[
@@ -973,9 +1086,9 @@ function CaseCard({ photos, title }: { photos: string[]; title: string }) {
             ["Peak month", "Rs 1.98 L"],
             ["Avg net", "Rs 78k+"],
           ].map(([label, value]) => (
-            <div className="bg-white p-4" key={label}>
+            <div className="min-w-0 bg-white p-3 sm:p-4" key={label}>
               <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#717171]">{label}</div>
-              <div className="mt-1 text-lg font-extrabold">{value}</div>
+              <div className="mt-1 break-words text-base font-extrabold sm:text-lg">{value}</div>
             </div>
           ))}
         </div>
@@ -1007,14 +1120,14 @@ function Testimonials() {
   ];
 
   return (
-    <div className="mt-16 grid gap-6 lg:grid-cols-3">
+    <div className="mt-12 grid gap-5 sm:mt-16 sm:gap-6 lg:grid-cols-3">
       {items.map((item) => (
-        <figure className="flex h-full flex-col rounded-[24px] border border-[#ebebeb] bg-white p-7 shadow-sm" key={item.who}>
+        <figure className="flex h-full min-w-0 flex-col rounded-[20px] border border-[#ebebeb] bg-white p-5 shadow-sm sm:rounded-[24px] sm:p-7" key={item.who}>
           <Quote className="h-7 w-7 text-[#ff9295]" />
           <blockquote className="mt-4 flex-1 text-base italic leading-7 text-[#222222]">&quot;{item.q}&quot;</blockquote>
-          <figcaption className="mt-6 flex items-center gap-3">
+          <figcaption className="mt-6 flex min-w-0 items-center gap-3">
             <Image alt={item.who} className="h-11 w-11 rounded-full object-cover" height={44} src={photo(item.photo)} width={44} />
-            <span>
+            <span className="min-w-0">
               <span className="block text-sm font-extrabold">{item.who}</span>
               <span className="block text-xs font-semibold text-[#717171]">{item.prop}</span>
             </span>
@@ -1028,11 +1141,11 @@ function Testimonials() {
 function Transparency() {
   return (
     <Section id="transparency" tone="dark">
-      <div className="grid items-center gap-14 lg:grid-cols-[1.02fr_0.98fr]">
-        <div>
+      <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.02fr_0.98fr]">
+        <div className="min-w-0">
           <Eyebrow light>No black box</Eyebrow>
           <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight md:text-[42px]">Every booking. Every expense. Every month. In your inbox.</h2>
-          <p className="mt-5 text-lg leading-8 text-white/70">The biggest reason owners hesitate is fear of the unknown: inflated expenses, mystery deductions, and surprise charges. We built CMS to eliminate that fear.</p>
+          <p className="mt-5 text-base leading-7 text-white/70 sm:text-lg sm:leading-8">The biggest reason owners hesitate is fear of the unknown: inflated expenses, mystery deductions, and surprise charges. We built CMS to eliminate that fear.</p>
           <div className="mt-8 grid gap-1">
             {[
               ["Monthly P&L statement", "Every booking, expense, and final profit is shared by the 5th."],
@@ -1040,9 +1153,9 @@ function Transparency() {
               ["Bank transfer in 3 days", "Once approved, your share is transferred with confirmation."],
               ["Audit access anytime", "Bills, receipts, IDs, and booking records stay centrally available."],
             ].map(([title, body], index) => (
-              <div className={`flex gap-4 py-4 ${index ? "border-t border-white/10" : ""}`} key={title}>
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-sm font-extrabold text-[#e9aa4b]">{String(index + 1).padStart(2, "0")}</span>
-                <div>
+              <div className={`flex gap-3 py-4 sm:gap-4 ${index ? "border-t border-white/10" : ""}`} key={title}>
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-sm font-extrabold text-[#e9aa4b] sm:h-11 sm:w-11">{String(index + 1).padStart(2, "0")}</span>
+                <div className="min-w-0">
                   <div className="font-extrabold text-white">{title}</div>
                   <div className="mt-1 text-sm leading-6 text-white/65">{body}</div>
                 </div>
@@ -1058,8 +1171,8 @@ function Transparency() {
 
 function OwnerPortalMock() {
   return (
-    <div>
-      <div className="rounded-[24px] border border-[#ebebeb] bg-white text-[#222222] shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
+    <div className="min-w-0">
+      <div className="min-w-0 rounded-[20px] border border-[#ebebeb] bg-white text-[#222222] shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:rounded-[24px]">
         <div className="flex items-center gap-3 border-b border-[#ebebeb] bg-[#f7f7f7] px-4 py-3">
           <Image alt="" className="h-6 w-6 rounded-md" height={24} src="/logo.png" width={24} />
           <span className="text-sm font-extrabold">Owner dashboard</span>
@@ -1068,14 +1181,14 @@ function OwnerPortalMock() {
             <span className="h-2.5 w-2.5 rounded-full bg-[#dddddd]" />
           </span>
         </div>
-        <div className="grid gap-3 p-4">
+        <div className="grid min-w-0 gap-3 p-3 sm:p-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <MiniMetric label="Revenue YTD" tone="green" value="Rs 8.5 L" />
             <MiniMetric label="This month" tone="amber" value="3 confirmed" />
           </div>
           <div className="rounded-xl border border-[#ebebeb] p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#717171]">Calendar - peak season</span>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[11px] font-extrabold uppercase text-[#717171] sm:text-xs">Calendar - peak season</span>
               <span className="rounded-full bg-[#fff1f1] px-3 py-1 text-[11px] font-extrabold text-[#d63e43]">Nov-Feb</span>
             </div>
             <div className="grid grid-cols-[repeat(14,minmax(0,1fr))] gap-1">
@@ -1086,7 +1199,7 @@ function OwnerPortalMock() {
           </div>
           <div className="flex flex-wrap gap-2">
             {["P&L - Dec.pdf", "P&L - Nov.pdf", "License.pdf"].map((doc) => (
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#f7f7f7] px-3 py-2 text-xs font-bold text-[#484848]" key={doc}>
+              <span className="inline-flex min-w-0 items-center gap-1.5 rounded-lg bg-[#f7f7f7] px-2.5 py-2 text-xs font-bold text-[#484848] sm:px-3" key={doc}>
                 <FileText className="h-3.5 w-3.5 text-[#ff5a5f]" /> {doc}
               </span>
             ))}
@@ -1121,16 +1234,16 @@ function Tiers() {
   return (
     <Section className="pt-0" id="tiers" tone="cream">
       <Heading eyebrow="The tier system" lead="Three ways to work with us. The right tier depends on whether your property is plug-and-play or needs setup." title="Pick the model that matches your goals." />
-      <div className="mt-14 grid items-start gap-6 lg:grid-cols-3">
+      <div className="mt-12 grid items-start gap-6 sm:mt-14 lg:grid-cols-3">
         {tiers.map(([name, tag, split, setup, items, featured]) => (
-          <div className={`relative rounded-[24px] bg-white p-7 shadow-sm ${featured ? "-translate-y-2 border-2 border-[#ff5a5f] shadow-[0_6px_16px_rgba(0,0,0,0.12)]" : "border border-[#dddddd]"}`} key={name}>
-            {featured ? <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-[#ff5a5f] px-4 py-1.5 text-xs font-extrabold uppercase tracking-[0.14em] text-white">Most chosen</div> : null}
+          <div className={`relative min-w-0 rounded-[20px] bg-white p-5 shadow-sm sm:rounded-[24px] sm:p-7 ${featured ? "border-2 border-[#ff5a5f] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:-translate-y-2" : "border border-[#dddddd]"}`} key={name}>
+            {featured ? <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#ff5a5f] px-4 py-1.5 text-xs font-extrabold uppercase text-white">Most chosen</div> : null}
             <h3 className="text-2xl font-extrabold">{name}</h3>
             <p className="mt-2 min-h-10 text-sm leading-6 text-[#717171]">{tag}</p>
-            <div className={`mt-5 text-4xl font-extrabold tracking-tight ${featured ? "text-[#ff5a5f]" : "text-[#222222]"}`}>{split}</div>
+            <div className={`mt-5 text-3xl font-extrabold sm:text-4xl ${featured ? "text-[#ff5a5f]" : "text-[#222222]"}`}>{split}</div>
             <p className="mt-1 text-sm font-semibold text-[#717171]">Owner / CMS on net profit</p>
-            <div className="mt-5 flex items-center gap-2 rounded-xl bg-[#f7f7f7] px-4 py-3 text-sm font-bold text-[#484848]">
-              <Banknote className="h-4 w-4 text-[#2f8f4e]" /> Setup: {setup}
+            <div className="mt-5 flex min-w-0 items-start gap-2 rounded-xl bg-[#f7f7f7] px-3.5 py-3 text-sm font-bold leading-5 text-[#484848] sm:px-4">
+              <Banknote className="mt-0.5 h-4 w-4 shrink-0 text-[#2f8f4e]" /> <span className="min-w-0 break-words">Setup: {setup}</span>
             </div>
             <div className="mt-6 text-xs font-extrabold uppercase tracking-[0.14em] text-[#b0b0b0]">Right for you if it is</div>
             <ul className="mt-4 grid gap-3">
@@ -1153,15 +1266,15 @@ function Tiers() {
 function Team() {
   return (
     <Section id="about">
-      <div className="grid items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
           <Image alt="The Curate My Stay family" className="h-full max-h-[560px] w-full object-contain" height={900} sizes="(min-width: 1024px) 460px, 100vw" src={photo("founder.jpg")} width={720} />
         </div>
         <div>
           <Eyebrow>Who we are</Eyebrow>
           <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight md:text-[40px]">A family-run business, in a corner of the market that is anything but.</h2>
-          <p className="mt-5 text-base leading-8 text-[#484848]">Curate My Stay is a Goa-based property management firm run by a family with facility management and investment-side thinking. We approach each property like an asset with an ROI, an operational P&L, and a clear strategy.</p>
-          <p className="mt-4 text-base leading-8 text-[#484848]">Communication runs directly through the founder. No call centres, no ticket queues, no account-manager churn. That is how we built a 4.98 rating, and how we plan to scale deliberately.</p>
+          <p className="mt-5 text-base leading-7 text-[#484848] sm:leading-8">Curate My Stay is a Goa-based property management firm run by a family with facility management and investment-side thinking. We approach each property like an asset with an ROI, an operational P&L, and a clear strategy.</p>
+          <p className="mt-4 text-base leading-7 text-[#484848] sm:leading-8">Communication runs directly through the founder. No call centres, no ticket queues, no account-manager churn. That is how we built a 4.98 rating, and how we plan to scale deliberately.</p>
           <div className="mt-7 grid gap-4 sm:grid-cols-3">
             {[
               [Rocket, "Founded 2024", "In active growth mode"],
@@ -1197,18 +1310,18 @@ function CollapsibleExtras() {
           ].map(([Icon, title, summary]) => {
             const IconComponent = Icon as LucideIcon;
             return (
-              <details className="group rounded-[24px] border border-[#dddddd] bg-white p-6 shadow-sm" key={title as string}>
-                <summary className="flex cursor-pointer list-none items-center gap-5">
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#fff1f1] text-[#ff5a5f]">
-                    <IconComponent className="h-6 w-6" />
+              <details className="group min-w-0 rounded-[20px] border border-[#dddddd] bg-white p-4 shadow-sm sm:rounded-[24px] sm:p-6" key={title as string}>
+                <summary className="flex min-w-0 cursor-pointer list-none items-center gap-3 sm:gap-5">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#fff1f1] text-[#ff5a5f] sm:h-12 sm:w-12 sm:rounded-2xl">
+                    <IconComponent className="h-5 w-5 sm:h-6 sm:w-6" />
                   </span>
-                  <span className="flex-1">
-                    <span className="block text-lg font-extrabold">{title as string}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block break-words text-base font-extrabold sm:text-lg">{title as string}</span>
                     <span className="mt-1 block text-sm leading-6 text-[#717171]">{summary as string}</span>
                   </span>
-                  <ChevronDown className="h-5 w-5 transition group-open:rotate-180" />
+                  <ChevronDown className="h-5 w-5 shrink-0 transition group-open:rotate-180" />
                 </summary>
-                <div className="mt-5 rounded-2xl bg-[#fbf7f1] p-5 text-sm leading-6 text-[#484848]">
+                <div className="mt-5 rounded-2xl bg-[#fbf7f1] p-4 text-sm leading-6 text-[#484848] sm:p-5">
                   This is kept intentionally simple: clear monthly approvals, transparent records, and no hidden operating layer.
                 </div>
               </details>
@@ -1238,13 +1351,13 @@ function RiskSection() {
       <div className="mt-12 grid gap-4 lg:grid-cols-2">
         {faqs.map(([q, a], index) => (
           <details className="group rounded-2xl border border-[#ebebeb] bg-white shadow-sm" key={q} open={index === 0}>
-            <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-5">
-              <span className="flex-1 text-base font-extrabold leading-6">{q}</span>
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f7f7f7] transition group-open:rotate-180 group-open:bg-[#ff5a5f] group-open:text-white">
+            <summary className="flex min-w-0 cursor-pointer list-none items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5 sm:py-5">
+              <span className="min-w-0 flex-1 break-words text-[15px] font-extrabold leading-6 sm:text-base">{q}</span>
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f7f7f7] transition group-open:rotate-180 group-open:bg-[#ff5a5f] group-open:text-white">
                 <ChevronDown className="h-4 w-4" />
               </span>
             </summary>
-            <p className="px-5 pb-5 text-sm leading-6 text-[#484848]">{a}</p>
+            <p className="px-4 pb-4 text-sm leading-6 text-[#484848] sm:px-5 sm:pb-5">{a}</p>
           </details>
         ))}
       </div>
@@ -1259,20 +1372,20 @@ function FinalCTA({ onBook }: { onBook: () => void }) {
         <h2 className="text-3xl font-extrabold leading-tight tracking-tight md:text-[50px]">
           The math is simple. The execution is the hard part. <span className="text-[#e9aa4b]">We have already done it.</span>
         </h2>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/70">Book a 30-minute discovery call. We will look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move.</p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <ButtonLink onClick={onBook} size="lg" variant="onDark">
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">Book a 30-minute discovery call. We will look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move.</p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+          <ButtonLink className="w-full sm:w-auto" onClick={onBook} size="lg" variant="onDark">
             <Calendar className="h-4 w-4" /> Book a discovery call
           </ButtonLink>
-          <ButtonLink href="https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa." size="lg" variant="outlineDark">
+          <ButtonLink className="w-full sm:w-auto" href="https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa." size="lg" variant="outlineDark">
             <MessageCircle className="h-4 w-4" /> WhatsApp us directly
           </ButtonLink>
         </div>
       </div>
-      <div className="mx-auto mt-12 flex max-w-2xl flex-col gap-6 rounded-[24px] border border-white/10 bg-white/[0.05] p-6 sm:flex-row sm:items-center md:p-8">
-        <Image alt="Aravind" className="h-24 w-24 shrink-0 rounded-[20px] object-cover object-top" height={96} src={photo("aravind.jpg")} width={96} />
-        <div>
-          <div className="text-lg font-extrabold text-white">Aravind <span className="text-sm font-semibold text-white/50">: Founder, Curate My Stay</span></div>
+      <div className="mx-auto mt-10 flex max-w-2xl flex-col gap-5 rounded-[20px] border border-white/10 bg-white/[0.05] p-5 sm:mt-12 sm:flex-row sm:items-center sm:gap-6 sm:rounded-[24px] sm:p-6 md:p-8">
+        <Image alt="Aravind" className="h-20 w-20 shrink-0 self-center rounded-[18px] object-cover object-top sm:h-24 sm:w-24 sm:self-auto sm:rounded-[20px]" height={96} src={photo("aravind.jpg")} width={96} />
+        <div className="min-w-0">
+          <div className="text-center text-lg font-extrabold text-white sm:text-left">Aravind <span className="block text-sm font-semibold text-white/50 sm:inline">: Founder, Curate My Stay</span></div>
           <p className="mt-2 text-sm italic leading-6 text-white/70">&quot;Every property we take on is still personally overseen by me. That level of involvement is a big part of how we maintain consistency, trust, and attention to detail across every stay.&quot;</p>
         </div>
       </div>
@@ -1283,21 +1396,21 @@ function FinalCTA({ onBook }: { onBook: () => void }) {
 function Footer() {
   return (
     <footer className="bg-[#241e19] text-white/70">
-      <div className="mx-auto max-w-[1180px] px-6 py-14 md:px-8">
+      <div className="mx-auto max-w-[1180px] px-4 py-12 sm:px-6 sm:py-14 md:px-8">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <Logo light />
             <p className="mt-4 text-sm italic text-[#e9aa4b]">&quot;Wealth managers for property.&quot;</p>
             <div className="mt-5 grid gap-3 text-sm">
               <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-white/50" /> Goa, India</span>
-              <a className="inline-flex items-center gap-2" href="mailto:hello@curatemystay.com"><Mail className="h-4 w-4 text-white/50" /> hello@curatemystay.com</a>
+              <a className="inline-flex min-w-0 items-center gap-2 break-all" href="mailto:hello@curatemystay.com"><Mail className="h-4 w-4 shrink-0 text-white/50" /> hello@curatemystay.com</a>
               <a className="inline-flex items-center gap-2" href="https://wa.me/916282627601"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
             </div>
           </div>
           <FooterLinks title="Site" items={["For Owners", "For Guests / Book a Stay", "About", "Case Studies", "Blog (soon)"]} />
           <FooterLinks title="Resources" items={["Sample P&L Statement", "Standard L&L Agreement", "Tier System One-Pager", "ROI Calculator"]} />
         </div>
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/45">
+        <div className="mt-10 flex flex-col items-start gap-4 border-t border-white/10 pt-6 text-xs leading-5 text-white/45 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <span>Copyright Curate My Stay 2026 - Privacy - Terms - Cookies</span>
           <div className="flex gap-4">
             <Globe className="h-5 w-5" />
@@ -1329,10 +1442,10 @@ function BookingModal({ onClose, open }: { onClose: () => void; open: boolean })
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] grid place-items-center bg-[#140c08]/55 p-5 backdrop-blur" onClick={onClose}>
-      <div className="max-h-[90vh] w-full max-w-xl overflow-auto rounded-[24px] bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)]" onClick={(event) => event.stopPropagation()}>
-        <div className="flex items-start justify-between gap-4 border-b border-[#ebebeb] p-7">
-          <div>
+    <div className="fixed inset-0 z-[200] grid place-items-center bg-[#140c08]/55 p-3 backdrop-blur sm:p-5" onClick={onClose}>
+      <div className="max-h-[92vh] w-full max-w-xl overflow-auto rounded-[20px] bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:max-h-[90vh] sm:rounded-[24px]" onClick={(event) => event.stopPropagation()}>
+        <div className="flex min-w-0 items-start justify-between gap-3 border-b border-[#ebebeb] p-5 sm:gap-4 sm:p-7">
+          <div className="min-w-0">
             <div className="flex items-center gap-3">
               <Logo />
             </div>
@@ -1342,7 +1455,7 @@ function BookingModal({ onClose, open }: { onClose: () => void; open: boolean })
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-7">
+        <div className="p-5 sm:p-7">
           <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#717171]">Pick a slot</div>
           <ButtonLink className="w-full" href="https://calendar.google.com/calendar/appointments/schedules/?add=curatemystay@gmail.com" size="lg">
             <Calendar className="h-4 w-4" /> Book via Google Calendar
@@ -1356,19 +1469,6 @@ function BookingModal({ onClose, open }: { onClose: () => void; open: boolean })
           </ButtonLink>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StickyBar({ onBook }: { onBook: () => void }) {
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t border-[#ebebeb] bg-white/95 p-3 backdrop-blur md:hidden">
-      <ButtonLink className="shrink-0" href="https://wa.me/916282627601" variant="secondary">
-        <MessageCircle className="h-4 w-4" />
-      </ButtonLink>
-      <ButtonLink className="flex-1" onClick={onBook}>
-        Book a discovery call <ArrowRight className="h-4 w-4" />
-      </ButtonLink>
     </div>
   );
 }
@@ -1391,7 +1491,6 @@ export function ReferenceHome() {
       <CollapsibleExtras />
       <FinalCTA onBook={() => setBookingOpen(true)} />
       <Footer />
-      <StickyBar onBook={() => setBookingOpen(true)} />
       <BookingModal onClose={() => setBookingOpen(false)} open={bookingOpen} />
     </main>
   );
