@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { bookingStatuses } from "@/src/lib/constants/statuses";
 
 export const bookingSchema = z
   .object({
@@ -14,7 +13,6 @@ export const bookingSchema = z
     guests: z.coerce.number().int().nonnegative().optional(),
     nightly_rate: z.coerce.number().nonnegative().optional(),
     total_amount: z.coerce.number().nonnegative(),
-    status: z.enum(bookingStatuses),
     concierge: z.string().optional(),
     notes: z.string().optional(),
   })

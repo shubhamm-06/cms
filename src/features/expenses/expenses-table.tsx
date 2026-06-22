@@ -14,7 +14,7 @@ export function AdminExpensesTable({ expenses }: { expenses: ExpenseTableRow[] }
       data={expenses}
       embedded
       emptyMessage="No expenses found."
-      searchPlaceholder="Search expenses..."
+      showSearch={false}
     />
   );
 }

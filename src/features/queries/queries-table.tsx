@@ -10,7 +10,7 @@ export function AdminQueriesTable({ queries }: { queries: QueryTableRow[] }) {
       data={queries}
       embedded
       emptyMessage="No queries found."
-      searchPlaceholder="Search queries..."
+      showSearch={false}
     />
   );
 }

@@ -1,23 +1,44 @@
-# Setup
+# Local Setup
 
-## Supabase
+## 1. Install
 
-1. Create the tables from `supabase/schema.sql`.
-2. Enable RLS on all tables.
-3. Add policies that match `docs/SUPABASE_SCHEMA.md` and `docs/ROUTES_AND_PERMISSIONS.md`.
-4. Ensure `curatemystay@gmail.com` has an active protected admin profile.
+```bash
+npm install
+copy .env.example .env.local
+```
 
-## Auth
+Fill `.env.local` with development values. Never commit it.
 
-Enable email/password auth in Supabase. For Google login, configure the Google provider in Supabase and add:
+## 2. Configure Supabase
 
-- `http://localhost:3000/auth/callback`
-- Your production `/auth/callback` URL
+1. Create a Supabase project.
+2. Run `supabase/schema.sql`.
+3. Add and verify RLS policies for the access model in [Supabase Schema](./SUPABASE_SCHEMA.md). The repository SQL enables RLS but does not define policies.
+4. Enable email/password authentication.
+5. For Google login, enable the provider and configure the local app callback as `http://localhost:3000/auth/callback`.
+6. Create or verify the protected active admin profile described in the deployment runbook.
 
-## Email
+## 3. Optional Funnel Services
 
-Set `RESEND_API_KEY` and `ADMIN_CONTACT_EMAIL`. The contact route saves the submission and sends an email when Resend is configured.
+- Configure Resend to send forecast and contact emails.
+- Configure the Apps Script webhook and shared secret to generate pitch-deck PDFs.
+- Configure the public WhatsApp number for follow-up links.
 
-## Local Env
+The forecast result works independently from proposal generation, but the downloadable deck requires Apps Script.
 
-Copy `.env.example` to `.env.local` and fill in Supabase/Resend values. Never put service role or Resend keys in frontend code.
+## 4. Run
+
+```bash
+npm run dev
+```
+
+If port 3000 is already occupied, stop the stale dev process or use the alternate URL printed by Next.js. Do not run two Next dev servers for the same checkout.
+
+## 5. Verify
+
+```bash
+npm run lint
+npm run build
+```
+
+For production configuration and smoke tests, use the [Deployment Runbook](./DEPLOYMENT_RUNBOOK.md).

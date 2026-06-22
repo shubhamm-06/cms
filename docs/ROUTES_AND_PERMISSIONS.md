@@ -1,54 +1,77 @@
-# Routes And Permissions
+# Routes and Permissions
 
-## Public
+Route layouts and server actions enforce application roles. Supabase RLS must independently enforce the same data boundaries. See [Supabase Schema](./SUPABASE_SCHEMA.md) and [API Contracts](./API_CONTRACTS.md).
 
-- `/`: landing page
-- `/login`
-- `/signup`
-- `/auth/callback`
-- `/pending-approval`
-- `/account-disabled`
-- `/api/contact`
+## Public and Auth Routes
 
-## Admin
+| Route | Purpose | Access | Security or behavior note |
+| --- | --- | --- | --- |
+| `/` | Reference-style homepage and owner forecast funnel | Public | Skips proxy session refresh; forecast calculations still run server-side through APIs |
+| `/login` | Email/password and Google login | Public | Redirects by profile status and role after authentication |
+| `/signup` | Public account registration | Public | Always creates a pending owner profile; never creates an admin |
+| `/auth/callback` | Supabase auth code exchange | Public callback | Creates a safe pending-owner fallback profile when required, then redirects by role/status |
+| `/pending-approval` | Pending-account notice | Public/pending | Pending users cannot enter dashboards |
+| `/account-disabled` | Inactive-account notice | Public/inactive | Inactive users cannot enter dashboards |
 
-- `/dashboard`
-- `/dashboard/users`
-- `/dashboard/properties`
-- `/dashboard/bookings`
-- `/dashboard/expenses`
-- `/dashboard/pnl`
-- `/dashboard/payouts`
-- `/dashboard/queries`
-- `/dashboard/settings`
-- `/dashboard/profile`
+## Public APIs
 
-Admin users must be active. Admin can manage all Phase 1 data except deleting the protected admin account. Admin data tables use TanStack Table for sorting/search/pagination, but mutations still post to existing admin-only server actions.
+| Route | Method | Purpose | Access | Security or behavior note |
+| --- | --- | --- | --- | --- |
+| `/api/contact` | POST | Store a general enquiry and optionally notify admin | Public | Zod validation; server-side Supabase/Resend usage |
+| `/api/owner-forecast` | POST | Validate, calculate, and store an owner forecast lead | Public | Returns the forecast without waiting for PDF generation; calculator is server-authoritative |
+| `/api/owner-forecast/proposal` | POST | Recalculate forecast and generate the pitch deck | Public | Calls Apps Script separately; credentials remain server-only; returns safe PDF URLs |
 
-Admin payout permissions:
+The proposal endpoint sends the admin email after the generation attempt. It sends the owner a link-only email only after successful generation with a download URL.
 
-- `/dashboard/payouts` ensures previous-month payouts on page load.
-- Admin can review combined owner-month payouts and property-wise breakup.
-- Admin can resolve linked payout queries from `/dashboard/queries`.
-- Admin can mark approved or resolved payouts as paid.
-- Admin cannot manually edit TDS; TDS is fixed at 10% when owner profit is positive.
+## Admin Routes
 
-## Owner
+All `/dashboard/*` routes require an authenticated profile with `role = admin` and `status = active`.
 
-- `/owner`
-- `/owner/property`
-- `/owner/bookings`
-- `/owner/expenses`
-- `/owner/payout`
-- `/owner/queries`
-- `/owner/profile`
+| Route | Purpose | Key behavior |
+| --- | --- | --- |
+| `/dashboard` | Operational overview | KPIs, property performance, occupancy, and upcoming check-ins |
+| `/dashboard/users` | User management | Activate/deactivate users and change roles; protected admin cannot be demoted, disabled, or deleted |
+| `/dashboard/properties` | Property management | Create/edit/delete properties, assign one owner, and maintain owner/CMS shares totaling 100 |
+| `/dashboard/bookings` | Booking management | Create/edit/delete; date status is server-calculated; property dropdown filtering |
+| `/dashboard/expenses` | Expense management | Create/edit/delete property and CMS expenses; CMS is default and has no property |
+| `/dashboard/pnl` | P&L reporting | Operational revenue, expenses, profit, and share view |
+| `/dashboard/payouts` | Owner payout operations | Ensures previous-month records on page load; displays combined rows and property breakups; permits mark-paid only from approved/resolved |
+| `/dashboard/queries` | Owner query inbox | Resolve or delete queries with linked-payout restoration rules |
+| `/dashboard/settings` | Dropdown settings | Manages booking sources, expense categories, and concierge options as JSON arrays |
+| `/dashboard/profile` | Admin profile | Admin edits own name, phone, and avatar URL |
 
-Owner users must be active. Owners can only see their own assigned property data and cannot edit operational records. Owner bookings, expenses, payouts, and query history use TanStack tables.
+Admin mutation actions call `requireRole("admin")`. UI visibility is not the security boundary.
 
-Owner payout permissions:
+## Owner Routes
 
-- `/owner/payout` ensures the owner's previous-month payout on page load.
-- From the 1st through 5th, a `ready_for_review` payout can be approved or queried by the owner.
-- After the 5th, untouched ready payouts are auto-approved by page-load processing.
-- Raising a payout query creates an owner query linked to the payout and moves the payout to `query_raised`.
-- Owners cannot mark payouts paid, edit payout amounts, edit TDS, or see other owners' payouts.
+All `/owner/*` routes require an authenticated profile with `role = owner` and `status = active`. `getOwnerData()` scopes records to the authenticated owner's property IDs and owner ID; RLS must also enforce this scope.
+
+| Route | Purpose | Key behavior |
+| --- | --- | --- |
+| `/owner` | Owner overview | Current-month live performance plus owner-scoped operational summaries |
+| `/owner/property` | Property details | Read-only assigned property information |
+| `/owner/bookings` | Booking list | Read-only assigned-property bookings, including guest names and phone numbers; owner-property filter only |
+| `/owner/expenses` | Expense list | Read-only property expenses; CMS expenses excluded |
+| `/owner/payout` | Live performance and payout history | Top panel is informational current-month calculation; table contains all monthly payout records latest first, including previous-month payable statements |
+| `/owner/queries` | Owner queries | Create and view own simple queries |
+| `/owner/profile` | Owner profile | Edit own name, phone, and avatar URL only |
+
+### Owner Payout Actions
+
+- Previous-calendar-month payable records are ensured when `/owner/payout` loads.
+- The current-month live panel does not create a payout row and has no review actions.
+- From the 1st through 5th, the owner may approve or query only an owned `ready_for_review` row.
+- Server actions re-check role, ownership, status, and review window.
+- After the 5th, untouched previous-month `draft` or `ready_for_review` records are auto-approved during page-load processing.
+- Owners cannot edit payout amounts or TDS, mark payouts paid, see admin notes, or see another owner's records.
+
+## Role Summary
+
+| Capability | Public | Active owner | Active admin |
+| --- | ---: | ---: | ---: |
+| Submit forecast/contact request | Yes | Yes | Yes |
+| Read operational data | No | Own assigned data | All operational data subject to RLS |
+| Manage users/properties/bookings/expenses/settings | No | No | Yes |
+| Read CMS expenses | No | No | Yes |
+| Approve/query eligible owner payout | No | Own only | No |
+| Resolve query / mark payout paid | No | No | Yes |

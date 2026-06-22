@@ -31,6 +31,13 @@ export type OwnerCombinedPayout = {
   carry_forward_next: number;
 };
 
+export type OwnerLivePerformance = {
+  estimated_payout: number;
+  expense_total: number;
+  net_profit: number;
+  revenue_total: number;
+};
+
 function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
@@ -116,6 +123,44 @@ export function calculateBreakupsForOwnerMonth({
         monthKey,
       }),
     );
+}
+
+export function calculateOwnerLivePerformance({
+  ownerId,
+  monthKey,
+  properties,
+  bookings,
+  expenses,
+  payouts,
+}: {
+  ownerId: string;
+  monthKey: string;
+  properties: Property[];
+  bookings: Booking[];
+  expenses: Expense[];
+  payouts: Payout[];
+}): OwnerLivePerformance {
+  const propertyBreakups = calculateBreakupsForOwnerMonth({
+    ownerId,
+    monthKey,
+    properties,
+    bookings,
+    expenses,
+  });
+  const combined = calculateOwnerCombinedPayout({
+    propertyBreakups,
+    previousCarryForward: calculatePreviousCarryForward({
+      payouts,
+      beforeMonth: monthKey,
+    }),
+  });
+
+  return {
+    estimated_payout: combined.final_payout_amount,
+    expense_total: combined.expense_total,
+    net_profit: combined.current_month_net,
+    revenue_total: combined.revenue_total,
+  };
 }
 
 export function calculatePreviousCarryForward({

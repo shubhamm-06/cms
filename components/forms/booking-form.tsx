@@ -10,23 +10,12 @@ import {
   calculateNightlyRate,
   calculateNights,
   calculateTotalAmount,
-  getBookingStatus,
-  type BookingStatus,
 } from "@/src/features/bookings/booking-calculations";
 import type { Database } from "@/types/database.types";
 
 type Booking = Database["public"]["Tables"]["bookings"]["Row"];
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 type AmountField = "nightly_rate" | "total_amount";
-type StatusOverride = "auto" | "cancelled" | "blocked";
-
-const statusLabels: Record<BookingStatus, string> = {
-  blocked: "Blocked",
-  cancelled: "Cancelled",
-  checked_out: "Checked Out",
-  in_house: "In House",
-  upcoming: "Upcoming",
-};
 
 function toInputValue(value: number | null | undefined, fallback = 0) {
   return String(value ?? fallback);
@@ -46,20 +35,31 @@ function isCheckOutBeforeCheckIn(checkIn: string, checkOut: string) {
   return Boolean(checkIn && checkOut && checkOut < checkIn);
 }
 
-export function BookingForm({ properties, booking }: { properties: Property[]; booking?: Booking }) {
+export function BookingForm({
+  bookingSources,
+  conciergeOptions,
+  properties,
+  booking,
+}: {
+  bookingSources: string[];
+  conciergeOptions: string[];
+  properties: Property[];
+  booking?: Booking;
+}) {
   const [checkIn, setCheckIn] = useState(booking?.check_in || "");
   const [checkOut, setCheckOut] = useState(booking?.check_out || "");
   const [nights, setNights] = useState(toInputValue(booking?.nights));
   const [nightlyRate, setNightlyRate] = useState(toInputValue(booking?.nightly_rate));
   const [totalAmount, setTotalAmount] = useState(toInputValue(booking?.total_amount));
   const [lastAmountEdited, setLastAmountEdited] = useState<AmountField | null>(null);
-  const [statusOverride, setStatusOverride] = useState<StatusOverride>(
-    booking?.status === "cancelled" || booking?.status === "blocked" ? booking.status : "auto",
-  );
-
   const dateError = isCheckOutBeforeCheckIn(checkIn, checkOut) ? "Check-out cannot be before check-in." : "";
-  const status = getBookingStatus(checkIn, checkOut, statusOverride === "auto" ? null : statusOverride);
-  const statusHint = statusOverride === "auto" ? "auto calculated" : "admin override";
+  const sourceOptions = booking?.source && !bookingSources.includes(booking.source)
+    ? [booking.source, ...bookingSources]
+    : bookingSources;
+  const existingConcierge = booking?.concierge?.join(", ") || "";
+  const availableConciergeOptions = existingConcierge && !conciergeOptions.includes(existingConcierge)
+    ? [existingConcierge, ...conciergeOptions]
+    : conciergeOptions;
 
   function recalculateAmounts(
     nextNightsValue: string,
@@ -145,7 +145,12 @@ export function BookingForm({ properties, booking }: { properties: Property[]; b
         <Input defaultValue={booking?.guest_phone || ""} name="guest_phone" />
       </Field>
       <Field label="Source">
-        <Input defaultValue={booking?.source || ""} name="source" />
+        <Select defaultValue={booking?.source || ""} name="source">
+          <option value="">{sourceOptions.length ? "Select source" : "No booking sources configured"}</option>
+          {sourceOptions.map((source) => (
+            <option key={source} value={source}>{source}</option>
+          ))}
+        </Select>
       </Field>
       <Field label="Check-in">
         <Input name="check_in" onChange={(event) => handleCheckInChange(event.target.value)} required type="date" value={checkIn} />
@@ -188,37 +193,13 @@ export function BookingForm({ properties, booking }: { properties: Property[]; b
           value={totalAmount}
         />
       </Field>
-      <Field label="Calculated status">
-        <input name="status" type="hidden" value={status} />
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm font-semibold text-[var(--foreground)]">{statusLabels[status]}</span>
-            <span className="text-xs font-semibold text-[var(--muted)]">{statusHint}</span>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {[
-              ["auto", "Auto"],
-              ["cancelled", "Cancelled"],
-              ["blocked", "Blocked"],
-            ].map(([value, label]) => (
-              <button
-                className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition ${
-                  statusOverride === value
-                    ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
-                    : "border-[var(--border)] bg-white text-[var(--muted)] hover:text-[var(--foreground)]"
-                }`}
-                key={value}
-                onClick={() => setStatusOverride(value as StatusOverride)}
-                type="button"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </Field>
       <Field label="Concierge">
-        <Input defaultValue={booking?.concierge?.join(", ") || ""} name="concierge" placeholder="Comma separated" />
+        <Select defaultValue={existingConcierge} name="concierge">
+          <option value="">{availableConciergeOptions.length ? "Select concierge option" : "No concierge options configured"}</option>
+          {availableConciergeOptions.map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </Select>
       </Field>
       <Field label="Notes">
         <Input defaultValue={booking?.notes || ""} name="notes" />

@@ -1,46 +1,60 @@
 # CurateMyStay
 
-CurateMyStay is a small Next.js + Supabase property management dashboard for short-term rental operations.
+CurateMyStay is a Next.js and Supabase application for short-term rental operations in Goa. It combines a public owner-acquisition forecast funnel with role-protected admin and property-owner dashboards.
 
-## Tech Stack
+## Core Stack
 
-- Next.js App Router 16
-- TypeScript
-- Tailwind CSS
-- Supabase Auth, Postgres, and RLS
-- `@supabase/ssr`
-- Zod
-- React Hook Form ready validators
-- Lucide React
-- Resend for enquiry emails
+- Next.js 16 App Router, React 19, and strict TypeScript
+- Tailwind CSS v4
+- Supabase Auth and Postgres through `@supabase/ssr`
+- Zod validation and TanStack Table
+- Resend email and Google Apps Script pitch-deck generation
+
+## Prerequisites
+
+- Node.js 20 or newer
+- npm
+- A Supabase project
+- Optional for the complete public funnel: Resend and a deployed Apps Script proposal service
 
 ## Local Setup
 
 ```bash
 npm install
+copy .env.example .env.local
 npm run dev
 ```
 
-Create `.env.local` from `.env.example`:
+Open `http://localhost:3000`. Apply `supabase/schema.sql` and configure database policies before testing authenticated data. See [Setup](docs/SETUP.md) for local details and the [Deployment Runbook](docs/DEPLOYMENT_RUNBOOK.md) for production setup.
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-RESEND_API_KEY=
-ADMIN_CONTACT_EMAIL=curatemystay@gmail.com
+## Environment Overview
+
+`.env.example` lists every active variable. Browser-safe variables begin with `NEXT_PUBLIC_`; Supabase service credentials, Apps Script credentials, and Resend credentials are server-only. Never commit real values.
+
+## Verification
+
+```bash
+npm run lint
+npm run build
 ```
 
 ## Main Routes
 
-- `/` public landing page and enquiry form
-- `/login`, `/signup`, `/auth/callback`
-- `/pending-approval`, `/account-disabled`
-- `/dashboard` admin dashboard
-- `/owner` owner dashboard
-- `/api/contact` landing enquiry endpoint
+| Area | Routes |
+| --- | --- |
+| Public | `/`, `/login`, `/signup`, `/pending-approval`, `/account-disabled` |
+| Public APIs | `/api/contact`, `/api/owner-forecast`, `/api/owner-forecast/proposal` |
+| Admin | `/dashboard` and `/dashboard/*` |
+| Owner | `/owner` and `/owner/*` |
+
+The complete route and access matrix is in [Routes and Permissions](docs/ROUTES_AND_PERMISSIONS.md).
+
+## Documentation
+
+Start with the [Documentation Index](docs/INDEX.md). It provides the recommended reading order and directs maintainers to the source of truth for calculator, payout, API, schema, operations, and deployment work.
+
+Recommended sequence: README -> Documentation Index -> AI Project Context -> Project Overview -> Routes and Permissions -> Supabase Schema -> task-specific guide. Read the changelog last and only for history.
 
 ## Deployment
 
-Deploy to a Next.js host such as Vercel after configuring Supabase Auth redirect URLs, RLS policies, and Resend environment variables.
+Deploy to a Next.js-compatible host after configuring production environment variables, Supabase Auth redirects and RLS policies, a verified Resend sender, and the Apps Script dependency. Run the deployment smoke tests before enabling real users.

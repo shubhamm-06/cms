@@ -4,12 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   calculateBreakupsForOwnerMonth,
+  calculateOwnerLivePerformance,
   calculateOwnerCombinedPayout,
   calculatePreviousCarryForward,
 } from "@/src/features/payouts/payout-calculations";
 import { ensureOwnerPayoutForPreviousMonth } from "@/src/features/payouts/payout-actions";
+import { OwnerLivePerformancePanel } from "@/src/features/payouts/owner-live-performance";
 import { getOwnerData } from "@/src/features/shared/data";
-import { formatDate, getPreviousMonthKey } from "@/src/lib/utils/dates";
+import { currentMonthLabel, formatDate, getCurrentMonthKey, getPreviousMonthKey } from "@/src/lib/utils/dates";
 import { humanize } from "@/src/lib/utils/format";
 import { formatMoney } from "@/src/lib/utils/money";
 
@@ -74,17 +76,21 @@ export default async function OwnerOverviewPage() {
     propertyBreakups: payoutBreakups,
     previousCarryForward,
   });
+  const livePerformance = calculateOwnerLivePerformance({
+    ownerId: profile.id,
+    monthKey: getCurrentMonthKey(),
+    properties,
+    bookings,
+    expenses,
+    payouts,
+  });
 
-  const revenue = propertyBookings.reduce((sum, booking) => sum + Number(booking.total_amount), 0);
-  const expenseTotal = propertyExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
   const ownerSharePercent = latestPayout ? payoutSummary.owner_share_percent : Number(selectedProperty?.owner_share ?? 70);
   const cmsSharePercent = latestPayout ? payoutSummary.cms_share_percent : Number(selectedProperty?.cms_share ?? 30);
   const ownerShare = latestPayout?.owner_share_amount ?? 0;
   const cmsShare = latestPayout?.cms_share_amount ?? 0;
   const tds = latestPayout?.tds_amount ?? 0;
   const netPayable = latestPayout?.final_payout_amount ?? 0;
-  const nightsBooked = propertyBookings.reduce((sum, booking) => sum + Number(booking.nights || 0), 0);
-  const occupancy = Math.min(100, Math.round((nightsBooked / 31) * 100));
   const showPreviousCarryForward = previousCarryForward < 0;
 
   return (
@@ -158,23 +164,7 @@ export default async function OwnerOverviewPage() {
         )}
       </div>
 
-      <section className="mb-3 rounded-[14px] border border-[var(--border)] bg-white">
-        <div className="grid gap-4 px-6 py-5 md:grid-cols-5">
-          {[
-            ["Occupancy", `${occupancy}%`, `${nightsBooked} room-nights`, "text-[var(--brand)]"],
-            ["Revenue", formatMoney(revenue), `${propertyBookings.length} bookings`, ""],
-            ["Expenses", formatMoney(expenseTotal), "Property expenses", ""],
-            ["Net to you", formatMoney(netPayable), latestPayout ? "after fixed 10% TDS" : "Awaiting payout", "text-[var(--green)]"],
-            ["TDS deducted", formatMoney(tds), "Fixed 10% when profit is positive", ""],
-          ].map(([label, value, sub, tone]) => (
-            <div key={label}>
-              <div className="text-[11px] font-bold uppercase tracking-wide text-[var(--muted)]">{label}</div>
-              <div className={`mt-1 text-[26px] font-extrabold tracking-tight ${tone}`}>{value}</div>
-              <div className="text-xs text-[var(--muted)]">{sub}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <OwnerLivePerformancePanel monthLabel={currentMonthLabel()} performance={livePerformance} />
 
       {openQuery ? (
         <div className="mb-3 flex items-start gap-3 rounded-[10px] border border-[#EDDFB1] bg-[var(--amber-soft)] px-3.5 py-3 text-[13px] text-[#6B4F00]">

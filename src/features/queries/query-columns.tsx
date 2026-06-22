@@ -4,7 +4,8 @@ import { CheckCircle2 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { resolveQueryAction } from "@/src/features/shared/actions";
+import { ConfirmDeleteButton } from "@/components/forms/confirm-button";
+import { deleteOwnerQueryAction, resolveQueryAction } from "@/src/features/shared/actions";
 import { formatDate } from "@/src/lib/utils/dates";
 import type { Database } from "@/types/database.types";
 
@@ -41,16 +42,23 @@ export const adminQueryColumns: ColumnDef<QueryTableRow>[] = [
     id: "actions",
     header: "Action",
     enableSorting: false,
-    cell: ({ row }) =>
-      row.original.resolved ? null : (
-        <form action={resolveQueryAction}>
+    cell: ({ row }) => (
+      <div className="flex flex-wrap items-center gap-2">
+        {!row.original.resolved ? (
+          <form action={resolveQueryAction}>
+            <input name="id" type="hidden" value={row.original.id} />
+            <Button type="submit" variant="primary">
+              <CheckCircle2 className="h-4 w-4" />
+              Resolve
+            </Button>
+          </form>
+        ) : null}
+        <form action={deleteOwnerQueryAction}>
           <input name="id" type="hidden" value={row.original.id} />
-          <Button type="submit" variant="primary">
-            <CheckCircle2 className="h-4 w-4" />
-            Resolve
-          </Button>
+          <ConfirmDeleteButton />
         </form>
-      ),
+      </div>
+    ),
   },
 ];
 

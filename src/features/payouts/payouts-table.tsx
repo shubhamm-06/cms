@@ -1,20 +1,15 @@
 "use client";
 
 import { DataTable } from "@/components/ui/data-table";
-import {
-  getOwnerPayoutColumns,
-  type PayoutTableRow,
-} from "@/src/features/payouts/payout-columns";
+import { ownerPayoutColumns, type PayoutTableRow } from "@/src/features/payouts/payout-columns";
 
 export function OwnerPayoutsTable({ payouts }: { payouts: PayoutTableRow[] }) {
-  const showCarryForward = payouts.some((payout) => payout.previous_carry_forward < 0);
-
   return (
     <DataTable
-      columns={getOwnerPayoutColumns({ showCarryForward })}
+      columns={ownerPayoutColumns}
       data={payouts}
       embedded
-      emptyMessage="No payouts found."
+      emptyMessage="No payout statements are available yet. Your first statement will appear after the first completed calendar month."
       showSearch={false}
     />
   );

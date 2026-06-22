@@ -12,7 +12,7 @@ export default async function BookingsPage({
 }) {
   const editParam = (await searchParams).edit;
   const editId = Array.isArray(editParam) ? editParam[0] : editParam;
-  const { bookings, properties } = await getAdminData();
+  const { bookings, properties, settings } = await getAdminData();
   const bookingToEdit = editId ? bookings.find((booking) => booking.id === editId) : undefined;
   const propertyNames = new Map(properties.map((property) => [property.id, property.name]));
   const activeProperties = properties
@@ -22,6 +22,12 @@ export default async function BookingsPage({
     ...booking,
     property_name: propertyNames.get(booking.property_id) || "Unknown",
   }));
+  const settingsOptions = (key: string) => {
+    const value = settings.find((setting) => setting.key === key)?.value;
+    return Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string" && Boolean(item.trim()))
+      : [];
+  };
 
   return (
     <>
@@ -39,7 +45,12 @@ export default async function BookingsPage({
           title={bookingToEdit ? "Edit booking" : "Add booking"}
         />
         <CardBody>
-          <BookingForm booking={bookingToEdit} properties={properties} />
+          <BookingForm
+            booking={bookingToEdit}
+            bookingSources={settingsOptions("booking_sources")}
+            conciergeOptions={settingsOptions("concierge_options")}
+            properties={properties}
+          />
         </CardBody>
       </Card>
       <Card>

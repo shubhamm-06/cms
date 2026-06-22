@@ -76,10 +76,10 @@ export function DataTable<TData, TValue>({
       {showSearch || toolbar ? (
         <div className="flex flex-col gap-3 border-b border-[var(--border)] bg-white px-4 py-3 md:flex-row md:items-center md:justify-between">
           {showSearch ? (
-            <label className="relative max-w-md flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+            <label className="relative block w-full min-w-0 md:w-80 md:flex-none">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
               <input
-                className="cms-input h-10 w-full pl-9"
+                className="block h-10 w-full min-w-0 rounded-lg border border-[var(--border-strong)] bg-white py-2 pl-10 pr-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--brand)] focus:ring-4 focus:ring-[rgba(229,72,77,0.12)]"
                 onChange={(event) => setGlobalFilter(event.target.value)}
                 placeholder={searchPlaceholder}
                 type="search"
@@ -87,7 +87,7 @@ export function DataTable<TData, TValue>({
               />
             </label>
           ) : null}
-          {toolbar ? <div className="flex items-center gap-2">{toolbar}</div> : null}
+          {toolbar ? <div className="flex min-w-0 items-center gap-2">{toolbar}</div> : null}
         </div>
       ) : null}
 

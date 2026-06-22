@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/src/lib/supabase/server";
 import { requireProfile, requireRole } from "@/src/features/auth/auth-guards";
 import { getBookingStatus } from "@/src/features/bookings/booking-calculations";
@@ -10,6 +11,7 @@ import { profileSchema } from "@/src/lib/validators/profile";
 import { propertySchema } from "@/src/lib/validators/properties";
 import { userSchema } from "@/src/lib/validators/users";
 import { isProtectedAdmin } from "@/src/lib/utils/permissions";
+import { isPayoutReviewWindow } from "@/src/lib/utils/dates";
 import type { Database } from "@/types/database.types";
 
 function emptyToNull<T extends Record<string, unknown>>(data: T) {
@@ -74,11 +76,7 @@ export async function saveBookingAction(formData: FormData) {
   const { id, concierge, ...rest } = emptyToNull(parsed.data);
   const payload = {
     ...rest,
-    status: getBookingStatus(
-      rest.check_in,
-      rest.check_out,
-      rest.status === "cancelled" || rest.status === "blocked" ? rest.status : null,
-    ),
+    status: getBookingStatus(rest.check_in, rest.check_out),
     concierge: typeof concierge === "string" && concierge ? concierge.split(",").map((item) => item.trim()).filter(Boolean) : [],
   };
   const supabase = await createClient();
@@ -100,10 +98,14 @@ export async function saveExpenseAction(formData: FormData) {
   const parsed = expenseSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return;
   const { id, ...data } = emptyToNull(parsed.data);
+  const supabase = await createClient();
+  if (data.expense_for === "property") {
+    const property = await supabase.from("properties").select("id").eq("id", String(data.property_id || "")).maybeSingle();
+    if (!property.data) return;
+  }
   // CMS expenses intentionally have no property_id; owners only read property expenses.
   const payload: Database["public"]["Tables"]["expenses"]["Insert"] =
     data.expense_for === "cms" ? { ...data, property_id: null } : data;
-  const supabase = await createClient();
   if (id) await supabase.from("expenses").update(payload).eq("id", id);
   else await supabase.from("expenses").insert(payload);
   revalidatePath("/dashboard/expenses");
@@ -138,6 +140,56 @@ export async function resolveQueryAction(formData: FormData) {
   revalidatePath("/dashboard/queries");
   revalidatePath("/dashboard/payouts");
   revalidatePath("/owner/payout");
+}
+
+export async function deleteOwnerQueryAction(formData: FormData) {
+  await requireRole("admin");
+  const id = String(formData.get("id") || "");
+  if (!id) redirect("/dashboard/queries?error=missing-query");
+
+  const supabase = await createClient();
+  const query = await supabase.from("owner_queries").select("id,payout_id").eq("id", id).maybeSingle();
+  if (!query.data) redirect("/dashboard/queries?error=query-not-found");
+
+  let restoredPayout: { approved_at: string | null; id: string } | null = null;
+  if (query.data.payout_id) {
+    const payout = await supabase
+      .from("owner_payouts")
+      .select("id,status,approved_at")
+      .eq("id", query.data.payout_id)
+      .maybeSingle();
+
+    if (payout.data?.status === "query_raised") {
+      const inReviewWindow = isPayoutReviewWindow();
+      const restored = await supabase
+        .from("owner_payouts")
+        .update({
+          status: inReviewWindow ? "ready_for_review" : "approved",
+          approved_at: inReviewWindow ? payout.data.approved_at : payout.data.approved_at || new Date().toISOString(),
+        })
+        .eq("id", payout.data.id)
+        .eq("status", "query_raised");
+      if (restored.error) redirect("/dashboard/queries?error=payout-restore-failed");
+      restoredPayout = { approved_at: payout.data.approved_at, id: payout.data.id };
+    }
+  }
+
+  const deleted = await supabase.from("owner_queries").delete().eq("id", id);
+  if (deleted.error) {
+    if (restoredPayout) {
+      await supabase
+        .from("owner_payouts")
+        .update({ status: "query_raised", approved_at: restoredPayout.approved_at })
+        .eq("id", restoredPayout.id);
+    }
+    redirect("/dashboard/queries?error=delete-failed");
+  }
+
+  revalidatePath("/dashboard/queries");
+  revalidatePath("/dashboard/payouts");
+  revalidatePath("/owner/payout");
+  revalidatePath("/owner/queries");
+  redirect("/dashboard/queries?deleted=1");
 }
 
 export async function createOwnerQueryAction(formData: FormData) {

@@ -1,4 +1,7 @@
+"use client";
+
 import { Save } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -82,9 +85,6 @@ export function PropertyForm({ owners, property }: { owners: Profile[]; property
           <option value="inactive">Inactive</option>
         </Select>
       </Field>
-      <Field label="Image URL">
-        <Input defaultValue={property?.image_url || ""} name="image_url" />
-      </Field>
       <div className="self-end md:col-span-3">
         <Button type="submit" variant="primary">
           <Save className="h-4 w-4" />
@@ -95,18 +95,46 @@ export function PropertyForm({ owners, property }: { owners: Profile[]; property
   );
 }
 
-export function ExpenseForm({ properties, expense }: { properties: Property[]; expense?: Expense }) {
+export function ExpenseForm({
+  categories,
+  properties,
+  expense,
+}: {
+  categories: string[];
+  properties: Property[];
+  expense?: Expense;
+}) {
+  const [expenseFor, setExpenseFor] = useState<"cms" | "property">(expense?.expense_for || "cms");
+  const [propertyId, setPropertyId] = useState(expense?.property_id || "");
+  const categoryOptions = expense?.category && !categories.includes(expense.category)
+    ? [expense.category, ...categories]
+    : categories;
+
   return (
     <form action={saveExpenseAction} className="grid gap-3 md:grid-cols-4">
       <input name="id" type="hidden" value={expense?.id || ""} />
       <Field label="Expense for">
-        <Select defaultValue={expense?.expense_for || "property"} name="expense_for">
-          <option value="property">Property</option>
+        <Select
+          name="expense_for"
+          onChange={(event) => {
+            const value = event.target.value as "cms" | "property";
+            setExpenseFor(value);
+            if (value === "cms") setPropertyId("");
+          }}
+          value={expenseFor}
+        >
           <option value="cms">CMS</option>
+          <option value="property">Property</option>
         </Select>
       </Field>
       <Field label="Property">
-        <Select defaultValue={expense?.property_id || ""} name="property_id">
+        <Select
+          disabled={expenseFor === "cms"}
+          name="property_id"
+          onChange={(event) => setPropertyId(event.target.value)}
+          required={expenseFor === "property"}
+          value={propertyId}
+        >
           <option value="">CMS / none</option>
           {properties.map((property) => (
             <option key={property.id} value={property.id}>
@@ -119,7 +147,12 @@ export function ExpenseForm({ properties, expense }: { properties: Property[]; e
         <Input defaultValue={expense?.date || ""} name="date" required type="date" />
       </Field>
       <Field label="Category">
-        <Input defaultValue={expense?.category || ""} name="category" required />
+        <Select defaultValue={expense?.category || ""} name="category" required>
+          <option value="">{categoryOptions.length ? "Select category" : "No categories configured"}</option>
+          {categoryOptions.map((category) => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </Select>
       </Field>
       <Field label="Amount">
         <Input defaultValue={expense?.amount || 0} name="amount" required type="number" />

@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Pencil } from "lucide-react";
 import { ConfirmDeleteButton } from "@/components/forms/confirm-button";
 import { Badge } from "@/components/ui/badge";
 import { deleteExpenseAction } from "@/src/features/shared/actions";
@@ -49,10 +51,21 @@ export const adminExpenseColumns: ColumnDef<ExpenseTableRow>[] = [
     header: "Actions",
     enableSorting: false,
     cell: ({ row }) => (
-      <form action={deleteExpenseAction}>
-        <input name="id" type="hidden" value={row.original.id} />
-        <ConfirmDeleteButton />
-      </form>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link
+          aria-label={`Edit ${row.original.category} expense`}
+          className="cms-btn bg-white hover:bg-[var(--surface-2)]"
+          href={`/dashboard/expenses?edit=${row.original.id}`}
+          title="Edit expense"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit
+        </Link>
+        <form action={deleteExpenseAction}>
+          <input name="id" type="hidden" value={row.original.id} />
+          <ConfirmDeleteButton />
+        </form>
+      </div>
     ),
   },
 ];

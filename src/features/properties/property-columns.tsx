@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Pencil } from "lucide-react";
 import { ConfirmDeleteButton } from "@/components/forms/confirm-button";
 import { Badge } from "@/components/ui/badge";
 import { deletePropertyAction } from "@/src/features/shared/actions";
@@ -45,10 +47,21 @@ export const propertyColumns: ColumnDef<PropertyTableRow>[] = [
     header: "Actions",
     enableSorting: false,
     cell: ({ row }) => (
-      <form action={deletePropertyAction}>
-        <input name="id" type="hidden" value={row.original.id} />
-        <ConfirmDeleteButton />
-      </form>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link
+          aria-label={`Edit ${row.original.name}`}
+          className="cms-btn bg-white hover:bg-[var(--surface-2)]"
+          href={`/dashboard/properties?edit=${row.original.id}`}
+          title="Edit property"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit
+        </Link>
+        <form action={deletePropertyAction}>
+          <input name="id" type="hidden" value={row.original.id} />
+          <ConfirmDeleteButton />
+        </form>
+      </div>
     ),
   },
 ];

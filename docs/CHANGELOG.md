@@ -190,3 +190,40 @@
 - Added a touch-friendly hamburger menu for mobile and tablet navigation.
 - Moved homepage links, booking action, and dashboard access inside the mobile menu while preserving the desktop navbar.
 - Refined the menu with Lucide icons, stronger typography, cream/coral surfaces, grouped actions, improved touch targets, and Escape-key dismissal.
+
+## Owner and Admin Dashboard Improvement Pass
+
+- Fixed the shared TanStack search input spacing, alignment, and responsive width.
+- Removed generic search from owner expenses and owner queries without changing owner scoping.
+- Added default Current Payout and separate Payout History tabs; the current table uses the ensured previous-month live payout.
+- Added property and expense edit-pencil actions using the existing `?edit=<id>` form pattern.
+- Removed property Image URL from the form while preserving existing `image_url` values and the database column.
+- Removed all booking status controls/client values; booking status is always calculated server-side from dates.
+- Wired `booking_sources`, `expense_categories`, and `concierge_options` settings into their respective dropdowns with legacy edit-value preservation.
+- Made CMS the default expense type, with cleared/disabled property selection, while property expenses require a valid server-checked property.
+- Added admin-only query deletion with confirmation, feedback, and review-window-aware restoration of linked payouts from `query_raised`.
+- No package, permission, payout-formula, RLS-assumption, or database-schema changes were made.
+
+## Owner Payout Current-Month Performance
+
+- Replaced the upper previous-month payout summary on `/owner/payout` with current-calendar-month live performance.
+- Added one shared `calculateOwnerLivePerformance` helper and `OwnerLivePerformancePanel` used by both `/owner` and `/owner/payout`.
+- Current revenue remains nightly-prorated with check-in inclusive/check-out exclusive; cancelled/blocked bookings and CMS expenses remain excluded through existing payout helpers.
+- Kept payout review actions, carry-forward rules, and previous-month payout generation unchanged.
+- No current-month `owner_payouts` row, schema change, package, or admin-page change was introduced.
+
+## Owner Payout History Simplification
+
+- Replaced the separate Current Payout and Payout History tabs with one payout-history table.
+- Kept the current-month live performance panel separate and unchanged above the table.
+- The combined table includes every owner payout statement, latest month first, including the previous-month payable record.
+- Kept owner approval and query actions on eligible ready-for-review rows under the existing review-window rules.
+- Kept owner payout search disabled and made no payout formula, creation, permission, schema, or admin-page changes.
+
+## Documentation Consolidation
+
+- Added `INDEX.md` and an AI-first recommended reading order.
+- Added detailed owner forecast calculator, payout logic, API contracts, admin operations, and deployment documents.
+- Updated README, setup, schema, routes, project overview, environment template, and AI context to reflect the current implementation.
+- Clarified the source-of-truth hierarchy, RLS deployment responsibility, and AI handoff workflow.
+- Preserved all prior changelog entries as historical records.
