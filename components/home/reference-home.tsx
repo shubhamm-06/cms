@@ -418,7 +418,7 @@ function Hero() {
             We help Goa homeowners earn more through fully managed short-term rentals, with complete financial transparency.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
-            <ButtonLink className="w-full sm:w-auto" href="#contact" size="lg">
+            <ButtonLink className="w-full sm:w-auto" target="_blank" href="https://calendar.app.google/U1j59uGweQoZ7hZd7" size="lg">
               Book a discovery call <ArrowRight className="h-4 w-4" />
             </ButtonLink>
             <ButtonLink className="w-full sm:w-auto" href="#calculator" size="lg" variant="secondary">
@@ -1374,7 +1374,7 @@ function FinalCTA({ onBook }: { onBook: () => void }) {
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">Book a 30-minute discovery call. We will look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move.</p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink className="w-full sm:w-auto" onClick={onBook} size="lg" variant="onDark">
+          <ButtonLink className="w-full sm:w-auto" href="https://calendar.app.google/U1j59uGweQoZ7hZd7" size="lg" variant="onDark">
             <Calendar className="h-4 w-4" /> Book a discovery call
           </ButtonLink>
           <ButtonLink className="w-full sm:w-auto" href="https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa." size="lg" variant="outlineDark">
@@ -1403,7 +1403,7 @@ function Footer() {
             <p className="mt-4 text-sm italic text-[#e9aa4b]">&quot;Wealth managers for property.&quot;</p>
             <div className="mt-5 grid gap-3 text-sm">
               <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-white/50" /> Goa, India</span>
-              <a className="inline-flex min-w-0 items-center gap-2 break-all" href="mailto:hello@curatemystay.com"><Mail className="h-4 w-4 shrink-0 text-white/50" /> hello@curatemystay.com</a>
+              <a className="inline-flex min-w-0 items-center gap-2 break-all" href="mailto:curatemystay@gmail.com"><Mail className="h-4 w-4 shrink-0 text-white/50" /> curatemystay@gmail.com</a>
               <a className="inline-flex items-center gap-2" href="https://wa.me/916282627601"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
             </div>
           </div>
