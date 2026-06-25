@@ -155,8 +155,17 @@ Use blank placeholders from `.env.example`. Deployment steps are in [Deployment 
 
 ## Homepage and Forecast Funnel
 
-- `/` renders `components/home/reference-home.tsx`, a Tailwind-first conversion of `reference/index.html` with local assets.
+- `/` renders `components/home/reference-home.tsx`, and `reference/index.html` is the visual source of truth for the owner landing page.
+- The homepage is maintained as a Tailwind-first Next.js translation of `reference/index.html` with local assets rather than a separate HTML implementation.
+- Homepage typography is normalized with scoped `next/font/google` Figtree loading for the public landing page so the reference hierarchy is preserved without changing dashboard typography.
+- Header and footer both use `public/logo.png` as the official logo mark with `object-contain`; the header no longer adds an extra "For Property Owners" subtitle.
+- Header and mobile navigation use `Book a call` for the external calendar CTA and keep `Dashboard` linked to `/dashboard`.
 - The page includes a timed hero carousel, responsive hamburger menu, service/proof sections, booking modal, WhatsApp links, and three-step owner forecast.
+- The proof section uses the reference portfolio metrics, the Panjim and Varca case studies, static first-month-normalized revenue ramp charts, and the approved testimonial copy rendered with placeholder initial avatars instead of profile photos.
+- The FAQ restores all ten approved questions/answers as a two-column accessible accordion with one open item at a time.
+- The old standalone transparency section is removed from the page flow; its approved transparency/control/investment content now lives inside the bottom `More about how we work` accordion.
+- The partnership section uses the reference `Signature`, `Curated`, and `Bespoke` cards, with `Curated` visually featured as `Most Chosen`.
+- Person photos are not used on the homepage; testimonial avatars stay as initials and the team/final CTA image areas use branded placeholders instead of founder/team photos.
 - Initial submission calls `/api/owner-forecast`; server validates, calculates, stores the lead, and returns forecast without waiting for a deck.
 - The browser immediately displays annual revenue, 15% operating cost, and net profit.
 - It then calls `/api/owner-forecast/proposal` in the background.
@@ -164,6 +173,7 @@ Use blank placeholders from `.env.example`. Deployment steps are in [Deployment 
 - Download becomes ready only when HTTP succeeds, `result.ok === true`, and `pdfDownloadUrl` exists.
 - Owner receives a link-only email only after successful PDF generation. Email failure does not invalidate a successful deck.
 - No owner/CMS split, TDS, payout, or fixed commercial terms are shown in the public funnel.
+- Dashboard routes, auth, APIs, Supabase access, and backend business logic are untouched by homepage-only visual/content passes.
 
 Exact formulas: [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md). HTTP shapes: [API Contracts](./API_CONTRACTS.md).
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## Homepage Public Correction Pass
+
+- Normalized public homepage typography so nav, buttons, headings, cards, testimonial text, FAQ, and footer all follow the same reference-style Figtree hierarchy.
+- Updated the header and footer to use `public/logo.png` with correct proportions and object-contain treatment, and removed the extra header subtitle.
+- Changed the header/mobile booking CTA from `Book a property` to `Book a call`, pointing to the existing Google Calendar URL, while keeping `Dashboard` linked to `/dashboard`.
+- Rebuilt the proof area with the approved track-record cards, Panjim and Varca case studies, and reference-style revenue ramp charts using only approved reference data.
+- Replaced homepage testimonials with the approved reference quotes, names, and roles, using placeholder initial avatars instead of profile images.
+- Restored the full ten-item FAQ accordion with accessible buttons, coral active state, and the approved default-open item.
+- Replaced the old pricing section with the approved `Signature`, `Curated`, and `Bespoke` partnership cards, including the `Most Chosen` Curated treatment.
+- Removed the standalone mid-page transparency block and moved its approved transparency/control/investment content into the bottom `More about how we work` accordion.
+- Tightened homepage reference parity further by scoping `next/font/google` Figtree to `/`, restoring the missing comparison-table row/copy, and replacing team/founder photos with branded placeholders while keeping the existing working CTA destinations and forecast flow.
+- Kept dashboard pages, owner pages, auth, APIs, Supabase, forecast calculations, pitch-deck generation, email workflows, and other backend logic unchanged.
+
 ## Initial Build
 
 - Added Next.js 16 App Router structure for CurateMyStay.

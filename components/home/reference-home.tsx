@@ -10,8 +10,8 @@ import {
   Building2,
   Calendar,
   Check,
-  CheckCircle2,
   ChevronDown,
+  Eye,
   FileCheck2,
   FileText,
   Globe,
@@ -35,6 +35,8 @@ import { useEffect, useState } from "react";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
 
 const photo = (name: string) => `/homepage/${name}`;
+const BOOK_CALL_URL = "https://calendar.app.google/U1j59uGweQoZ7hZd7";
+const WHATSAPP_URL = "https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa.";
 
 const navLinks = [
   ["How it works", "services"],
@@ -169,14 +171,44 @@ function formatINR(value: number) {
   }).format(Math.round(value));
 }
 
-function Logo({ light = false }: { light?: boolean }) {
+function Logo({
+  light = false,
+  showWord = true,
+  size = "md",
+}: {
+  light?: boolean;
+  showWord?: boolean;
+  size?: "sm" | "md" | "lg";
+}) {
+  const sizes = {
+    lg: {
+      image: "h-12 w-12 sm:h-14 sm:w-14",
+      text: "text-lg sm:text-[22px]",
+    },
+    md: {
+      image: "h-10 w-10 sm:h-11 sm:w-11",
+      text: "text-[15px] sm:text-[17px]",
+    },
+    sm: {
+      image: "h-8 w-8 sm:h-9 sm:w-9",
+      text: "text-sm sm:text-[15px]",
+    },
+  }[size];
+
   return (
-    <span className="inline-flex min-w-0 items-center gap-2.5 sm:gap-3">
-      <Image alt="Curate My Stay" className="h-8 w-8 shrink-0 rounded-lg object-contain sm:h-9 sm:w-9 sm:rounded-xl" height={36} src="/logo.png" width={36} />
-      <span className="min-w-0 leading-none">
-        <span className={`block whitespace-nowrap text-sm font-extrabold sm:text-base ${light ? "text-white" : "text-[#222222]"}`}>Curate My Stay</span>
-        <span className={`mt-1 hidden text-xs font-bold sm:block ${light ? "text-white/50" : "text-[#717171]"}`}>For Property Owners</span>
-      </span>
+    <span className="inline-flex min-w-0 items-center gap-3 sm:gap-3.5">
+      <Image
+        alt="Curate My Stay"
+        className={`${sizes.image} shrink-0 object-contain`}
+        height={56}
+        src="/logo.png"
+        width={56}
+      />
+      {showWord ? (
+        <span className={`min-w-0 whitespace-nowrap font-extrabold leading-none tracking-[-0.02em] ${sizes.text} ${light ? "text-white" : "text-[#222222]"}`}>
+          Curate My Stay
+        </span>
+      ) : null}
     </span>
   );
 }
@@ -281,10 +313,6 @@ function Heading({
   );
 }
 
-function Photo({ alt, className = "", src }: { alt: string; className?: string; src: string }) {
-  return <Image alt={alt} className={`h-full w-full object-cover [filter:saturate(1.06)_contrast(1.03)_brightness(1.02)] ${className}`} height={900} sizes="(min-width: 1024px) 560px, 100vw" src={photo(src)} width={1200} />;
-}
-
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -311,8 +339,8 @@ function Header() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
-          <ButtonLink href="#contact" size="sm" variant="ghost">
-            Book a property
+          <ButtonLink href={BOOK_CALL_URL} rel="noreferrer" size="sm" target="_blank" variant="ghost">
+            Book a call
           </ButtonLink>
           <ButtonLink href="/dashboard" size="sm">
             Dashboard <ArrowRight className="h-4 w-4 shrink-0" />
@@ -350,8 +378,14 @@ function Header() {
               </div>
               <div className="my-2 h-px bg-[#eadfd8]" />
               <div className="grid gap-2 sm:grid-cols-2">
-                <a className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-sm font-bold text-[#332c28] transition hover:border-[#ffb1b3] hover:bg-[#fff8f8]" href="#contact" onClick={() => setMenuOpen(false)}>
-                  <Calendar className="h-4 w-4 text-[#d63e43]" /> Book a property
+                <a
+                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-sm font-bold text-[#332c28] transition hover:border-[#ffb1b3] hover:bg-[#fff8f8]"
+                  href={BOOK_CALL_URL}
+                  onClick={() => setMenuOpen(false)}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Calendar className="h-4 w-4 text-[#d63e43]" /> Book a call
                 </a>
                 <a className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ff5a5f] px-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#e54b50]" href="/dashboard" onClick={() => setMenuOpen(false)}>
                   Dashboard <ArrowRight className="h-4 w-4" />
@@ -456,11 +490,12 @@ function Hero() {
 function MathAnchor() {
   const rows = [
     ["ROI", "3-4%", "Upwards of 6%"],
-    ["Maintenance", "Tenant calls, tenant terms", "Daily care, deep cleans, restocking"],
+    ["Maintenance", "Tenant call, tenant terms", "Daily care, deep cleans, restocking"],
+    ["Condition over 12 months", "Wears down", "Hotel-grade"],
     ["Control", "Locked in 11 months", "Block dates anytime, use it yourself"],
-    ["Vacancy risk", "1-2 month gaps", "Spread across 100+ guests per year"],
-    ["Seasonality", "Fixed rent", "Higher earnings in peak tourism months"],
-    ["Guest quality", "Single tenant dependency", "Verified guests and reviews"],
+    ["Vacancy risk", "1-2 month gaps", "Spread across 100+ guests / year"],
+    ["Seasonality", "Fixed rent regardless of demand", "Higher earnings during peak tourism months"],
+    ["Guest quality", "Single tenant dependency", "Verified guests & reviews"],
   ];
 
   return (
@@ -1044,7 +1079,11 @@ function Services() {
 function StatsAndProof() {
   return (
     <Section id="proof" tone="cream">
-      <Heading eyebrow="Track record and proof" lead="We lead with real figures, not adjectives. Here is what the portfolio looks like today." title="The numbers behind the promise." />
+      <Heading
+        eyebrow="Track record & proof"
+        lead="We lead with real figures, not adjectives. Here's what the portfolio looks like today."
+        title="The numbers behind the promise."
+      />
       <div className="mt-10 grid gap-4 sm:grid-cols-2 md:mt-12 md:grid-cols-4 md:gap-5">
         {[
           ["4.98 / 5", "Airbnb rating across all listings"],
@@ -1052,47 +1091,186 @@ function StatsAndProof() {
           ["200+", "Successful stays delivered"],
           ["Superhost", "11+ months running"],
         ].map(([value, label]) => (
-          <div className="rounded-2xl border border-[#ebebeb] bg-white p-5 text-center shadow-sm sm:p-7" key={label}>
-            <div className="text-3xl font-extrabold text-[#ff5a5f] sm:text-4xl">{value}</div>
-            <div className="mt-3 text-sm font-semibold leading-5 text-[#484848]">{label}</div>
+          <div className="rounded-2xl border border-[#ebebeb] bg-white px-5 py-6 text-center shadow-sm sm:rounded-[24px] sm:px-6 sm:py-7" key={label}>
+            <div className="text-[34px] font-extrabold leading-none tracking-[-0.02em] text-[#ff5a5f] sm:text-[42px]">{value}</div>
+            <div className="mt-3 text-sm leading-5 text-[#484848]">{label}</div>
           </div>
         ))}
       </div>
-      <div className="mt-12 grid gap-6 sm:mt-16 sm:gap-8 lg:grid-cols-2">
-        <CaseCard photos={["panjim-1.jpg", "panjim-2.jpg", "panjim-3.jpg", "panjim-4.jpg"]} title="Panjim apartment portfolio" />
-        <CaseCard photos={["varca-1.jpg", "varca-2.jpg", "varca-3.jpg"]} title="Varca villa relaunch" />
+      <div className="mt-12 grid gap-14 sm:mt-16 sm:gap-18">
+        <CaseStudy
+          body="Rather than adapting a residential apartment for short-term rentals, this property was designed from day one with guests in mind. From workcation-friendly interiors and fully air-conditioned spaces to a furnished balcony, modern kitchen, pool access, and a central Panjim location, every element was optimized to maximize guest appeal and occupancy throughout the year."
+          chart={[
+            { m: "Nov '25", v: 1 },
+            { m: "Dec '25", v: 1.73 },
+            { m: "Jan '26", v: 1.38 },
+            { m: "Feb '26", v: 1.18 },
+            { m: "Mar '26", v: 1.16 },
+          ]}
+          eyebrow="Case study · Managed since November 2025"
+          photos={["panjim-1.jpg", "panjim-2.jpg", "panjim-3.jpg", "panjim-4.jpg"]}
+          stats={[
+            ["Average occupancy", "77%"],
+            ["Location average occupancy", "28.7%"],
+            ["Guest rating", "5 *"],
+            ["Expense ratio", "9.9%"],
+          ]}
+          subtitle="Modern 2 BHK Apartment in Panjim"
+          title="Designed for Short-Term Rentals from Day One"
+        />
+        <CaseStudy
+          body="When we took over this 3 BHK villa in Varca, the property was not operationally ready for the short-term rental market. We invested in setup, operational improvements, and guest-readiness during the first month. The investment was recovered the very next month, with revenue doubling shortly thereafter: transforming the villa into a high-performing holiday home just 700 metres from the beach."
+          chart={[
+            { m: "Oct '25", v: 1 },
+            { m: "Nov '25", v: 1.36 },
+            { m: "Dec '25", v: 2.11 },
+            { m: "Jan '26", v: 1.81 },
+            { m: "Feb '26", v: 1.29 },
+            { m: "Mar '26", v: 1.37 },
+          ]}
+          eyebrow="Case study · Managed since September 2025"
+          photos={["varca-1.jpg", "varca-2.jpg", "varca-3.jpg"]}
+          reverse
+          stats={[
+            ["Average occupancy", "65.4%"],
+            ["Location average occupancy", "31.2%"],
+            ["Guest rating", "4.95 *"],
+            ["Expense ratio", "15.5%"],
+          ]}
+          subtitle="Private 3 BHK Villa in Varca, South Goa"
+          title="From Underperforming Asset to Proven Performer"
+        />
       </div>
       <Testimonials />
     </Section>
   );
 }
 
-function CaseCard({ photos, title }: { photos: string[]; title: string }) {
+function RampChart({ data }: { data: Array<{ m: string; v: number }> }) {
+  const width = 360;
+  const height = 130;
+  const pad = 8;
+  const max = Math.max(...data.map((point) => point.v));
+  const step = (width - pad * 2) / Math.max(1, data.length - 1);
+  const points = data.map((point, index) => [pad + index * step, height - pad - (point.v / max) * (height - pad - 22)] as const);
+  const line = points.map((point, index) => `${index ? "L" : "M"} ${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(" ");
+  const area = `${line} L ${points.at(-1)?.[0].toFixed(1)} ${height - pad} L ${points[0]?.[0].toFixed(1)} ${height - pad} Z`;
+
   return (
-    <div className="overflow-hidden rounded-[24px] border border-[#ebebeb] bg-white shadow-sm">
-      <div className="grid h-52 grid-cols-2 grid-rows-2 gap-1 bg-[#ebebeb] sm:h-64">
-        {photos.slice(0, 3).map((src, index) => (
-          <Photo alt={title} className={index === 0 ? "row-span-2" : ""} key={src} src={src} />
-        ))}
-      </div>
-      <div className="p-4 sm:p-6">
-        <Eyebrow>Case study</Eyebrow>
-        <h3 className="mt-3 break-words text-xl font-extrabold sm:text-2xl">{title}</h3>
-        <p className="mt-3 text-sm leading-6 text-[#484848]">Professional operations, stronger pricing, transparent reporting, and owner-approved monthly statements.</p>
-        <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-2xl border border-[#ebebeb] bg-[#ebebeb]">
-          {[
-            ["Revenue", "Rs 8.5 L"],
-            ["Owner paid", "Rs 5.5 L"],
-            ["Peak month", "Rs 1.98 L"],
-            ["Avg net", "Rs 78k+"],
-          ].map(([label, value]) => (
-            <div className="min-w-0 bg-white p-3 sm:p-4" key={label}>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#717171]">{label}</div>
-              <div className="mt-1 break-words text-base font-extrabold sm:text-lg">{value}</div>
-            </div>
+    <svg className="block w-full" viewBox={`0 0 ${width} ${height}`}>
+      <defs>
+        <linearGradient id="case-ramp-fill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#e98363" stopOpacity="0.28" />
+          <stop offset="1" stopColor="#e98363" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#case-ramp-fill)" />
+      <path d={line} fill="none" stroke="#ff5a5f" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+      {points.map((point, index) => {
+        const peak = data[index]?.v === max;
+        return <circle cx={point[0]} cy={point[1]} fill={peak ? "#ff5a5f" : "#ffffff"} key={data[index]?.m} r={peak ? 4.5 : 3} stroke="#ff5a5f" strokeWidth="2" />;
+      })}
+      {data.map((point, index) => (
+        <text fill="#b0b0b0" fontSize="9" fontWeight="600" key={point.m} textAnchor="middle" x={points[index]?.[0]} y={height - 1}>
+          {point.m}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+function CaseStudy({
+  body,
+  chart,
+  eyebrow,
+  photos,
+  reverse = false,
+  stats,
+  subtitle,
+  title,
+}: {
+  body: string;
+  chart: Array<{ m: string; v: number }>;
+  eyebrow: string;
+  photos: string[];
+  reverse?: boolean;
+  stats: Array<[string, string]>;
+  subtitle: string;
+  title: string;
+}) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (photos.length <= 1) return undefined;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % photos.length);
+    }, 4000);
+
+    return () => window.clearInterval(timer);
+  }, [photos]);
+
+  const imagePanel = (
+    <div className="relative h-[300px] overflow-hidden rounded-[20px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:h-[360px] lg:h-[min(56vh,440px)]">
+      {photos.map((src, photoIndex) => (
+        <Image
+          alt={title}
+          className={`object-cover transition-opacity duration-[1000ms] ease-in-out ${photoIndex === index ? "opacity-100" : "opacity-0"}`}
+          fill
+          key={src}
+          sizes="(min-width: 1024px) 520px, 100vw"
+          src={photo(src)}
+        />
+      ))}
+      {photos.length > 1 ? (
+        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+          {photos.map((src, photoIndex) => (
+            <button
+              aria-label={`Show ${title} photo ${photoIndex + 1}`}
+              className={`h-2 rounded-full border-0 bg-white p-0 transition-all duration-300 ${photoIndex === index ? "w-5 opacity-100" : "w-2 opacity-55"}`}
+              key={src}
+              onClick={() => setIndex(photoIndex)}
+              type="button"
+            />
           ))}
         </div>
+      ) : null}
+    </div>
+  );
+
+  const copyPanel = (
+    <div className="min-w-0">
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h3 className="mt-4 text-[28px] font-extrabold leading-[1.12] tracking-[-0.02em] text-[#222222] sm:text-[32px]">{title}</h3>
+      <p className="mt-2 text-[17px] font-semibold text-[#717171]">{subtitle}</p>
+      <p className="mt-4 text-[15px] leading-7 text-[#484848] sm:text-[16.5px] sm:leading-[1.6]">{body}</p>
+      <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-[20px] border border-[#ebebeb] bg-[#ebebeb]">
+        {stats.map(([label, value], statIndex) => (
+          <div className="bg-white px-4 py-4 sm:px-[18px]" key={label}>
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#717171]">{label}</div>
+            <div className={`mt-1 text-[21px] font-extrabold tracking-[-0.01em] ${statIndex === stats.length - 1 ? "text-[#ff5a5f]" : "text-[#222222]"}`}>{value}</div>
+          </div>
+        ))}
       </div>
+      <div className="mt-5 rounded-[20px] border border-[#ebebeb] bg-white px-4 py-4 sm:px-[18px] sm:pb-3">
+        <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#717171]">Monthly revenue progression (first month = 1.0x)</div>
+        <RampChart data={chart} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-[52px]">
+      {reverse ? (
+        <>
+          {copyPanel}
+          {imagePanel}
+        </>
+      ) : (
+        <>
+          {imagePanel}
+          {copyPanel}
+        </>
+      )}
     </div>
   );
 }
@@ -1100,125 +1278,48 @@ function CaseCard({ photos, title }: { photos: string[]; title: string }) {
 function Testimonials() {
   const items = [
     {
-      photo: "ayushi.png",
-      prop: "Owner - Varca 3 BHK Villa",
-      q: "Aravind has been managing several of our rental properties and has been a dependable partner throughout. He is professional, responsive, and has great attention to detail.",
+      initials: "AC",
+      prop: "Owner · Varca 3 BHK Villa",
+      q: "Aravind has been managing several of our rental properties and has been a dependable partner throughout. He is professional, responsive, and has a great attention to detail. He strives hard to ensure both great guest experience and adequate property care, making day-to-day hosting much easier.",
       who: "Ayushi Chand",
     },
     {
-      photo: "sadhna.png",
-      prop: "Owner - Majorda 3 BHK Villa",
-      q: "The house is always kept clean, guests are well cared for, and he handles everything with great sincerity. Highly appreciated and fully trusted.",
+      initials: "SS",
+      prop: "Owner · Majorda 3 BHK Villa",
+      q: "Aravind has been an outstanding host. He is extremely honest, responsible, disciplined, and punctual in managing the Airbnb. The house is always kept clean, guests are well cared for, and he handles everything with great sincerity. Highly appreciated and fully trusted.",
       who: "Sadhna S.",
     },
     {
-      photo: "aravind.jpg",
-      prop: "Founder-led operations",
-      q: "What sold me was that I approve every payout before it moves. The monthly statement makes the business feel transparent.",
-      who: "Venu K.",
+      initials: "VC",
+      prop: "Owner · Panjim 2 BHK Apartment",
+      q: "Working with Aravind has made hosting our property far more seamless and stress-free. He is proactive, communicates clearly, and genuinely cares about maintaining the home to a high standard. Guests have consistently had smooth experiences, and we have appreciated the level of reliability and transparency throughout.",
+      who: "Venu Chand",
     },
   ];
 
   return (
-    <div className="mt-12 grid gap-5 sm:mt-16 sm:gap-6 lg:grid-cols-3">
-      {items.map((item) => (
-        <figure className="flex h-full min-w-0 flex-col rounded-[20px] border border-[#ebebeb] bg-white p-5 shadow-sm sm:rounded-[24px] sm:p-7" key={item.who}>
-          <Quote className="h-7 w-7 text-[#ff9295]" />
-          <blockquote className="mt-4 flex-1 text-base italic leading-7 text-[#222222]">&quot;{item.q}&quot;</blockquote>
-          <figcaption className="mt-6 flex min-w-0 items-center gap-3">
-            <Image alt={item.who} className="h-11 w-11 rounded-full object-cover" height={44} src={photo(item.photo)} width={44} />
-            <span className="min-w-0">
-              <span className="block text-sm font-extrabold">{item.who}</span>
-              <span className="block text-xs font-semibold text-[#717171]">{item.prop}</span>
-            </span>
-          </figcaption>
-        </figure>
-      ))}
-    </div>
-  );
-}
-
-function Transparency() {
-  return (
-    <Section id="transparency" tone="dark">
-      <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.02fr_0.98fr]">
-        <div className="min-w-0">
-          <Eyebrow light>No black box</Eyebrow>
-          <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight md:text-[42px]">Every booking. Every expense. Every month. In your inbox.</h2>
-          <p className="mt-5 text-base leading-7 text-white/70 sm:text-lg sm:leading-8">The biggest reason owners hesitate is fear of the unknown: inflated expenses, mystery deductions, and surprise charges. We built CMS to eliminate that fear.</p>
-          <div className="mt-8 grid gap-1">
-            {[
-              ["Monthly P&L statement", "Every booking, expense, and final profit is shared by the 5th."],
-              ["Owner approval", "No payout moves until you review and approve the statement."],
-              ["Bank transfer in 3 days", "Once approved, your share is transferred with confirmation."],
-              ["Audit access anytime", "Bills, receipts, IDs, and booking records stay centrally available."],
-            ].map(([title, body], index) => (
-              <div className={`flex gap-3 py-4 sm:gap-4 ${index ? "border-t border-white/10" : ""}`} key={title}>
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-sm font-extrabold text-[#e9aa4b] sm:h-11 sm:w-11">{String(index + 1).padStart(2, "0")}</span>
-                <div className="min-w-0">
-                  <div className="font-extrabold text-white">{title}</div>
-                  <div className="mt-1 text-sm leading-6 text-white/65">{body}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <OwnerPortalMock />
-      </div>
-    </Section>
-  );
-}
-
-function OwnerPortalMock() {
-  return (
-    <div className="min-w-0">
-      <div className="min-w-0 rounded-[20px] border border-[#ebebeb] bg-white text-[#222222] shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:rounded-[24px]">
-        <div className="flex items-center gap-3 border-b border-[#ebebeb] bg-[#f7f7f7] px-4 py-3">
-          <Image alt="" className="h-6 w-6 rounded-md" height={24} src="/logo.png" width={24} />
-          <span className="text-sm font-extrabold">Owner dashboard</span>
-          <span className="ml-auto flex gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#dddddd]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#dddddd]" />
-          </span>
-        </div>
-        <div className="grid min-w-0 gap-3 p-3 sm:p-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <MiniMetric label="Revenue YTD" tone="green" value="Rs 8.5 L" />
-            <MiniMetric label="This month" tone="amber" value="3 confirmed" />
-          </div>
-          <div className="rounded-xl border border-[#ebebeb] p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[11px] font-extrabold uppercase text-[#717171] sm:text-xs">Calendar - peak season</span>
-              <span className="rounded-full bg-[#fff1f1] px-3 py-1 text-[11px] font-extrabold text-[#d63e43]">Nov-Feb</span>
-            </div>
-            <div className="grid grid-cols-[repeat(14,minmax(0,1fr))] gap-1">
-              {Array.from({ length: 28 }).map((_, index) => (
-                <span className={`aspect-square rounded-[3px] ${[2, 3, 4, 8, 9, 10, 11, 15, 16, 17, 22, 23, 24, 25].includes(index) ? "bg-[#ff5a5f]" : "bg-[#f7f7f7]"}`} key={index} />
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {["P&L - Dec.pdf", "P&L - Nov.pdf", "License.pdf"].map((doc) => (
-              <span className="inline-flex min-w-0 items-center gap-1.5 rounded-lg bg-[#f7f7f7] px-2.5 py-2 text-xs font-bold text-[#484848] sm:px-3" key={doc}>
-                <FileText className="h-3.5 w-3.5 text-[#ff5a5f]" /> {doc}
+    <div className="mt-12 sm:mt-16">
+      <div className="grid gap-5 lg:grid-cols-3">
+        {items.map((item) => (
+          <figure className="flex h-full min-w-0 flex-col rounded-[20px] border border-[#ebebeb] bg-white p-5 shadow-sm sm:rounded-[24px] sm:p-[30px]" key={item.who}>
+            <Quote className="h-7 w-7 text-[#ff9295]" />
+            <blockquote className="mt-4 flex-1 text-[16px] italic leading-7 text-[#222222]">&quot;{item.q}&quot;</blockquote>
+            <figcaption className="mt-6 flex min-w-0 items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#e98363_0%,#e1914f_45%,#e9aa4b_100%)] text-sm font-extrabold text-white">
+                {item.initials}
               </span>
-            ))}
-          </div>
-        </div>
+              <span className="min-w-0">
+                <span className="block text-sm font-extrabold text-[#222222]">{item.who}</span>
+                <span className="block text-xs text-[#717171]">{item.prop}</span>
+              </span>
+            </figcaption>
+          </figure>
+        ))}
       </div>
-      <p className="mt-5 text-center text-sm italic text-[#e9aa4b]">Real-time owner portal, monthly statements, and approval workflow.</p>
-    </div>
-  );
-}
-
-function MiniMetric({ label, tone, value }: { label: string; tone: "amber" | "green"; value: string }) {
-  return (
-    <div className="rounded-xl bg-[#fbf7f1] p-4">
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#717171]">{label}</div>
-      <div className="mt-1 text-2xl font-extrabold">{value}</div>
-      <div className={`mt-1 text-xs font-bold ${tone === "green" ? "text-[#2f8f4e]" : "text-[#c58a00]"}`}>{tone === "green" ? "78% to target" : "1 pending approval"}</div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#ebebeb]">
-        <div className={`h-full rounded-full ${tone === "green" ? "w-[78%] bg-gradient-to-r from-[#e98363] via-[#e1914f] to-[#e9aa4b]" : "w-[66%] bg-[#3c8399]"}`} />
+      <div className="mt-10 text-center">
+        <ButtonLink href={BOOK_CALL_URL} rel="noreferrer" size="lg" target="_blank">
+          Book a discovery call <ArrowRight className="h-4 w-4" />
+        </ButtonLink>
       </div>
     </div>
   );
@@ -1226,40 +1327,192 @@ function MiniMetric({ label, tone, value }: { label: string; tone: "amber" | "gr
 
 function Tiers() {
   const tiers = [
-    ["Essential", "Plug-and-play properties.", "80 / 20", "Rs 0 - we absorb it", ["Airbnb-ready homes", "High-demand zones", "Monthly P&L approval", "7 personal-use days"], false],
-    ["Curated", "Properties that need polish before they perform.", "70 / 30", "Recovered from early profit", ["Styling refresh", "Listing audit", "Professional photo plan", "Relaunch strategy"], true],
-    ["Bespoke", "New, raw, or under-developed properties.", "65 / 35", "Quoted case-by-case", ["Furniture sourcing", "Fit-out support", "Partner network", "Property brand build"], false],
+    {
+      featured: false,
+      forWhom: [
+        "Existing Airbnb properties with a proven track record",
+        "Fully furnished and guest-ready homes",
+        "Recently renovated properties",
+        "Homes requiring little to no setup work",
+      ],
+      gets: [
+        "End-to-end property operations",
+        "Multi-platform listing & revenue management",
+        "Guest communication & support",
+        "Monthly owner reporting & approvals",
+        "Compliance assistance & recurring oversight",
+      ],
+      name: "Signature",
+      split: "80 / 20",
+      splitNote: "Owner / CMS on net profit",
+      tag: "For market-ready homes that are ready to start hosting immediately.",
+    },
+    {
+      featured: true,
+      forWhom: [
+        "First-time Airbnb owners",
+        "Furnished homes entering the STR market",
+        "Properties requiring repositioning or branding",
+        "Homes needing compliance and operational readiness support",
+      ],
+      gets: [
+        "Everything in Signature, plus:",
+        "Professional photography & listing creation",
+        "Property positioning & launch strategy",
+        "Styling and presentation recommendations",
+        "Assistance with licenses, registrations & NOCs",
+        "Safety, compliance & operational readiness guidance",
+        "Ongoing liaison support for approvals and renewals",
+      ],
+      name: "Curated",
+      split: "70 / 30",
+      splitNote: "Owner / CMS on net profit",
+      tag: "For homes that need activation before they can perform as professional short-term rentals.",
+    },
+    {
+      featured: false,
+      forWhom: [
+        "Newly purchased properties",
+        "Empty or partially furnished homes",
+        "Properties requiring fit-out or furnishing",
+        "Owners building a hospitality asset from the ground up",
+      ],
+      gets: [
+        "Everything in Curated, plus:",
+        "Architect & design partner coordination",
+        "Furniture, decor & procurement support",
+        "End-to-end fit-out project management",
+        "Property branding & positioning",
+        "Launch strategy from concept to first booking",
+      ],
+      name: "Bespoke",
+      split: "Custom",
+      splitNote: "Structured around the scope of work",
+      tag: "For properties that require complete transformation before launch.",
+    },
   ] as const;
 
   return (
-    <Section className="pt-0" id="tiers" tone="cream">
-      <Heading eyebrow="The tier system" lead="Three ways to work with us. The right tier depends on whether your property is plug-and-play or needs setup." title="Pick the model that matches your goals." />
+    <Section id="tiers" tone="cream">
+      <Heading
+        eyebrow="The tier system"
+        lead="Every property is different. Some are ready to generate revenue immediately, while others need repositioning, compliance support, or a complete setup before launch. We will recommend the most suitable model after assessing your property."
+        title="Choose the partnership model that fits your property."
+      />
       <div className="mt-12 grid items-start gap-6 sm:mt-14 lg:grid-cols-3">
-        {tiers.map(([name, tag, split, setup, items, featured]) => (
-          <div className={`relative min-w-0 rounded-[20px] bg-white p-5 shadow-sm sm:rounded-[24px] sm:p-7 ${featured ? "border-2 border-[#ff5a5f] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:-translate-y-2" : "border border-[#dddddd]"}`} key={name}>
-            {featured ? <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#ff5a5f] px-4 py-1.5 text-xs font-extrabold uppercase text-white">Most chosen</div> : null}
-            <h3 className="text-2xl font-extrabold">{name}</h3>
-            <p className="mt-2 min-h-10 text-sm leading-6 text-[#717171]">{tag}</p>
-            <div className={`mt-5 text-3xl font-extrabold sm:text-4xl ${featured ? "text-[#ff5a5f]" : "text-[#222222]"}`}>{split}</div>
-            <p className="mt-1 text-sm font-semibold text-[#717171]">Owner / CMS on net profit</p>
-            <div className="mt-5 flex min-w-0 items-start gap-2 rounded-xl bg-[#f7f7f7] px-3.5 py-3 text-sm font-bold leading-5 text-[#484848] sm:px-4">
-              <Banknote className="mt-0.5 h-4 w-4 shrink-0 text-[#2f8f4e]" /> <span className="min-w-0 break-words">Setup: {setup}</span>
-            </div>
-            <div className="mt-6 text-xs font-extrabold uppercase tracking-[0.14em] text-[#b0b0b0]">Right for you if it is</div>
+        {tiers.map((tier) => (
+          <div
+            className={`relative min-w-0 rounded-[20px] bg-white px-5 py-7 sm:rounded-[24px] sm:px-7 sm:py-8 ${
+              tier.featured ? "border-2 border-[#ff5a5f] shadow-[0_12px_28px_rgba(0,0,0,0.14)] lg:-translate-y-2" : "border border-[#dddddd] shadow-sm"
+            }`}
+            key={tier.name}
+          >
+            {tier.featured ? <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#ff5a5f] px-4 py-1.5 text-xs font-extrabold uppercase text-white">Most Chosen</div> : null}
+            <h3 className="text-2xl font-extrabold text-[#222222]">{tier.name}</h3>
+            <p className="mt-2 min-h-[44px] text-sm leading-6 text-[#717171]">{tier.tag}</p>
+            <div className={`mt-5 text-[34px] font-extrabold leading-none tracking-[-0.02em] ${tier.featured ? "text-[#ff5a5f]" : "text-[#222222]"}`}>{tier.split}</div>
+            <p className="mt-1 text-sm text-[#717171]">{tier.splitNote}</p>
+            <div className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#b0b0b0]">Best suited for</div>
             <ul className="mt-4 grid gap-3">
-              {items.map((item) => (
+              {tier.forWhom.map((item) => (
                 <li className="flex gap-2 text-sm leading-5 text-[#484848]" key={item}>
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#ff5a5f]" /> {item}
+                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#b0b0b0]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="my-6 h-px bg-[#ebebeb]" />
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#b0b0b0]">Includes</div>
+            <ul className="mt-4 grid gap-3">
+              {tier.gets.map((item) => (
+                <li className="flex gap-2 text-sm leading-5 text-[#484848]" key={item}>
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#ff5a5f]" />
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
             <div className="mt-7">
-              <ButtonLink className="w-full" href="#contact" variant={featured ? "primary" : "secondary"}>Choose {name}</ButtonLink>
+              <ButtonLink className="w-full" href={BOOK_CALL_URL} rel="noreferrer" target="_blank" variant={tier.featured ? "primary" : "secondary"}>
+                Choose {tier.name}
+              </ButtonLink>
             </div>
           </div>
         ))}
       </div>
+      <div className="mt-12 text-center">
+        <p className="mx-auto max-w-3xl text-base leading-7 text-[#717171]">Not sure which model fits? Tell us about your property in the calculator above and we will recommend one in your custom pitch deck.</p>
+        <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+          <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} rel="noreferrer" size="lg" target="_blank">
+            Book a discovery call <ArrowRight className="h-4 w-4" />
+          </ButtonLink>
+          <ButtonLink className="w-full sm:w-auto" href="#calculator" size="lg" variant="secondary">
+            See how we calculate your share
+          </ButtonLink>
+        </div>
+      </div>
     </Section>
+  );
+}
+
+function TeamPlaceholder() {
+  return (
+    <div className="relative flex min-h-[360px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#f7f7f7] p-6 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:min-h-[460px] sm:p-8">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,90,95,0.16),_transparent_40%),radial-gradient(circle_at_bottom_right,_rgba(60,131,153,0.18),_transparent_35%)]" />
+      <div className="relative flex items-center gap-3">
+        <div className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#d63e43] shadow-sm">
+          Founder-led operations
+        </div>
+      </div>
+      <div className="relative space-y-4">
+        <div className="grid gap-3 sm:grid-cols-[1.05fr_0.95fr]">
+          <div className="rounded-[22px] border border-white/70 bg-white/90 p-5 shadow-sm">
+            <Logo showWord={false} size="lg" />
+            <div className="mt-5 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[#222222] sm:text-[30px]">
+              A hands-on management partner for owners who want better hospitality returns.
+            </div>
+            <div className="mt-4 text-sm leading-6 text-[#717171]">
+              Built for clear reporting, strong guest stays, and long-term property care.
+            </div>
+          </div>
+          <div className="grid gap-3">
+            <div className="rounded-[20px] border border-white/70 bg-[#1b1714] p-5 text-white shadow-sm">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#e9aa4b]">Owner mindset</div>
+              <div className="mt-3 text-lg font-extrabold tracking-[-0.02em]">Treating each property like an asset, not just an address.</div>
+            </div>
+            <div className="rounded-[20px] border border-white/70 bg-white/90 p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#717171]">What matters</span>
+                <span className="rounded-full bg-[#fff1f1] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#d63e43]">
+                  4.98 rating
+                </span>
+              </div>
+              <div className="mt-4 grid gap-3">
+                {[
+                  ["Reporting", "Monthly P&L shared clearly"],
+                  ["Operations", "Guest and property care managed"],
+                  ["Control", "Owners approve where it matters"],
+                ].map(([label, value]) => (
+                  <div className="flex items-start justify-between gap-3 border-t border-[#ebebeb] pt-3 first:border-t-0 first:pt-0" key={label}>
+                    <span className="text-sm font-bold text-[#222222]">{label}</span>
+                    <span className="text-right text-xs leading-5 text-[#717171]">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FounderPlaceholder() {
+  return (
+    <div className="grid h-20 w-20 shrink-0 place-items-center rounded-[18px] border border-white/15 bg-[linear-gradient(160deg,_rgba(233,131,99,0.92),_rgba(233,170,75,0.9),_rgba(60,131,153,0.86))] shadow-sm sm:h-24 sm:w-24 sm:rounded-[20px]">
+      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/18 backdrop-blur-sm sm:h-14 sm:w-14">
+        <Logo light showWord={false} size="sm" />
+      </div>
+    </div>
   );
 }
 
@@ -1267,19 +1520,19 @@ function Team() {
   return (
     <Section id="about">
       <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
-          <Image alt="The Curate My Stay family" className="h-full max-h-[560px] w-full object-contain" height={900} sizes="(min-width: 1024px) 460px, 100vw" src={photo("founder.jpg")} width={720} />
-        </div>
+        <TeamPlaceholder />
         <div>
           <Eyebrow>Who we are</Eyebrow>
-          <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight md:text-[40px]">A family-run business, in a corner of the market that is anything but.</h2>
-          <p className="mt-5 text-base leading-7 text-[#484848] sm:leading-8">Curate My Stay is a Goa-based property management firm run by a family with facility management and investment-side thinking. We approach each property like an asset with an ROI, an operational P&L, and a clear strategy.</p>
-          <p className="mt-4 text-base leading-7 text-[#484848] sm:leading-8">Communication runs directly through the founder. No call centres, no ticket queues, no account-manager churn. That is how we built a 4.98 rating, and how we plan to scale deliberately.</p>
+          <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight md:text-[40px]">A Family-Run Approach to Property Management</h2>
+          <p className="mt-5 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">Curate My Stay is a Goa-based property management firm run by a family with two complementary backgrounds: facility management and investment-side thinking. We currently manage 5 properties and we are scaling deliberately.</p>
+          <p className="mt-4 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">We approach property management the way a wealth manager approaches a portfolio: every property is an asset with an ROI, an operational P&amp;L, and a strategy attached to it. That framing is what consistently delivers strong returns for our owners without compromising the property itself.</p>
+          <p className="mt-4 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">Communication stays direct, operations stay hands-on, and every property is managed with long-term value in mind.</p>
+          <p className="mt-4 text-base font-semibold leading-7 text-[#222222] sm:text-[16.5px] sm:leading-8">It is how we built a 4.98 rating. It is how we plan to scale.</p>
           <div className="mt-7 grid gap-4 sm:grid-cols-3">
             {[
-              [Rocket, "Founded 2024", "In active growth mode"],
-              [MapPin, "Based in Goa", "Team on the ground"],
-              [Target, "Mid-market focus", "Rs 4,000-14,000 / night"],
+              [Rocket, "Founded 2025", "In active growth mode"],
+              [MapPin, "Based in Goa", "Operational team on the ground"],
+              [Target, "Cross-domain expertise", "20+ yrs facility management (Dubai) · Investment advisory & Fortune 500 background"],
             ].map(([Icon, title, body]) => {
               const IconComponent = Icon as LucideIcon;
               return (
@@ -1298,33 +1551,63 @@ function Team() {
 }
 
 function CollapsibleExtras() {
+  const [openIndex, setOpenIndex] = useState(0);
+  const sections = [
+    {
+      content: <TransparencyInline />,
+      icon: Eye,
+      summary: "Every booking, every expense, every month. Full transparency on how your money moves.",
+      title: "No black box",
+    },
+    {
+      content: <ApprovalsInline />,
+      icon: Zap,
+      summary: "What you sign off on, and what we handle without bothering you.",
+      title: "You stay in control",
+    },
+    {
+      content: <InvestmentInline />,
+      icon: Building2,
+      summary: "The math on a Goa STR investment: rental yield, appreciation, and combined IRR.",
+      title: "Thinking of buying in Goa?",
+    },
+  ] as const;
+
   return (
-    <Section className="pt-0" id="control" tone="cream">
-      <div className="mx-auto max-w-4xl">
-        <Heading eyebrow="Dig deeper" lead="Everything you would want to know before signing." title="More about how we work." />
+    <Section className="pt-0" id="extras" tone="cream">
+      <div className="mx-auto max-w-[860px]">
+        <Heading eyebrow="Dig deeper" lead="Everything you'd want to know before signing." title="More about how we work." />
         <div className="mt-10 grid gap-4">
-          {[
-            [CheckCircle2, "You approve", "Monthly P&L statements, meaningful expenses, furnishing upgrades, long stays, and tier deviations pass through you."],
-            [Zap, "We handle", "Guest communication, cleaning, restocking, routine maintenance, pricing tweaks, listings, and reporting cadence stay with us."],
-            [Building2, "Thinking of buying in Goa?", "We can help estimate STR yield, operating expenses, and the combined property return before you commit."],
-          ].map(([Icon, title, summary]) => {
+          {sections.map((section, index) => {
+            const Icon = section.icon;
             const IconComponent = Icon as LucideIcon;
+            const isOpen = openIndex === index;
+
             return (
-              <details className="group min-w-0 rounded-[20px] border border-[#dddddd] bg-white p-4 shadow-sm sm:rounded-[24px] sm:p-6" key={title as string}>
-                <summary className="flex min-w-0 cursor-pointer list-none items-center gap-3 sm:gap-5">
+              <div className="overflow-hidden rounded-[20px] border border-[#dddddd] bg-white shadow-sm sm:rounded-[24px]" key={section.title}>
+                <button
+                  aria-expanded={isOpen}
+                  className="flex w-full min-w-0 items-center gap-3 px-4 py-4 text-left sm:gap-5 sm:px-6 sm:py-6"
+                  onClick={() => setOpenIndex((current) => (current === index ? -1 : index))}
+                  type="button"
+                >
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#fff1f1] text-[#ff5a5f] sm:h-12 sm:w-12 sm:rounded-2xl">
                     <IconComponent className="h-5 w-5 sm:h-6 sm:w-6" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block break-words text-base font-extrabold sm:text-lg">{title as string}</span>
-                    <span className="mt-1 block text-sm leading-6 text-[#717171]">{summary as string}</span>
+                    <span className="block break-words text-base font-extrabold text-[#222222] sm:text-lg">{section.title}</span>
+                    <span className="mt-1 block text-sm leading-6 text-[#717171]">{section.summary}</span>
                   </span>
-                  <ChevronDown className="h-5 w-5 shrink-0 transition group-open:rotate-180" />
-                </summary>
-                <div className="mt-5 rounded-2xl bg-[#fbf7f1] p-4 text-sm leading-6 text-[#484848] sm:p-5">
-                  This is kept intentionally simple: clear monthly approvals, transparent records, and no hidden operating layer.
+                  <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${isOpen ? "bg-[#ff5a5f] text-white rotate-180" : "bg-[#f7f7f7] text-[#484848]"}`}>
+                    <ChevronDown className="h-4 w-4" />
+                  </span>
+                </button>
+                <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                  <div className="overflow-hidden">
+                    <div className="px-4 pb-4 sm:px-6 sm:pb-6">{section.content}</div>
+                  </div>
                 </div>
-              </details>
+              </div>
             );
           })}
         </div>
@@ -1335,55 +1618,268 @@ function CollapsibleExtras() {
 
 function RiskSection() {
   const faqs = [
-    ["What if I lose control of my property?", "You retain 100% ownership. The Leave & License agreement is a standard legal instrument that creates no tenancy rights."],
-    ["What if you inflate expenses?", "Every expense is itemised in your monthly P&L with a receipt or invoice attached. You approve the statement before any payout."],
-    ["What if guests damage my property?", "Every booking goes through ID verification and a security deposit. House rules are explicit and enforced."],
-    ["What happens during monsoon with no bookings?", "Monsoon is part of the Goa rental cycle, and we actively plan for it with pricing, offline agents, repeat guests, and preventive maintenance."],
-    ["What if I want to use my own property?", "You get personal-use days every year, plus anything we mutually agree. Just give advance notice so we can block the dates."],
-    ["What if I am not happy and want to exit?", "After the lock-in, either party can exit with written notice. We still recommend evaluating across a full 12-month cycle."],
-    ["Is this fully legal?", "Yes. Tourism license and homestay registration stay in your name, and Statistic Forma reporting is filed for every guest."],
-    ["What about TDS and tax compliance?", "We deduct 10% TDS on your share, deposit it, and share records ready for your CA."],
+    ["What if I lose control of my property?", "You retain 100% ownership. The Leave & License agreement is a standard legal instrument that creates no tenancy rights. You can exit after the lock-in with 2 months' notice. We never take a stake in the property itself."],
+    ["What if you inflate expenses?", "Every expense is itemised in your monthly P&L with a receipt or invoice attached. You approve the statement before any payout. You have audit access to the underlying receipts any time. If you disagree with anything, we discuss it before payment."],
+    ["What if guests damage my property?", "Every booking goes through ID verification and a security deposit. House rules are explicit and enforced, and property condition is photographed before and after every stay. Airbnb's Host Protection adds cover. Damages get a documented recovery plan within 48 hours."],
+    ["What happens during monsoon with no bookings?", "Monsoon is part of the Goa rental cycle, and we actively plan for it. We use dynamic pricing, flexible stay strategies, offline agents, third-party partners, and a strong repeat guest network to maintain occupancy through the season.\n\nWe also have a growing contact base of 200+ past guests and enquiries who often return during off-season months for longer stays at value pricing. At the same time, monsoon is used for preventive maintenance and upgrades so the property is fully peak-season ready."],
+    ["What if I want to use my own property?", "You get personal-use days every year (5-7 depending on tier), plus anything we mutually agree. Just give advance notice so we can block the dates. It's still your home."],
+    ["What if I'm not happy and want to exit?", "After the 6-8 month lock-in, either party can exit with 2 months' written notice. There are no hidden exit fees.\n\nThat said, Goa is a highly seasonal market, and properties typically perform best when evaluated across a full 12-month cycle. Staying through the full year gives a far more accurate picture of occupancy, cash flow, and overall returns."],
+    ["Is this fully legal? Do I need permissions?", "Yes. The tourism license / homestay registration goes in your name (we handle the paperwork). Statistic Forma Reporting is filed for every guest. The Leave & License agreement is the same instrument used across India for short-stay arrangements."],
+    ["What if you misrepresent earnings?", "Every OTA booking carries a complete platform paper trail, and revenue is fully verifiable from the platform records themselves. We also share supporting screenshots and booking-level details in the monthly P&L.\n\nFor offline or direct bookings, entries are backed by payment proofs, guest records, and internal invoices/logs; so all revenue remains trackable and transparent. There is no scenario where one number is shown internally and another exists on the actual booking source."],
+    ["What about TDS and tax compliance?", "We deduct 10% TDS on your share, deposit it with the government monthly, and share quarterly TDS filings ready for your CA. NRIs receive Form 16A on request. Your accountant gets everything they need."],
+    ["What if you can't fill the property?", "We share occupancy projections in your custom pitch deck before you sign. If actuals fall materially below projection for two consecutive months, we trigger a joint review: pricing, listing, or operations: at no cost."],
   ];
+  const [openIndex, setOpenIndex] = useState(4);
+  const midpoint = Math.ceil(faqs.length / 2);
+  const columns = [faqs.slice(0, midpoint), faqs.slice(midpoint)];
 
   return (
     <Section id="risk" tone="cream">
-      <Heading eyebrow="Risk and objections" lead="We do not pretend property management is risk-free. Here is what owners worry about and how each concern is handled." title="What could go wrong. And what we have already done about it." />
+      <Heading
+        eyebrow="Risk & objections"
+        lead="We don't pretend property management is risk-free. Here's a frank list of what owners worry about, and exactly how each is handled."
+        title="What could go wrong. And what we've already done about it."
+      />
       <div className="mt-12 grid gap-4 lg:grid-cols-2">
-        {faqs.map(([q, a], index) => (
-          <details className="group rounded-2xl border border-[#ebebeb] bg-white shadow-sm" key={q} open={index === 0}>
-            <summary className="flex min-w-0 cursor-pointer list-none items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5 sm:py-5">
-              <span className="min-w-0 flex-1 break-words text-[15px] font-extrabold leading-6 sm:text-base">{q}</span>
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f7f7f7] transition group-open:rotate-180 group-open:bg-[#ff5a5f] group-open:text-white">
-                <ChevronDown className="h-4 w-4" />
-              </span>
-            </summary>
-            <p className="px-4 pb-4 text-sm leading-6 text-[#484848] sm:px-5 sm:pb-5">{a}</p>
-          </details>
+        {columns.map((column, columnIndex) => (
+          <div className="grid gap-4" key={columnIndex}>
+            {column.map(([question, answer], index) => {
+              const absoluteIndex = columnIndex * midpoint + index;
+              const isOpen = openIndex === absoluteIndex;
+
+              return (
+                <div className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-colors ${isOpen ? "border-[#ff9295]" : "border-[#ebebeb]"}`} key={question}>
+                  <button
+                    aria-expanded={isOpen}
+                    className="flex w-full min-w-0 items-center gap-3 px-4 py-4 text-left sm:gap-4 sm:px-5 sm:py-5"
+                    onClick={() => setOpenIndex((current) => (current === absoluteIndex ? -1 : absoluteIndex))}
+                    type="button"
+                  >
+                    <span className="min-w-0 flex-1 break-words text-[15px] font-extrabold leading-6 text-[#222222] sm:text-base">{question}</span>
+                    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${isOpen ? "bg-[#ff5a5f] text-white rotate-180" : "bg-[#f7f7f7] text-[#484848]"}`}>
+                      <ChevronDown className="h-4 w-4" />
+                    </span>
+                  </button>
+                  <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                    <div className="overflow-hidden">
+                      <p className="px-4 pb-4 text-sm leading-6 whitespace-pre-line text-[#484848] sm:px-5 sm:pb-5">{answer}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ))}
       </div>
     </Section>
   );
 }
 
-function FinalCTA({ onBook }: { onBook: () => void }) {
+function TransparencyInline() {
+  const steps = [
+    ["Monthly P&L statement", "A detailed sheet with every booking, every expense, and the final profit: shared by the 5th of every month for the month prior."],
+    ["Owner approval", "No payout is made until you review and approve. If something looks off, we discuss it. Full control stays with you."],
+    ["Bank transfer in 3 days", "Once you approve, your share is transferred within 3 working days. TDS handled. UTR confirmation shared."],
+    ["Audit access anytime", "All bills, receipts, ID copies and booking records are kept centrally. Verify any expense, any time."],
+  ];
+
+  return (
+    <div className="rounded-2xl bg-[#fbf7f1] p-4 sm:p-5">
+      <p className="text-[15px] leading-7 text-[#484848]">The biggest reason owners hesitate to hand over their property is fear of the unknown: inflated expenses, mystery deductions, surprise charges. We built CMS specifically to eliminate that fear.</p>
+      <div className="mt-5 grid gap-1">
+        {steps.map(([title, body], index) => (
+          <div className={`flex gap-4 py-4 ${index ? "border-t border-[#ebebeb]" : ""}`} key={title}>
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#fff1f1] text-sm font-extrabold text-[#ff5a5f]">{String(index + 1).padStart(2, "0")}</span>
+            <div className="min-w-0">
+              <div className="text-[15px] font-extrabold text-[#222222]">{title}</div>
+              <div className="mt-1 text-sm leading-6 text-[#717171]">{body}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ApprovalsInline() {
+  const youApprove = [
+    "Monthly P&L statement, before any payout",
+    "Any expense above Rs 5,000 outside standard ops",
+    "Any furnishing, repair or upgrade above Rs 10,000",
+    "Pricing strategy review (quarterly, optional)",
+    "Long-stay (30+ night) guest bookings",
+    "Any deviation from the agreed tier model",
+  ];
+  const weHandle = [
+    "Day-to-day guest communication",
+    "Cleaning, restocking, minor repairs (under Rs 5,000)",
+    "Standard seasonal pricing adjustments",
+    "Compliance filings (Statistic Forma, TDS returns, etc.)",
+    "Marketing and listing optimisations",
+    "Routine owner reporting",
+  ];
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="rounded-2xl border border-[#ff9295] bg-[#fbf7f1] p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-[#ff5a5f]" />
+          <span className="text-base font-extrabold text-[#222222]">You approve</span>
+        </div>
+        <ul className="grid gap-3">
+          {youApprove.map((item) => (
+            <li className="flex gap-2 text-sm leading-6 text-[#484848]" key={item}>
+              <Check className="mt-1 h-4 w-4 shrink-0 text-[#ff5a5f]" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="rounded-2xl border border-[#ebebeb] bg-white p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <Zap className="h-5 w-5 text-[#3c8399]" />
+          <span className="text-base font-extrabold text-[#222222]">We handle</span>
+        </div>
+        <ul className="grid gap-3">
+          {weHandle.map((item) => (
+            <li className="flex gap-2 text-sm leading-6 text-[#484848]" key={item}>
+              <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#3c8399]" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function InvestmentInline() {
+  const [scenarioIndex, setScenarioIndex] = useState(0);
+  const scenarios = [
+    {
+      groups: [
+        {
+          rows: [
+            ["Property purchase price", "Rs 1.80 Cr"],
+            ["Stamp duty & registration (~4-6%)", "Rs 7.2-10.8 L"],
+            ["Total investment", "~Rs 1.87-1.91 Cr", true],
+          ],
+          title: "Investment",
+        },
+        {
+          rows: [
+            ["Annual gross STR revenue", "Rs 15 L"],
+            ["Operational expenses (~15%)", "Rs 2.25 L"],
+            ["Net operating income", "Rs 12.75 L"],
+            ["Owner share (80%)", "Rs 10.2 L", true],
+          ],
+          title: "Annual Returns",
+        },
+        {
+          rows: [
+            ["Gross rental yield (on total investment)", "~7.8-8.0% p.a."],
+            ["Net rental yield (post ops + management)", "~5.3-5.5% p.a."],
+            ["Estimated asset appreciation", "4-6% p.a."],
+            ["Potential combined return profile", "~9-11.5% p.a.", true],
+          ],
+          title: "Yield Profile",
+        },
+      ],
+      label: "2 BHK Apartment in Panjim",
+    },
+    {
+      groups: [
+        {
+          rows: [
+            ["Property purchase price", "Rs 2.25 Cr"],
+            ["Stamp duty & registration (~4-6%)", "Rs 9-13.5 L"],
+            ["Total investment", "~Rs 2.34-2.39 Cr", true],
+          ],
+          title: "Investment",
+        },
+        {
+          rows: [
+            ["Annual gross STR revenue", "Rs 15 L"],
+            ["Operational expenses (~15%)", "Rs 2.25 L"],
+            ["Net operating income", "Rs 12.75 L"],
+            ["Owner share (80%)", "Rs 10.2 L", true],
+          ],
+          title: "Annual Returns",
+        },
+        {
+          rows: [
+            ["Gross rental yield (on total investment)", "~6.3-6.4% p.a."],
+            ["Net rental yield (post ops + management)", "~4.2-4.4% p.a."],
+            ["Estimated asset appreciation", "6-10% p.a."],
+            ["Potential combined return profile", "~10-14% p.a.", true],
+          ],
+          title: "Yield Profile",
+        },
+      ],
+      label: "3 BHK Villa in South Goa",
+    },
+  ] as const;
+
+  const scenario = scenarios[scenarioIndex];
+
+  return (
+    <div>
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row">
+        {scenarios.map((entry, index) => (
+          <button
+            className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+              scenarioIndex === index ? "border-[#ff5a5f] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#484848]"
+            }`}
+            key={entry.label}
+            onClick={() => setScenarioIndex(index)}
+            type="button"
+          >
+            {entry.label}
+          </button>
+        ))}
+      </div>
+      <div className="grid gap-4">
+        {scenario.groups.map((group) => (
+          <div className="overflow-hidden rounded-2xl border border-[#dddddd] bg-[#fbf7f1]" key={group.title}>
+            <div className="bg-[#1b1714] px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white">{group.title}</div>
+            {group.rows.map(([label, value, highlight], index) => (
+              <div className={`flex items-center justify-between gap-3 px-5 py-3 ${index ? "border-t border-[#ebebeb]" : ""} ${highlight ? "bg-[#fff1f1]" : ""}`} key={label}>
+                <span className={`text-sm ${highlight ? "font-bold text-[#484848]" : "text-[#484848]"}`}>{label}</span>
+                <span className={`text-sm font-extrabold whitespace-nowrap ${highlight ? "text-[#ff5a5f]" : "text-[#222222]"}`}>{value}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-[12.5px] italic leading-5 text-[#b0b0b0]">These are illustrative scenarios based on current Goa market data. Actual returns depend on property specifics, location, season, and market dynamics.</p>
+      <div className="mt-5">
+        <ButtonLink className="w-full" href={BOOK_CALL_URL} rel="noreferrer" size="lg" target="_blank">
+          Thinking of buying? Get a custom analysis <ArrowRight className="h-4 w-4" />
+        </ButtonLink>
+      </div>
+    </div>
+  );
+}
+
+function FinalCTA() {
   return (
     <Section id="contact" tone="dark">
       <div className="mx-auto max-w-4xl text-center">
         <h2 className="text-3xl font-extrabold leading-tight tracking-tight md:text-[50px]">
-          The math is simple. The execution is the hard part. <span className="text-[#e9aa4b]">We have already done it.</span>
+          The math is simple. The execution is the hard part. <span className="text-[#e9aa4b]">We&apos;ve already done it.</span>
         </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">Book a 30-minute discovery call. We will look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move.</p>
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">Book a 30-minute discovery call. We will look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move for you. If it&apos;s not, we&apos;ll say so.</p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink className="w-full sm:w-auto" href="https://calendar.app.google/U1j59uGweQoZ7hZd7" size="lg" variant="onDark">
+          <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} size="lg" variant="onDark">
             <Calendar className="h-4 w-4" /> Book a discovery call
           </ButtonLink>
-          <ButtonLink className="w-full sm:w-auto" href="https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa." size="lg" variant="outlineDark">
+          <ButtonLink className="w-full sm:w-auto" href={WHATSAPP_URL} size="lg" variant="outlineDark">
             <MessageCircle className="h-4 w-4" /> WhatsApp us directly
           </ButtonLink>
         </div>
       </div>
       <div className="mx-auto mt-10 flex max-w-2xl flex-col gap-5 rounded-[20px] border border-white/10 bg-white/[0.05] p-5 sm:mt-12 sm:flex-row sm:items-center sm:gap-6 sm:rounded-[24px] sm:p-6 md:p-8">
-        <Image alt="Aravind" className="h-20 w-20 shrink-0 self-center rounded-[18px] object-cover object-top sm:h-24 sm:w-24 sm:self-auto sm:rounded-[20px]" height={96} src={photo("aravind.jpg")} width={96} />
+        <FounderPlaceholder />
         <div className="min-w-0">
           <div className="text-center text-lg font-extrabold text-white sm:text-left">Aravind <span className="block text-sm font-semibold text-white/50 sm:inline">: Founder, Curate My Stay</span></div>
           <p className="mt-2 text-sm italic leading-6 text-white/70">&quot;Every property we take on is still personally overseen by me. That level of involvement is a big part of how we maintain consistency, trust, and attention to detail across every stay.&quot;</p>
@@ -1394,21 +1890,35 @@ function FinalCTA({ onBook }: { onBook: () => void }) {
 }
 
 function Footer() {
+  const siteLinks = [
+    { href: "#top", label: "For Owners" },
+    { href: "#top", label: "For Guests / Book a Stay" },
+    { href: "#about", label: "About" },
+    { href: "#proof", label: "Case Studies" },
+    { href: "#top", label: "Blog (soon)" },
+  ];
+  const resourceLinks = [
+    { href: "#extras", label: "Sample P&L Statement" },
+    { href: "#extras", label: "Standard L&L Agreement" },
+    { href: "#tiers", label: "Tier System One-Pager" },
+    { href: "#calculator", label: "ROI Calculator" },
+  ];
+
   return (
     <footer className="bg-[#241e19] text-white/70">
       <div className="mx-auto max-w-[1180px] px-4 py-12 sm:px-6 sm:py-14 md:px-8">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <Logo light />
+            <Logo light size="lg" />
             <p className="mt-4 text-sm italic text-[#e9aa4b]">&quot;Wealth managers for property.&quot;</p>
             <div className="mt-5 grid gap-3 text-sm">
               <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-white/50" /> Goa, India</span>
               <a className="inline-flex min-w-0 items-center gap-2 break-all" href="mailto:curatemystay@gmail.com"><Mail className="h-4 w-4 shrink-0 text-white/50" /> curatemystay@gmail.com</a>
-              <a className="inline-flex items-center gap-2" href="https://wa.me/916282627601"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
+              <a className="inline-flex items-center gap-2" href={WHATSAPP_URL} rel="noreferrer" target="_blank"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
             </div>
           </div>
-          <FooterLinks title="Site" items={["For Owners", "For Guests / Book a Stay", "About", "Case Studies", "Blog (soon)"]} />
-          <FooterLinks title="Resources" items={["Sample P&L Statement", "Standard L&L Agreement", "Tier System One-Pager", "ROI Calculator"]} />
+          <FooterLinks items={siteLinks} title="Site" />
+          <FooterLinks items={resourceLinks} title="Resources" />
         </div>
         <div className="mt-10 flex flex-col items-start gap-4 border-t border-white/10 pt-6 text-xs leading-5 text-white/45 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <span>Copyright Curate My Stay 2026 - Privacy - Terms - Cookies</span>
@@ -1423,14 +1933,14 @@ function Footer() {
   );
 }
 
-function FooterLinks({ items, title }: { items: string[]; title: string }) {
+function FooterLinks({ items, title }: { items: Array<{ href: string; label: string }>; title: string }) {
   return (
     <div>
       <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/40">{title}</div>
       <div className="mt-4 grid gap-3 text-sm">
         {items.map((item) => (
-          <a className="hover:text-white" href={item.includes("Calculator") ? "#calculator" : "#top"} key={item}>
-            {item}
+          <a className="hover:text-white" href={item.href} key={item.label}>
+            {item.label}
           </a>
         ))}
       </div>
@@ -1457,7 +1967,7 @@ function BookingModal({ onClose, open }: { onClose: () => void; open: boolean })
         </div>
         <div className="p-5 sm:p-7">
           <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#717171]">Pick a slot</div>
-          <ButtonLink className="w-full" href="https://calendar.google.com/calendar/appointments/schedules/?add=curatemystay@gmail.com" size="lg">
+          <ButtonLink className="w-full" href={BOOK_CALL_URL} rel="noreferrer" size="lg" target="_blank">
             <Calendar className="h-4 w-4" /> Book via Google Calendar
           </ButtonLink>
           <p className="mt-3 text-center text-xs text-[#b0b0b0]">Calendar: curatemystay@gmail.com</p>
@@ -1477,19 +1987,18 @@ export function ReferenceHome() {
   const [bookingOpen, setBookingOpen] = useState(false);
 
   return (
-    <main className="min-h-screen bg-white font-sans text-[#222222]">
+    <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <Header />
       <Hero />
       <MathAnchor />
       <CalculatorSection />
       <Services />
       <StatsAndProof />
-      <Transparency />
       <RiskSection />
       <Tiers />
       <Team />
       <CollapsibleExtras />
-      <FinalCTA onBook={() => setBookingOpen(true)} />
+      <FinalCTA />
       <Footer />
       <BookingModal onClose={() => setBookingOpen(false)} open={bookingOpen} />
     </main>
