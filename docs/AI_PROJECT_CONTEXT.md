@@ -165,7 +165,7 @@ Use blank placeholders from `.env.example`. Deployment steps are in [Deployment 
 - The FAQ restores all ten approved questions/answers as a two-column accessible accordion with one open item at a time.
 - The old standalone transparency section is removed from the page flow; its approved transparency/control/investment content now lives inside the bottom `More about how we work` accordion.
 - The partnership section uses the reference `Signature`, `Curated`, and `Bespoke` cards, with `Curated` visually featured as `Most Chosen`.
-- Person photos are not used on the homepage; testimonial avatars stay as initials and the team/final CTA image areas use branded placeholders instead of founder/team photos.
+- Testimonial avatars stay as initials, while the team/about section and final CTA use the existing local `public/homepage/founder.jpg` and `public/homepage/aravind.jpg` assets.
 - Initial submission calls `/api/owner-forecast`; server validates, calculates, stores the lead, and returns forecast without waiting for a deck.
 - The browser immediately displays annual revenue, 15% operating cost, and net profit.
 - It then calls `/api/owner-forecast/proposal` in the background.

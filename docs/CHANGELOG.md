@@ -10,7 +10,7 @@
 - Restored the full ten-item FAQ accordion with accessible buttons, coral active state, and the approved default-open item.
 - Replaced the old pricing section with the approved `Signature`, `Curated`, and `Bespoke` partnership cards, including the `Most Chosen` Curated treatment.
 - Removed the standalone mid-page transparency block and moved its approved transparency/control/investment content into the bottom `More about how we work` accordion.
-- Tightened homepage reference parity further by scoping `next/font/google` Figtree to `/`, restoring the missing comparison-table row/copy, and replacing team/founder photos with branded placeholders while keeping the existing working CTA destinations and forecast flow.
+- Tightened homepage reference parity further by scoping `next/font/google` Figtree to `/`, restoring the missing comparison-table row/copy, and wiring the existing local `founder.jpg` and `aravind.jpg` assets back into the team/final CTA while keeping the existing working CTA destinations and forecast flow.
 - Kept dashboard pages, owner pages, auth, APIs, Supabase, forecast calculations, pitch-deck generation, email workflows, and other backend logic unchanged.
 
 ## Initial Build

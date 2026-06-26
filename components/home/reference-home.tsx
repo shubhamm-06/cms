@@ -446,7 +446,7 @@ function Hero() {
         <div className="min-w-0">
           <Eyebrow>Goa - Short-term rental management</Eyebrow>
           <h1 className="mt-4 max-w-3xl text-[34px] font-extrabold leading-[1.08] sm:mt-[18px] sm:text-[44px] lg:text-[60px] lg:leading-[1.04]">
-            Your Property. Professionally Managed. <span className="text-[#ff5a5f]">For Higher Returns.</span>
+            Your Property. Professionally Managed. <br/> <span className="text-[#ff5a5f]">For Higher Returns.</span>
           </h1>
           <p className="mt-5 max-w-xl text-[17px] leading-7 text-[#484848] sm:mt-6 sm:text-xl sm:leading-[1.55] lg:text-[22px]">
             We help Goa homeowners earn more through fully managed short-term rentals, with complete financial transparency.
@@ -1454,73 +1454,13 @@ function Tiers() {
   );
 }
 
-function TeamPlaceholder() {
-  return (
-    <div className="relative flex min-h-[360px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#f7f7f7] p-6 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:min-h-[460px] sm:p-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,90,95,0.16),_transparent_40%),radial-gradient(circle_at_bottom_right,_rgba(60,131,153,0.18),_transparent_35%)]" />
-      <div className="relative flex items-center gap-3">
-        <div className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#d63e43] shadow-sm">
-          Founder-led operations
-        </div>
-      </div>
-      <div className="relative space-y-4">
-        <div className="grid gap-3 sm:grid-cols-[1.05fr_0.95fr]">
-          <div className="rounded-[22px] border border-white/70 bg-white/90 p-5 shadow-sm">
-            <Logo showWord={false} size="lg" />
-            <div className="mt-5 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[#222222] sm:text-[30px]">
-              A hands-on management partner for owners who want better hospitality returns.
-            </div>
-            <div className="mt-4 text-sm leading-6 text-[#717171]">
-              Built for clear reporting, strong guest stays, and long-term property care.
-            </div>
-          </div>
-          <div className="grid gap-3">
-            <div className="rounded-[20px] border border-white/70 bg-[#1b1714] p-5 text-white shadow-sm">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#e9aa4b]">Owner mindset</div>
-              <div className="mt-3 text-lg font-extrabold tracking-[-0.02em]">Treating each property like an asset, not just an address.</div>
-            </div>
-            <div className="rounded-[20px] border border-white/70 bg-white/90 p-5 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#717171]">What matters</span>
-                <span className="rounded-full bg-[#fff1f1] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#d63e43]">
-                  4.98 rating
-                </span>
-              </div>
-              <div className="mt-4 grid gap-3">
-                {[
-                  ["Reporting", "Monthly P&L shared clearly"],
-                  ["Operations", "Guest and property care managed"],
-                  ["Control", "Owners approve where it matters"],
-                ].map(([label, value]) => (
-                  <div className="flex items-start justify-between gap-3 border-t border-[#ebebeb] pt-3 first:border-t-0 first:pt-0" key={label}>
-                    <span className="text-sm font-bold text-[#222222]">{label}</span>
-                    <span className="text-right text-xs leading-5 text-[#717171]">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FounderPlaceholder() {
-  return (
-    <div className="grid h-20 w-20 shrink-0 place-items-center rounded-[18px] border border-white/15 bg-[linear-gradient(160deg,_rgba(233,131,99,0.92),_rgba(233,170,75,0.9),_rgba(60,131,153,0.86))] shadow-sm sm:h-24 sm:w-24 sm:rounded-[20px]">
-      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/18 backdrop-blur-sm sm:h-14 sm:w-14">
-        <Logo light showWord={false} size="sm" />
-      </div>
-    </div>
-  );
-}
-
 function Team() {
   return (
     <Section id="about">
       <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[0.9fr_1.1fr]">
-        <TeamPlaceholder />
+        <div className="overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
+          <Image alt="The Curate My Stay family" className="h-full max-h-[560px] w-full object-contain" height={900} sizes="(min-width: 1024px) 460px, 100vw" src={photo("founder.jpg")} width={720} />
+        </div>
         <div>
           <Eyebrow>Who we are</Eyebrow>
           <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight md:text-[40px]">A Family-Run Approach to Property Management</h2>
@@ -1879,7 +1819,7 @@ function FinalCTA() {
         </div>
       </div>
       <div className="mx-auto mt-10 flex max-w-2xl flex-col gap-5 rounded-[20px] border border-white/10 bg-white/[0.05] p-5 sm:mt-12 sm:flex-row sm:items-center sm:gap-6 sm:rounded-[24px] sm:p-6 md:p-8">
-        <FounderPlaceholder />
+        <Image alt="Aravind" className="h-20 w-20 shrink-0 self-center rounded-[18px] object-cover object-top sm:h-24 sm:w-24 sm:self-auto sm:rounded-[20px]" height={96} src={photo("aravind.jpg")} width={96} />
         <div className="min-w-0">
           <div className="text-center text-lg font-extrabold text-white sm:text-left">Aravind <span className="block text-sm font-semibold text-white/50 sm:inline">: Founder, Curate My Stay</span></div>
           <p className="mt-2 text-sm italic leading-6 text-white/70">&quot;Every property we take on is still personally overseen by me. That level of involvement is a big part of how we maintain consistency, trust, and attention to detail across every stay.&quot;</p>
