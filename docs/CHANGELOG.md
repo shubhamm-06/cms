@@ -1,5 +1,13 @@
 # Changelog
 
+## Analytics Base Integration
+
+- Added a guarded Google Tag Manager base snippet through the root App Router layout using built-in `next/script`.
+- Added the standard GTM noscript iframe fallback inside `<body>`.
+- Used only `NEXT_PUBLIC_GTM_ID`; when it is missing, no GTM script or fallback iframe renders.
+- Kept GA4 configuration and event tracking out of application code because GA4 is managed inside GTM.
+- No package, homepage UI, business logic, API route, Supabase, auth, or unrelated environment-variable changes were made.
+
 ## Homepage Public Correction Pass
 
 - Normalized public homepage typography so nav, buttons, headings, cards, testimonial text, FAQ, and footer all follow the same reference-style Figtree hierarchy.

@@ -150,8 +150,11 @@ See [Supabase Schema](./SUPABASE_SCHEMA.md) for the full responsibility matrix.
 | `ADMIN_CONTACT_EMAIL` | Server config | Admin lead recipient |
 | `NEXT_PUBLIC_CMS_WHATSAPP_NUMBER` | Browser-safe | Public WhatsApp link number |
 | `NEXT_PUBLIC_SITE_URL` | Browser-safe | Auth callback/site origin |
+| `NEXT_PUBLIC_GTM_ID` | Browser-safe | Google Tag Manager container ID for global analytics base loading |
 
 Use blank placeholders from `.env.example`. Deployment steps are in [Deployment Runbook](./DEPLOYMENT_RUNBOOK.md).
+
+Global analytics is limited to the GTM base integration in `app/layout.tsx`. When `NEXT_PUBLIC_GTM_ID` is unset, no GTM script or noscript iframe renders. GA4 and event tracking are managed inside GTM, not directly in the application code.
 
 ## Homepage and Forecast Funnel
 
