@@ -1,5 +1,12 @@
 # Changelog
 
+## Homepage Analytics Tracking
+
+- Added a small browser-safe `dataLayer` helper for non-PII GTM event pushes.
+- Tracked public homepage calendar clicks, WhatsApp clicks, forecast funnel entry/start, successful forecast lead generation, successful pitch-deck readiness, and pitch-deck downloads.
+- Added `docs/ANALYTICS.md` and linked it from the documentation index.
+- Kept GTM/GA4/ad-platform configuration inside GTM; no analytics packages, direct `gtag` calls, API behavior, forecast calculations, auth behavior, or database schema changed.
+
 ## Analytics Base Integration
 
 - Added a guarded Google Tag Manager base snippet through the root App Router layout using built-in `next/script`.

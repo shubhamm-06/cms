@@ -156,6 +156,8 @@ Use blank placeholders from `.env.example`. Deployment steps are in [Deployment 
 
 Global analytics is limited to the GTM base integration in `app/layout.tsx`. When `NEXT_PUBLIC_GTM_ID` is unset, no GTM script or noscript iframe renders. GA4 and event tracking are managed inside GTM, not directly in the application code.
 
+Homepage funnel event tracking uses `src/lib/analytics.ts` to push non-PII objects to `window.dataLayer`. The helper no-ops during SSR, does not call `gtag`, does not include analytics IDs, and strips `undefined` values. The public homepage tracks calendar clicks, WhatsApp clicks, forecast-form open/start, successful lead generation, pitch-deck ready state, and pitch-deck downloads. The primary conversion is `generate_lead`, fired only after `/api/owner-forecast` succeeds and the forecast is accepted/displayed. See [Analytics Tracking](./ANALYTICS.md).
+
 ## Homepage and Forecast Funnel
 
 - `/` renders `components/home/reference-home.tsx`, and `reference/index.html` is the visual source of truth for the owner landing page.

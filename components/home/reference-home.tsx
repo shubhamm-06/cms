@@ -31,12 +31,34 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { trackDataLayerEvent } from "@/src/lib/analytics";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
 
 const photo = (name: string) => `/homepage/${name}`;
 const BOOK_CALL_URL = "https://calendar.app.google/U1j59uGweQoZ7hZd7";
 const WHATSAPP_URL = "https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa.";
+
+function trackCalendarClick(ctaLocation: string) {
+  trackDataLayerEvent("calendar_click", {
+    cta_location: ctaLocation,
+    destination_type: "google_appointment_schedule",
+  });
+}
+
+function trackWhatsappClick(ctaLocation: string) {
+  trackDataLayerEvent("whatsapp_click", {
+    cta_location: ctaLocation,
+    destination_type: "whatsapp",
+  });
+}
+
+function trackForecastFormOpen(ctaLocation: string) {
+  trackDataLayerEvent("forecast_form_open", {
+    cta_location: ctaLocation,
+    form_name: "owner_forecast",
+  });
+}
 
 const navLinks = [
   ["How it works", "services"],
@@ -339,7 +361,7 @@ function Header() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
-          <ButtonLink href={BOOK_CALL_URL} rel="noreferrer" size="sm" target="_blank" variant="ghost">
+          <ButtonLink href={BOOK_CALL_URL} onClick={() => trackCalendarClick("header")} rel="noreferrer" size="sm" target="_blank" variant="ghost">
             Book a call
           </ButtonLink>
           <ButtonLink href="/dashboard" size="sm">
@@ -381,7 +403,10 @@ function Header() {
                 <a
                   className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-sm font-bold text-[#332c28] transition hover:border-[#ffb1b3] hover:bg-[#fff8f8]"
                   href={BOOK_CALL_URL}
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => {
+                    trackCalendarClick("mobile_menu");
+                    setMenuOpen(false);
+                  }}
                   rel="noreferrer"
                   target="_blank"
                 >
@@ -452,10 +477,10 @@ function Hero() {
             We help Goa homeowners earn more through fully managed short-term rentals, with complete financial transparency.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
-            <ButtonLink className="w-full sm:w-auto" target="_blank" href="https://calendar.app.google/U1j59uGweQoZ7hZd7" size="lg">
+            <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("hero")} rel="noreferrer" size="lg" target="_blank">
               Book a discovery call <ArrowRight className="h-4 w-4" />
             </ButtonLink>
-            <ButtonLink className="w-full sm:w-auto" href="#calculator" size="lg" variant="secondary">
+            <ButtonLink className="w-full sm:w-auto" href="#calculator" onClick={() => trackForecastFormOpen("hero")} size="lg" variant="secondary">
               <FileText className="h-4 w-4" /> Get my custom pitch deck
             </ButtonLink>
           </div>
@@ -539,7 +564,7 @@ function MathAnchor() {
       </div>
       <div className="mt-12 text-center">
         <p className="mx-auto max-w-2xl text-2xl font-extrabold italic tracking-tight text-[#e9aa4b]">&quot;Same property. Different operating model. Better cash flow.&quot;</p>
-        <a className="mt-6 inline-flex items-center gap-2 border-b-2 border-[#ff5a5f] pb-1 text-base font-extrabold text-white" href="#calculator">
+        <a className="mt-6 inline-flex items-center gap-2 border-b-2 border-[#ff5a5f] pb-1 text-base font-extrabold text-white" href="#calculator" onClick={() => trackForecastFormOpen("math_comparison")}>
           See the full numbers for your property <ArrowRight className="h-4 w-4" />
         </a>
       </div>
@@ -732,7 +757,7 @@ function ForecastResult({
       </p>
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap [&>*]:w-full sm:[&>*]:w-auto">
         {whatsappUrl ? (
-          <ButtonLink href={whatsappUrl} rel="noreferrer" size="lg" target="_blank">
+          <ButtonLink href={whatsappUrl} onClick={() => trackWhatsappClick("forecast_result")} rel="noreferrer" size="lg" target="_blank">
             <MessageCircle className="h-4 w-4" /> WhatsApp us now
           </ButtonLink>
         ) : (
@@ -741,7 +766,7 @@ function ForecastResult({
           </ButtonLink>
         )}
         {pitchDeckStatus === "ready" && pdfDownloadUrl ? (
-          <ButtonLink href={pdfDownloadUrl} rel="noreferrer" size="lg" target="_blank" variant="secondary">
+          <ButtonLink href={pdfDownloadUrl} onClick={() => trackDataLayerEvent("pitch_deck_download", { asset_type: "pitch_deck_pdf", cta_location: "forecast_result" })} rel="noreferrer" size="lg" target="_blank" variant="secondary">
             <FileText className="h-4 w-4" /> Download full pitch deck
           </ButtonLink>
         ) : pitchDeckStatus === "generating" ? (
@@ -770,6 +795,7 @@ function CalculatorSection() {
   const [touched, setTouched] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const forecastStartedRef = useRef(false);
   const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email);
   const area = Number(data.areaSqft);
   const step1Ok = Boolean(
@@ -787,7 +813,17 @@ function CalculatorSection() {
   const configurationOptions = data.propertyCategory === "Apartment" ? apartmentConfigurations : villaConfigurations;
 
   function setField<Key extends keyof CalculatorData>(key: Key, value: CalculatorData[Key]) {
+    trackForecastStarted();
     setData((current) => ({ ...current, [key]: value }));
+  }
+
+  function trackForecastStarted() {
+    if (forecastStartedRef.current) return;
+    forecastStartedRef.current = true;
+    trackDataLayerEvent("forecast_form_started", {
+      form_name: "owner_forecast",
+      form_step: `step_${step + 1}`,
+    });
   }
 
   function nextStep() {
@@ -809,6 +845,7 @@ function CalculatorSection() {
   }
 
   function toggleAmenity(amenity: string) {
+    trackForecastStarted();
     setData((current) => ({
       ...current,
       amenities: current.amenities.includes(amenity)
@@ -838,6 +875,10 @@ function CalculatorSection() {
         throw new Error(body.message || "Could not generate your forecast right now.");
       }
       setResult(body);
+      trackDataLayerEvent("generate_lead", {
+        form_name: "owner_forecast",
+        lead_type: "pitch_deck_forecast",
+      });
       setPitchDeckStatus("generating");
       window.setTimeout(() => void generateProposal(payload), 0);
     } catch (error) {
@@ -864,6 +905,9 @@ function CalculatorSection() {
         throw new Error("Pitch deck generation failed.");
       }
       setProposal(body);
+      trackDataLayerEvent("pitch_deck_ready", {
+        lead_type: "pitch_deck_forecast",
+      });
       setPitchDeckStatus("ready");
     } catch {
       setPitchDeckStatus("failed");
@@ -904,6 +948,7 @@ function CalculatorSection() {
                 <Field label="Property category" required>
                   <Segmented
                     onChange={(value) => {
+                      trackForecastStarted();
                       const propertyCategory = value as CalculatorData["propertyCategory"];
                       setData((current) => ({
                         ...current,
@@ -1317,7 +1362,7 @@ function Testimonials() {
         ))}
       </div>
       <div className="mt-10 text-center">
-        <ButtonLink href={BOOK_CALL_URL} rel="noreferrer" size="lg" target="_blank">
+        <ButtonLink href={BOOK_CALL_URL} onClick={() => trackCalendarClick("testimonials")} rel="noreferrer" size="lg" target="_blank">
           Book a discovery call <ArrowRight className="h-4 w-4" />
         </ButtonLink>
       </div>
@@ -1432,7 +1477,7 @@ function Tiers() {
               ))}
             </ul>
             <div className="mt-7">
-              <ButtonLink className="w-full" href={BOOK_CALL_URL} rel="noreferrer" target="_blank" variant={tier.featured ? "primary" : "secondary"}>
+              <ButtonLink className="w-full" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("tier_card")} rel="noreferrer" target="_blank" variant={tier.featured ? "primary" : "secondary"}>
                 Choose {tier.name}
               </ButtonLink>
             </div>
@@ -1442,10 +1487,10 @@ function Tiers() {
       <div className="mt-12 text-center">
         <p className="mx-auto max-w-3xl text-base leading-7 text-[#717171]">Not sure which model fits? Tell us about your property in the calculator above and we will recommend one in your custom pitch deck.</p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} rel="noreferrer" size="lg" target="_blank">
+          <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("tiers")} rel="noreferrer" size="lg" target="_blank">
             Book a discovery call <ArrowRight className="h-4 w-4" />
           </ButtonLink>
-          <ButtonLink className="w-full sm:w-auto" href="#calculator" size="lg" variant="secondary">
+          <ButtonLink className="w-full sm:w-auto" href="#calculator" onClick={() => trackForecastFormOpen("tiers")} size="lg" variant="secondary">
             See how we calculate your share
           </ButtonLink>
         </div>
@@ -1793,7 +1838,7 @@ function InvestmentInline() {
       </div>
       <p className="mt-4 text-[12.5px] italic leading-5 text-[#b0b0b0]">These are illustrative scenarios based on current Goa market data. Actual returns depend on property specifics, location, season, and market dynamics.</p>
       <div className="mt-5">
-        <ButtonLink className="w-full" href={BOOK_CALL_URL} rel="noreferrer" size="lg" target="_blank">
+        <ButtonLink className="w-full" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("investment_accordion")} rel="noreferrer" size="lg" target="_blank">
           Thinking of buying? Get a custom analysis <ArrowRight className="h-4 w-4" />
         </ButtonLink>
       </div>
@@ -1810,10 +1855,10 @@ function FinalCTA() {
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">Book a 30-minute discovery call. We will look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move for you. If it&apos;s not, we&apos;ll say so.</p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} size="lg" variant="onDark">
+          <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("footer_cta")} size="lg" variant="onDark">
             <Calendar className="h-4 w-4" /> Book a discovery call
           </ButtonLink>
-          <ButtonLink className="w-full sm:w-auto" href={WHATSAPP_URL} size="lg" variant="outlineDark">
+          <ButtonLink className="w-full sm:w-auto" href={WHATSAPP_URL} onClick={() => trackWhatsappClick("footer_cta")} size="lg" variant="outlineDark">
             <MessageCircle className="h-4 w-4" /> WhatsApp us directly
           </ButtonLink>
         </div>
@@ -1841,7 +1886,7 @@ function Footer() {
     { href: "#extras", label: "Sample P&L Statement" },
     { href: "#extras", label: "Standard L&L Agreement" },
     { href: "#tiers", label: "Tier System One-Pager" },
-    { href: "#calculator", label: "ROI Calculator" },
+            { href: "#calculator", label: "ROI Calculator", onClick: () => trackForecastFormOpen("footer") },
   ];
 
   return (
@@ -1854,7 +1899,7 @@ function Footer() {
             <div className="mt-5 grid gap-3 text-sm">
               <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-white/50" /> Goa, India</span>
               <a className="inline-flex min-w-0 items-center gap-2 break-all" href="mailto:curatemystay@gmail.com"><Mail className="h-4 w-4 shrink-0 text-white/50" /> curatemystay@gmail.com</a>
-              <a className="inline-flex items-center gap-2" href={WHATSAPP_URL} rel="noreferrer" target="_blank"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
+              <a className="inline-flex items-center gap-2" href={WHATSAPP_URL} onClick={() => trackWhatsappClick("footer")} rel="noreferrer" target="_blank"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
             </div>
           </div>
           <FooterLinks items={siteLinks} title="Site" />
@@ -1873,13 +1918,13 @@ function Footer() {
   );
 }
 
-function FooterLinks({ items, title }: { items: Array<{ href: string; label: string }>; title: string }) {
+function FooterLinks({ items, title }: { items: Array<{ href: string; label: string; onClick?: () => void }>; title: string }) {
   return (
     <div>
       <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/40">{title}</div>
       <div className="mt-4 grid gap-3 text-sm">
         {items.map((item) => (
-          <a className="hover:text-white" href={item.href} key={item.label}>
+          <a className="hover:text-white" href={item.href} key={item.label} onClick={item.onClick}>
             {item.label}
           </a>
         ))}
@@ -1907,14 +1952,14 @@ function BookingModal({ onClose, open }: { onClose: () => void; open: boolean })
         </div>
         <div className="p-5 sm:p-7">
           <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#717171]">Pick a slot</div>
-          <ButtonLink className="w-full" href={BOOK_CALL_URL} rel="noreferrer" size="lg" target="_blank">
+          <ButtonLink className="w-full" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("booking_modal")} rel="noreferrer" size="lg" target="_blank">
             <Calendar className="h-4 w-4" /> Book via Google Calendar
           </ButtonLink>
           <p className="mt-3 text-center text-xs text-[#b0b0b0]">Calendar: curatemystay@gmail.com</p>
           <div className="my-5 flex items-center gap-3 text-xs text-[#717171]">
             <span className="h-px flex-1 bg-[#ebebeb]" /> or <span className="h-px flex-1 bg-[#ebebeb]" />
           </div>
-          <ButtonLink className="w-full" href="https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa." size="lg" variant="secondary">
+          <ButtonLink className="w-full" href={WHATSAPP_URL} onClick={() => trackWhatsappClick("booking_modal")} rel="noreferrer" size="lg" target="_blank" variant="secondary">
             <MessageCircle className="h-4 w-4" /> WhatsApp us directly
           </ButtonLink>
         </div>
