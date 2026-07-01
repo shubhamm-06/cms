@@ -49,7 +49,8 @@ export function UserEditForm({ profile }: { profile: Profile }) {
 
 export function PropertyForm({ owners, property }: { owners: Profile[]; property?: Property }) {
   return (
-    <form action={savePropertyAction} className="grid gap-3 md:grid-cols-4">
+    <form action={savePropertyAction} className="grid gap-3 md:grid-cols-4" key={property?.id || "new-property-form"}>
+      <input name="mode" type="hidden" value={property ? "edit" : "add"} />
       <input name="id" type="hidden" value={property?.id || ""} />
       <Field label="Name">
         <Input defaultValue={property?.name || ""} name="name" required />

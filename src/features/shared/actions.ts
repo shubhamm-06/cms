@@ -54,12 +54,23 @@ export async function savePropertyAction(formData: FormData) {
   await requireRole("admin");
   const parsed = propertySchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return;
+  const mode = String(formData.get("mode") || "add");
   const { id, ...values } = emptyToNull(parsed.data);
+  delete values.image_url;
   const supabase = await createClient();
-  if (id) await supabase.from("properties").update(values).eq("id", id);
-  else await supabase.from("properties").insert(values);
+  if (mode === "edit") {
+    if (!id) redirect("/dashboard/properties?error=missing-property-id");
+    const existing = await supabase.from("properties").select("id").eq("id", id).maybeSingle();
+    if (!existing.data) redirect("/dashboard/properties?error=property-not-found");
+    const { error } = await supabase.from("properties").update(values).eq("id", id);
+    if (error) redirect("/dashboard/properties?error=save-failed");
+  } else {
+    const { error } = await supabase.from("properties").insert(values);
+    if (error) redirect("/dashboard/properties?error=save-failed");
+  }
   revalidatePath("/dashboard/properties");
   revalidatePath("/dashboard");
+  redirect("/dashboard/properties");
 }
 
 export async function deletePropertyAction(formData: FormData) {

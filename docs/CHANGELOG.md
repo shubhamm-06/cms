@@ -1,5 +1,12 @@
 # Changelog
 
+## Admin Property Edit Fix
+
+- Fixed `/dashboard/properties?edit=<id>` so the client form remounts with the selected property id instead of keeping stale add-mode defaults.
+- Updated the property save action to require a valid id for edit submissions, update the existing row by id, preserve existing `image_url`, and redirect back to `/dashboard/properties` after successful save.
+- Add mode still inserts a new property with the same owner assignment, share, bedrooms, address, city, and status fields.
+- No payout, booking, auth, RLS, forecast, or unrelated dashboard logic changed.
+
 ## Homepage Analytics Tracking
 
 - Added a small browser-safe `dataLayer` helper for non-PII GTM event pushes.

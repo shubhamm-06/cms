@@ -220,7 +220,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 ## Admin Operations
 
 - Users: approve/change roles/status; protected admin remains active/admin and undeletable.
-- Properties: CRUD and owner/share assignment; image URL field is absent and existing values are preserved on edit.
+- Properties: CRUD and owner/share assignment. Edit mode remounts the existing form with the selected property id, server-side updates require that id, and successful saves redirect back to `/dashboard/properties` so edit mode resets. The image URL field is absent and existing `image_url` values are preserved on edit.
 - Bookings: CRUD, settings-backed source/concierge, automatic status.
 - Expenses: CRUD; CMS default and property requirement rules.
 - P&L: operational summary.

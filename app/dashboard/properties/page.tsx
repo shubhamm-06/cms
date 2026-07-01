@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PropertyForm } from "@/components/forms/admin-forms";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -36,7 +37,7 @@ export default async function PropertiesPage({
           title={propertyToEdit ? "Edit property" : "Add property"}
         />
         <CardBody>
-          <PropertyForm owners={owners} property={propertyToEdit} />
+          <PropertyForm key={propertyToEdit?.id || "new-property"} owners={owners} property={propertyToEdit} />
         </CardBody>
       </Card>
       <Card>
@@ -48,4 +49,3 @@ export default async function PropertiesPage({
     </>
   );
 }
-import Link from "next/link";
