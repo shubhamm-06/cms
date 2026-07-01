@@ -258,6 +258,8 @@ Prefer direct authenticated Supabase queries and feature server actions. Keep co
 - Existing server-action forms use native selects unless a future focused task changes one safely.
 - Delete/destructive actions should use `AlertDialog`; success/failure feedback can use Sonner toasts.
 - Tables continue using TanStack Table, with controlled horizontal scrolling as the default mobile behavior.
+- Dashboard navigation active states use `usePathname` in `components/layout/navigation-links.tsx` with exact root matching and segment-bound child matching.
+- Admin navigation stays efficient and operational; owner navigation can be slightly calmer and more polished because owners are the primary product-facing users.
 - Avoid generic UI abstractions that make future human editing harder.
 
 See [UI Conventions](./UI_CONVENTIONS.md) for the short practical checklist.

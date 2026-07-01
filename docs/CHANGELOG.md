@@ -1,5 +1,12 @@
 # Changelog
 
+## Dashboard Active Navigation
+
+- Added a small client navigation link component for admin and owner dashboard navigation so active states update correctly during App Router client navigation.
+- Replaced loose sidebar `startsWith` matching with exact root matching and segment-bound child matching.
+- Added `aria-current="page"` to the active dashboard navigation link and reused the same active logic for desktop sidebar and mobile dashboard navigation.
+- Kept navigation labels, routes, role visibility, page layout, forms, server actions, Supabase, auth, payouts, bookings, tables, homepage, analytics, and middleware unchanged.
+
 ## Minimal shadcn/ui Foundation
 
 - Added a minimal shadcn/ui-compatible foundation with `components.json`, a shared `cn` helper, and selected source primitives in `components/ui`.

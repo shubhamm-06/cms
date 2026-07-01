@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { AppProfile } from "@/types/app.types";
+import { NavigationLinks } from "@/components/layout/navigation-links";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 
@@ -17,6 +18,9 @@ export async function DashboardShell({
       <Sidebar mode={mode} profile={profile} />
       <main className="min-w-0 flex-1">
         <Topbar profile={profile} />
+        <div className="border-b border-[var(--border)] bg-[var(--surface)] md:hidden">
+          <NavigationLinks mode={mode} variant="mobile" />
+        </div>
         <div className="p-5 md:p-7">{children}</div>
       </main>
     </div>

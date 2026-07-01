@@ -10,3 +10,6 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 6. Tables continue using TanStack Table through the existing table components.
 7. Mobile table default is controlled horizontal scrolling unless a specific screen needs a separate mobile layout.
 8. Avoid generic abstractions that make future human edits harder.
+9. Dashboard navigation active states use exact or segment-bound route matching, set `aria-current="page"`, and should never highlight more than one item.
+10. Admin UI should remain efficient, dense, and operational for repeated back-office work.
+11. Owner UI should be slightly more polished, calm, and user-friendly because owners are the main product-facing users.
