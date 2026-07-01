@@ -1,5 +1,19 @@
 # Changelog
 
+## Minimal shadcn/ui Foundation
+
+- Added a minimal shadcn/ui-compatible foundation with `components.json`, a shared `cn` helper, and selected source primitives in `components/ui`.
+- Added Button, Input, Textarea, Card, Badge, AlertDialog, Skeleton, Tooltip, and Sonner primitives while preserving existing dashboard/homepage styling and existing table behavior.
+- Mounted the Sonner toaster once in the root layout.
+- Added `docs/UI_CONVENTIONS.md` and linked it from the documentation index.
+- No active page route, form workflow, server action, Supabase query, analytics logic, payout logic, booking logic, auth flow, database schema, or dashboard design was changed.
+
+## Supabase Stale Refresh Cookie Handling
+
+- Updated the Supabase proxy session refresh helper to catch `refresh_token_not_found`, clear stale `sb-*` auth cookies, and continue the request.
+- Prevents expired local browser cookies from producing repeated `Invalid Refresh Token: Refresh Token Not Found` errors during `next start`.
+- No auth permissions, RLS policies, login behavior, schema, or dashboard business logic changed.
+
 ## Admin Property Edit Fix
 
 - Fixed `/dashboard/properties?edit=<id>` so the client form remounts with the selected property id instead of keeping stale add-mode defaults.

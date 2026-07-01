@@ -23,11 +23,12 @@ Deferred: calendar, Forma Sheet, budgeting, receipt upload, channel sync, paymen
 - Supabase Auth/Postgres via `@supabase/ssr` and `@supabase/supabase-js`
 - Zod validation
 - TanStack Table for dashboard data tables
+- Select shadcn/ui-compatible source primitives in `components/ui`
 - Lucide icons
 - Resend email
 - Google Apps Script proposal/PDF generation
 
-No global state framework, CSS-in-JS layer, repository/service architecture, or UI framework is used.
+No global state framework, CSS-in-JS layer, repository/service architecture, or full UI framework is used.
 
 ## Architecture Map
 
@@ -39,7 +40,7 @@ components/
   home/       Public reference-style homepage and forecast UI.
   forms/      Concrete auth/admin/booking/contact forms.
   layout/     Admin/owner shell, sidebar, topbar, page headers.
-  ui/         Small Tailwind primitives and shared TanStack DataTable.
+  ui/         Small Tailwind/shadcn-compatible primitives and shared TanStack DataTable.
 
 src/features/
   auth/            Auth actions, profile guards, redirects.
@@ -110,7 +111,7 @@ See [Routes and Permissions](./ROUTES_AND_PERMISSIONS.md) for purpose and securi
 6. Admin and owner route layouts call `requireRole()`.
 7. Server mutation actions re-check the required role.
 
-`proxy.ts` refreshes Supabase sessions for matched routes. The public `/` route alone skips session refresh to remain a static acquisition page.
+`proxy.ts` refreshes Supabase sessions for matched routes. The public `/` route alone skips session refresh to remain a static acquisition page. If Supabase reports `refresh_token_not_found`, the proxy clears stale `sb-*` auth cookies from the forwarded request and response so expired local browser sessions do not crash or spam the production server.
 
 ## Supabase Clients
 
@@ -244,8 +245,22 @@ Practical details: [Admin Operations Guide](./ADMIN_OPERATIONS_GUIDE.md).
 | Auth/roles | `src/features/auth/*`, route layouts, route/schema docs |
 | Theme/layout | `app/globals.css`, `components/layout/*`, route pages |
 | Tables | `components/ui/data-table.tsx`, feature columns/wrappers |
+| Shared UI primitives | `components/ui/*`, [UI Conventions](./UI_CONVENTIONS.md) |
 
 Prefer direct authenticated Supabase queries and feature server actions. Keep components and helpers small; do not introduce repositories, factories, or service layers without demonstrated need.
+
+## UI Conventions
+
+- Tailwind utilities handle layout, spacing, responsiveness, and page-level styling.
+- `components/ui` contains selectively reused source primitives: Button, Input, Textarea, Card, Badge, AlertDialog, Skeleton, Tooltip, Sonner, and the existing table utilities.
+- `app/layout.tsx` mounts the Sonner toaster once for application feedback.
+- Business forms stay in `components/forms` and keep current server-action submission flows.
+- Existing server-action forms use native selects unless a future focused task changes one safely.
+- Delete/destructive actions should use `AlertDialog`; success/failure feedback can use Sonner toasts.
+- Tables continue using TanStack Table, with controlled horizontal scrolling as the default mobile behavior.
+- Avoid generic UI abstractions that make future human editing harder.
+
+See [UI Conventions](./UI_CONVENTIONS.md) for the short practical checklist.
 
 ## Known Limitations
 
