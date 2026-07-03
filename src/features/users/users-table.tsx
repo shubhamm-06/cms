@@ -9,9 +9,9 @@ export function UsersTable({ profiles }: { profiles: UserTableRow[] }) {
       columns={userColumns}
       data={profiles}
       embedded
-      emptyMessage="No users found."
+      emptyMessage="No users are available yet. Public signups will appear here for approval."
       pageSize={8}
-      searchPlaceholder="Search users..."
+      searchPlaceholder="Search name, email, or phone..."
     />
   );
 }

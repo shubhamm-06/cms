@@ -1,5 +1,14 @@
 # Changelog
 
+## Admin Users UI Reference Pass
+
+- Improved `/dashboard/users` with clearer page hierarchy, status/role summary cards, a refined users table header, and a route loading skeleton.
+- Polished user row spacing, no-wrap role/status badges, protected-admin identification, and row action readability while keeping TanStack DataTable search/pagination and horizontal mobile scrolling unchanged.
+- Added row-level pending save feedback to the existing user update form.
+- Added user-only notice handling for `user_updated`, `user_deleted`, and blocked protected-admin deletion attempts, with the page toast removing the notice from the URL after display.
+- Replaced direct user deletion with an AlertDialog confirmation that identifies the selected user by name/email before submitting the existing delete action.
+- Preserved protected-admin server-side behavior, role/status validation, public pending-owner signup flow, permissions, auth, schema, RLS assumptions, and unrelated dashboard modules.
+
 ## Admin Expenses UI Reference Pass
 
 - Improved `/dashboard/expenses` with clearer page hierarchy, separate expense form/list cards, grouped CMS/property context, grouped category/date/amount/vendor controls, full-width notes, and a route loading skeleton.

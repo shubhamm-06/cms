@@ -228,7 +228,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 
 ## Admin Operations
 
-- Users: approve/change roles/status; protected admin remains active/admin and undeletable.
+- Users: approve/change roles/status; protected admin remains active/admin and undeletable. `/dashboard/users` shows status/role summary cards, no-wrap role/status badges, row-level pending save feedback, user-only notice codes for update/delete results, AlertDialog delete confirmation for non-protected users, and a route-level loading skeleton.
 - Properties: CRUD and owner/share assignment. Edit mode remounts the existing form with the selected property id, server-side updates require that id, and successful saves redirect back to `/dashboard/properties` so edit mode resets. The image URL field is absent and existing `image_url` values are preserved on edit. Create/update/delete redirects use property-only notice codes for one-time success toasts, and property deletion is confirmed with an AlertDialog before submitting the existing delete action.
 - Bookings: CRUD, settings-backed source/concierge, automatic status, booking-only success notices, and AlertDialog delete confirmation.
 - Expenses: CRUD; CMS default, property requirement rules, expense-only success notices, and AlertDialog delete confirmation.
@@ -268,6 +268,7 @@ Prefer direct authenticated Supabase queries and feature server actions. Keep co
 - Admin create/edit pages can use small page-specific notice query codes for one-time success toasts after server-action redirects.
 - Booking form feedback uses allowlisted booking notice codes and keeps the existing local date/night/rate/amount helper behavior intact.
 - Expense form feedback uses allowlisted expense notice codes and preserves CMS/property select behavior.
+- User-management feedback uses user-only notice codes and keeps protected-admin role/status/delete controls locked in the UI while server actions remain the enforcement boundary.
 - Tables continue using TanStack Table, with controlled horizontal scrolling as the default mobile behavior.
 - Dashboard navigation active states use `usePathname` in `components/layout/navigation-links.tsx` with exact root matching and segment-bound child matching.
 - Admin navigation stays efficient and operational; owner navigation can be slightly calmer and more polished because owners are the primary product-facing users.

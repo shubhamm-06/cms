@@ -37,6 +37,7 @@ export async function updateUserAction(formData: FormData) {
   const data = current.data && isProtectedAdmin(current.data) ? { ...values, role: "admin" as const, status: "active" as const } : values;
   await supabase.from("profiles").update(emptyToNull(data)).eq("id", id);
   revalidatePath("/dashboard/users");
+  redirect("/dashboard/users?notice=user_updated");
 }
 
 export async function deleteUserAction(formData: FormData) {
@@ -45,9 +46,10 @@ export async function deleteUserAction(formData: FormData) {
   const supabase = await createClient();
   const current = await supabase.from("profiles").select("email,is_protected").eq("id", id).maybeSingle();
   // Protected admin deletion is blocked here as well as hidden in the UI.
-  if (!current.data || isProtectedAdmin(current.data)) return;
+  if (!current.data || isProtectedAdmin(current.data)) redirect("/dashboard/users?notice=user_delete_blocked");
   await supabase.from("profiles").delete().eq("id", id);
   revalidatePath("/dashboard/users");
+  redirect("/dashboard/users?notice=user_deleted");
 }
 
 export async function savePropertyAction(formData: FormData) {
