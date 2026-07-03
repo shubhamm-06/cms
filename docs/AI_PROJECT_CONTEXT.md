@@ -212,6 +212,9 @@ Exact formulas: [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md). HTT
 ## Owner Payout Workflow
 
 - `/owner` and the top of `/owner/payout` share current-calendar-month live performance from `calculateOwnerLivePerformance`.
+- `/owner` presents the current-month live figures in a premium owner-facing dashboard layout with clear revenue, property expense, net profit, and estimated payout cards.
+- `/owner` information order is current-month context, live financial performance, latest previous-month statement, recent activity/query sections, then lower-page property summary reference details.
+- `/owner/loading.tsx` provides a route-level skeleton matching the owner dashboard hierarchy and section order.
 - Live performance uses owner-scoped bookings and property expenses and creates no current-month payout row.
 - `/owner/payout` has one latest-first history table containing all owner payout records and no search/tabs.
 - Payable records are for the previous completed calendar month and are ensured on payout-page load.
@@ -269,6 +272,7 @@ Prefer direct authenticated Supabase queries and feature server actions. Keep co
 - Booking form feedback uses allowlisted booking notice codes and keeps the existing local date/night/rate/amount helper behavior intact.
 - Expense form feedback uses allowlisted expense notice codes and preserves CMS/property select behavior.
 - User-management feedback uses user-only notice codes and keeps protected-admin role/status/delete controls locked in the UI while server actions remain the enforcement boundary.
+- Owner dashboard hierarchy should remain calmer than admin pages, with current-month performance first, latest statement next, recent activity after that, and slower-changing property reference details lower on the page.
 - Tables continue using TanStack Table, with controlled horizontal scrolling as the default mobile behavior.
 - Dashboard navigation active states use `usePathname` in `components/layout/navigation-links.tsx` with exact root matching and segment-bound child matching.
 - Admin navigation stays efficient and operational; owner navigation can be slightly calmer and more polished because owners are the primary product-facing users.

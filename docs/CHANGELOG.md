@@ -1,5 +1,19 @@
 # Changelog
 
+## Owner Dashboard Order and Typography Refinement
+
+- Moved `/owner` property summary into a lower-page reference section after live performance, latest statement, recent bookings, expenses, and query sections.
+- Strengthened the owner dashboard typography hierarchy so the page heading, section headings, and financial values are easier to scan without making supporting text compete.
+- Updated `/owner/loading.tsx` to follow the revised dashboard section order.
+- Preserved owner-scoped data reads, `calculateOwnerLivePerformance`, payout calculations, carry-forward/share/TDS logic, statuses, permissions, routing, actions, and `/owner/payout`.
+
+## Owner Dashboard Premium UI Pass
+
+- Reworked `/owner` as the first owner-facing premium dashboard pass with a calmer welcome section, clearer current-month live performance explanation, refined financial cards, and softer read-only supporting sections.
+- Added property summary, latest statement, recent bookings, property expenses, and query sections with improved empty states and mobile-first one-column behavior.
+- Added `/owner/loading.tsx` so the owner dashboard has a skeleton matching the final visual hierarchy.
+- Preserved `calculateOwnerLivePerformance`, payout calculations, carry-forward/share/TDS logic, owner scoping, Supabase reads, permissions, schema, navigation, and `/owner/payout` behavior.
+
 ## Admin Users UI Reference Pass
 
 - Improved `/dashboard/users` with clearer page hierarchy, status/role summary cards, a refined users table header, and a route loading skeleton.

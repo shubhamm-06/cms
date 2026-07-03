@@ -18,3 +18,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 14. Booking form feedback stays booking-specific: use allowlisted notice codes, preserve local date/night/rate/amount helpers, and keep destructive booking deletes behind `AlertDialog`.
 15. Expense form feedback stays expense-specific: use allowlisted notice codes, keep CMS/property select behavior intact, and confirm expense deletes with category, amount, and context.
 16. User-management feedback stays user-specific: keep protected-admin role/status controls locked, use row-level pending save states, and confirm user deletes by name/email.
+17. Owner dashboards should prioritize calm hierarchy: current-month performance first, latest statement next, recent activity after that, and slower-changing property reference details lower on the page.

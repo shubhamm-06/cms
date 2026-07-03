@@ -1,15 +1,25 @@
 import Link from "next/link";
-import { Check, ChevronRight, Flag, MessageSquare } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  ChevronRight,
+  Flag,
+  IndianRupee,
+  MessageSquare,
+  ReceiptText,
+  TrendingDown,
+  TrendingUp,
+  WalletCards,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   calculateBreakupsForOwnerMonth,
-  calculateOwnerLivePerformance,
   calculateOwnerCombinedPayout,
+  calculateOwnerLivePerformance,
   calculatePreviousCarryForward,
 } from "@/src/features/payouts/payout-calculations";
 import { ensureOwnerPayoutForPreviousMonth } from "@/src/features/payouts/payout-actions";
-import { OwnerLivePerformancePanel } from "@/src/features/payouts/owner-live-performance";
 import { getOwnerData } from "@/src/features/shared/data";
 import { currentMonthLabel, formatDate, getCurrentMonthKey, getPreviousMonthKey } from "@/src/lib/utils/dates";
 import { humanize } from "@/src/lib/utils/format";
@@ -18,9 +28,9 @@ import { formatMoney } from "@/src/lib/utils/money";
 function shortMoney(value: number | null | undefined) {
   const amount = Number(value) || 0;
   const abs = Math.abs(amount);
-  if (abs >= 10000000) return `₹${(amount / 10000000).toFixed(1)}Cr`;
-  if (abs >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
-  if (abs >= 1000) return `₹${(amount / 1000).toFixed(1)}k`;
+  if (abs >= 10000000) return `${formatMoney(amount / 10000000)} Cr`;
+  if (abs >= 100000) return `${formatMoney(amount / 100000)} L`;
+  if (abs >= 1000) return `${formatMoney(amount / 1000)}k`;
   return formatMoney(amount);
 }
 
@@ -41,6 +51,53 @@ function payoutStatusTone(
   if (status === "paid" || paidAt || status === "approved" || status === "resolved") return "green";
   if (status === "ready_for_review" || status === "query_raised") return "amber";
   return "neutral";
+}
+
+function propertyInitials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function PerformanceCard({
+  description,
+  icon,
+  label,
+  tone = "neutral",
+  value,
+}: {
+  description: string;
+  icon: ReactNode;
+  label: string;
+  tone?: "green" | "brand" | "neutral";
+  value: number;
+}) {
+  const valueTone =
+    tone === "green" ? "text-[var(--green)]" : tone === "brand" ? "text-[var(--brand-ink)]" : "text-[var(--foreground)]";
+
+  return (
+    <div className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-[0_14px_34px_rgba(22,24,29,0.04)]">
+      <div className="flex items-start justify-between gap-4">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-2.5 text-[var(--brand-ink)]">
+          {icon}
+        </div>
+      </div>
+      <div className="mt-5 text-xs font-bold uppercase tracking-[0.06em] text-[#6f6a62]">{label}</div>
+      <div className={`mt-2 text-4xl font-extrabold tracking-tight ${valueTone}`}>{formatMoney(value)}</div>
+      <p className="mt-3 text-sm leading-6 text-[#5f5b55]">{description}</p>
+    </div>
+  );
+}
+
+function EmptyState({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-2)] px-4 py-8 text-center text-sm leading-6 text-[var(--muted)]">
+      {children}
+    </div>
+  );
 }
 
 export default async function OwnerOverviewPage() {
@@ -92,240 +149,296 @@ export default async function OwnerOverviewPage() {
   const tds = latestPayout?.tds_amount ?? 0;
   const netPayable = latestPayout?.final_payout_amount ?? 0;
   const showPreviousCarryForward = previousCarryForward < 0;
+  const monthLabel = currentMonthLabel();
 
   return (
-    <div>
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[22px] font-bold tracking-tight">
-            Hello, {profile.name || profile.email}.
-          </h1>
-          <p className="mt-1 max-w-2xl text-[13.5px] text-[var(--muted)]">
-            Live performance for {properties.length === 1 ? "your property" : `your ${properties.length} properties`}. Updated from bookings, expenses, and payout records.
+    <div className="space-y-6">
+      <section className="overflow-hidden rounded-3xl border border-[var(--border)] bg-white shadow-[0_18px_55px_rgba(22,24,29,0.06)]">
+        <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.25fr_0.75fr] lg:p-8">
+          <div>
+            <Badge className="mb-4 whitespace-nowrap" tone="brand">
+              Owner dashboard
+            </Badge>
+            <h1 className="max-w-3xl text-4xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-5xl">
+              Welcome, {profile.name || profile.email}.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[#5f5b55]">
+              Current-month performance for {properties.length === 1 ? "your property" : `your ${properties.length || "assigned"} properties`}, updated from owner-scoped bookings and property expenses.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link className="cms-btn cms-btn-primary" href="/owner/payout">
+                <Check className="h-4 w-4" />
+                View payout history
+              </Link>
+              <Link className="cms-btn bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]" href="/owner/queries">
+                <Flag className="h-4 w-4" />
+                Raise a query
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--cream)] p-5">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-white p-3 text-[var(--brand-ink)]">
+                <CalendarDays className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-[var(--foreground)]">Current-month view</div>
+                <div className="text-sm text-[#5f5b55]">{monthLabel}</div>
+              </div>
+            </div>
+            <div className="mt-5 rounded-xl bg-white p-4">
+              <div className="text-xs font-bold uppercase tracking-[0.06em] text-[#6f6a62]">Estimated payout so far</div>
+              <div className="mt-2 text-3xl font-extrabold tracking-tight text-[var(--green)]">
+                {formatMoney(livePerformance.estimated_payout)}
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[#5f5b55]">
+                Live estimate only. Payable statements are based on completed months.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="mb-3">
+          <h2 className="text-xl font-extrabold tracking-tight text-[var(--foreground)]">Current-month live performance</h2>
+          <p className="mt-1 text-sm leading-6 text-[#5f5b55]">
+            Revenue is prorated by nights in {monthLabel}. CMS expenses are excluded.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button>
-            <Link className="inline-flex items-center gap-2" href="/owner/queries">
-              <Flag className="h-4 w-4" />
-              Raise a query
-            </Link>
-          </Button>
-          <Button variant="primary">
-            <Link className="inline-flex items-center gap-2" href="/owner/payout">
-              <Check className="h-4 w-4" />
-              View payout
-            </Link>
-          </Button>
+        <div className="grid gap-4 lg:grid-cols-4">
+          <PerformanceCard
+            description="Booking revenue counted for nights falling in this calendar month."
+            icon={<TrendingUp className="h-5 w-5" />}
+            label="Revenue"
+            tone="green"
+            value={livePerformance.revenue_total}
+          />
+          <PerformanceCard
+            description="Only property expenses linked to your assigned property or properties."
+            icon={<ReceiptText className="h-5 w-5" />}
+            label="Property expenses"
+            tone="brand"
+            value={livePerformance.expense_total}
+          />
+          <PerformanceCard
+            description="Revenue minus property expenses before any monthly payout split."
+            icon={<TrendingDown className="h-5 w-5" />}
+            label="Net profit"
+            value={livePerformance.net_profit}
+          />
+          <PerformanceCard
+            description="Estimated owner payout after share, carry-forward, and TDS rules."
+            icon={<WalletCards className="h-5 w-5" />}
+            label="Estimated payout"
+            tone="green"
+            value={livePerformance.estimated_payout}
+          />
         </div>
-      </div>
+      </section>
 
-      <div className="mb-3 flex flex-wrap gap-2.5">
-        {properties.length === 0 ? (
-          <div className="rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--muted)]">
-            No property has been assigned yet.
-          </div>
-        ) : (
-          properties.map((property, index) => {
-            const active = property.id === selectedPropertyId;
-            const accent = propertyAccent[index % propertyAccent.length];
-            const initials = property.name
-              .split(" ")
-              .map((part) => part[0])
-              .join("")
-              .slice(0, 2)
-              .toUpperCase();
-            return (
-              <Link
-                className={`flex min-w-[220px] items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-left ${
-                  active ? "bg-white shadow-sm" : "bg-[var(--surface-2)]"
-                }`}
-                href="/owner/property"
-                key={property.id}
-                style={{ borderColor: active ? accent : "var(--border)" }}
-              >
-                <span
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-[13px] font-bold text-white"
-                  style={{ background: accent }}
-                >
-                  {initials}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13.5px] font-bold">{property.name}</span>
-                  <span className="block truncate text-xs text-[var(--muted)]">
-                    {property.bedrooms ? `${property.bedrooms} BHK · ` : ""}
-                    {property.city || "Property details"}
-                  </span>
-                </span>
-                {active ? <Check className="h-4 w-4" style={{ color: accent }} /> : null}
-              </Link>
-            );
-          })
-        )}
-      </div>
-
-      <OwnerLivePerformancePanel monthLabel={currentMonthLabel()} performance={livePerformance} />
-
-      {openQuery ? (
-        <div className="mb-3 flex items-start gap-3 rounded-[10px] border border-[#EDDFB1] bg-[var(--amber-soft)] px-3.5 py-3 text-[13px] text-[#6B4F00]">
-          <Flag className="mt-0.5 h-4 w-4 shrink-0" />
-          <div className="flex-1">
-            <div className="font-bold">Your query is being reviewed</div>
-            <div className="mt-0.5">&quot;{openQuery.message}&quot; · raised {formatDate(openQuery.created_at)}</div>
-          </div>
-          <Badge tone="amber">Open</Badge>
-        </div>
-      ) : null}
-
-      <div className="grid grid-cols-12 gap-3.5">
-        <section className="col-span-12 rounded-[14px] border border-[var(--border)] bg-white lg:col-span-7">
-          <div className="flex items-center justify-between gap-3 px-5 py-4">
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-[0_14px_34px_rgba(22,24,29,0.04)]">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-[13.5px] font-bold">Statement — {latestPayout?.month || payoutMonth}</h2>
+              <h2 className="text-xl font-extrabold tracking-tight text-[var(--foreground)]">Latest statement</h2>
+              <p className="mt-1 text-sm leading-6 text-[#5f5b55]">
+                Previous completed month. Current-month figures above are live estimates.
+              </p>
             </div>
-            <Badge tone={payoutStatusTone(latestPayout?.status, latestPayout?.paid_at)}>
+            <Badge className="whitespace-nowrap" tone={payoutStatusTone(latestPayout?.status, latestPayout?.paid_at)}>
               {payoutStatusLabel(latestPayout?.status, latestPayout?.paid_at)}
             </Badge>
           </div>
-          <div className="px-5 pb-5">
-            <table className="w-full border-collapse text-[13.5px]">
-              <tbody>
-                <tr className="border-b border-[var(--border)]">
-                  <td className="py-3 font-semibold">Rental revenue</td>
-                  <td className="py-3 text-right font-semibold text-[var(--green)]">+ {formatMoney(latestPayout?.revenue_total)}</td>
-                </tr>
-                <tr className="border-b border-[var(--border)]">
-                  <td className="py-3 font-semibold">Property expenses</td>
-                  <td className="py-3 text-right text-[var(--brand)]">- {formatMoney(latestPayout?.expense_total)}</td>
-                </tr>
-                {showPreviousCarryForward ? (
-                  <tr className="border-b border-[var(--border)]">
-                    <td className="py-3 font-semibold">Previous carry forward</td>
-                    <td className="py-3 text-right">{formatMoney(previousCarryForward)}</td>
-                  </tr>
-                ) : null}
-                <tr className="border-b border-[var(--border)]">
-                  <td className="py-3 font-semibold">Adjusted profit</td>
-                  <td className="py-3 text-right font-semibold">{formatMoney(latestPayout?.net_profit)}</td>
-                </tr>
-                <tr className="border-b border-[var(--border)]">
-                  <td className="py-3 pl-3">Owner share ({ownerSharePercent}%)</td>
-                  <td className="py-3 text-right">{formatMoney(ownerShare)}</td>
-                </tr>
-                <tr className="border-b border-[var(--border)]">
-                  <td className="py-3 pl-3">CMS management ({cmsSharePercent}%)</td>
-                  <td className="py-3 text-right">{formatMoney(cmsShare)}</td>
-                </tr>
-                <tr className="border-b border-[var(--border)] text-[var(--muted)]">
-                  <td className="py-3 pl-3">TDS 10%</td>
-                  <td className="py-3 text-right">- {formatMoney(tds)}</td>
-                </tr>
-                <tr className="border-b border-[var(--border)]">
-                  <td className="border-t-2 border-[var(--foreground)] pt-3 text-[15px] font-extrabold">
-                    Net payable to you
-                  </td>
-                  <td className="border-t-2 border-[var(--foreground)] pt-3 text-right text-lg font-extrabold text-[var(--green)]">
-                    {formatMoney(netPayable)}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-3 font-semibold">Status</td>
-                  <td className="py-3 text-right font-semibold">
-                    {payoutStatusLabel(latestPayout?.status, latestPayout?.paid_at)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+
+          <div className="mt-5 rounded-2xl border border-[var(--border)]">
+            {[
+              ["Statement month", latestPayout?.month || payoutMonth],
+              ["Rental revenue", formatMoney(latestPayout?.revenue_total)],
+              ["Property expenses", formatMoney(latestPayout?.expense_total)],
+              ...(showPreviousCarryForward ? [["Previous carry forward", formatMoney(previousCarryForward)]] : []),
+              ["Adjusted profit", formatMoney(latestPayout?.net_profit)],
+              [`Owner share (${ownerSharePercent}%)`, formatMoney(ownerShare)],
+              [`CMS management (${cmsSharePercent}%)`, formatMoney(cmsShare)],
+              ["TDS 10%", `- ${formatMoney(tds)}`],
+            ].map(([label, value]) => (
+              <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] px-4 py-3 text-sm last:border-b-0" key={label}>
+                <span className="text-[#5f5b55]">{label}</span>
+                <span className="text-right font-semibold text-[var(--foreground)]">{value}</span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between gap-4 rounded-b-2xl bg-[var(--surface-2)] px-4 py-4">
+              <span className="text-sm font-bold text-[var(--foreground)]">Net payable to you</span>
+              <span className="text-xl font-extrabold text-[var(--green)]">{formatMoney(netPayable)}</span>
+            </div>
           </div>
         </section>
 
-        <div className="col-span-12 flex flex-col gap-3.5 lg:col-span-5">
-          <section className="rounded-[14px] border border-[var(--border)] bg-white">
-            <div className="px-5 py-4 text-[13.5px] font-bold">Bookings this month</div>
-            <div className="px-5 pb-1">
-              {propertyBookings.length === 0 ? (
-                <div className="py-8 text-center text-sm text-[var(--muted)]">No bookings yet</div>
-              ) : (
-                propertyBookings.slice(0, 5).map((booking) => (
-                  <div className="flex items-center gap-3 border-t border-[var(--border)] py-3" key={booking.id}>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-[13px] font-bold">{booking.guest_name}</div>
-                      <div className="text-xs text-[var(--muted)]">
-                        {formatDate(booking.check_in)} to {formatDate(booking.check_out)} · {booking.nights || 0}n
-                      </div>
-                    </div>
-                    <Badge tone="teal">{booking.source || "Direct"}</Badge>
-                    <div className="min-w-16 text-right text-[13px] font-bold">{shortMoney(booking.total_amount)}</div>
-                  </div>
-                ))
-              )}
+      <div className="grid gap-5 xl:grid-cols-2">
+        <section className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-[0_14px_34px_rgba(22,24,29,0.04)]">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-extrabold tracking-tight text-[var(--foreground)]">Recent bookings</h2>
+              <p className="mt-1 text-sm leading-6 text-[#5f5b55]">Latest stays visible to your owner account.</p>
             </div>
-          </section>
-
-          <section className="rounded-[14px] border border-[var(--border)] bg-white">
-            <div className="px-5 py-4 text-[13.5px] font-bold">Recent expenses</div>
-            <div className="px-5 pb-1">
-              {propertyExpenses.length === 0 ? (
-                <div className="py-8 text-center text-sm text-[var(--muted)]">No expenses logged</div>
-              ) : (
-                propertyExpenses.slice(0, 4).map((expense) => (
-                  <div className="flex items-center gap-3 border-t border-[var(--border)] py-3" key={expense.id}>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-[13px] font-bold">{expense.vendor || expense.category}</div>
-                      <div className="truncate text-xs text-[var(--muted)]">{expense.note || expense.category}</div>
-                    </div>
-                    <div className="text-[13px] font-bold">{shortMoney(expense.amount)}</div>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-        </div>
-
-        <section className="col-span-12 rounded-[14px] border border-[var(--border)] bg-white">
-          <div className="flex items-center justify-between px-5 py-4">
-            <h2 className="text-[13.5px] font-bold">Queries & disputes</h2>
-            <Link className="inline-flex items-center gap-1 text-xs font-bold text-[var(--brand-ink)]" href="/owner/queries">
-              <MessageSquare className="h-3.5 w-3.5" />
-              Manage
-              <ChevronRight className="h-3.5 w-3.5" />
+            <Link className="inline-flex items-center gap-1 text-sm font-bold text-[var(--brand-ink)]" href="/owner/bookings">
+              View all
+              <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="overflow-x-auto">
-            <table className="cms-table">
-              <thead>
-                <tr>
-                  <th>Raised</th>
-                  <th>Topic</th>
-                  <th>Status</th>
-                  <th>Resolved</th>
-                </tr>
-              </thead>
-              <tbody>
-                {queries.length === 0 ? (
-                  <tr>
-                    <td className="p-9 text-center text-[var(--muted)]" colSpan={4}>
-                      No queries raised — everything looks aligned.
-                    </td>
-                  </tr>
-                ) : (
-                  queries.map((query) => (
-                    <tr key={query.id}>
-                      <td>{formatDate(query.created_at)}</td>
-                      <td className="font-semibold">{query.message}</td>
-                      <td>
-                        <Badge tone={query.resolved ? "green" : "amber"}>{query.status}</Badge>
-                      </td>
-                      <td>{query.resolved ? "Yes" : "No"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <div className="mt-5 space-y-3">
+            {propertyBookings.length === 0 ? (
+              <EmptyState>No bookings are visible for your assigned property yet.</EmptyState>
+            ) : (
+              propertyBookings.slice(0, 5).map((booking) => (
+                <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] p-4" key={booking.id}>
+                  <div className="rounded-xl bg-[var(--surface-2)] p-2.5 text-[var(--brand-ink)]">
+                    <CalendarDays className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold text-[var(--foreground)]">{booking.guest_name}</div>
+                    <div className="mt-1 text-sm text-[#5f5b55]">
+                      {formatDate(booking.check_in)} to {formatDate(booking.check_out)} | {booking.nights || 0} nights
+                    </div>
+                  </div>
+                  <div className="text-right text-sm font-bold text-[var(--foreground)]">{shortMoney(booking.total_amount)}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-[0_14px_34px_rgba(22,24,29,0.04)]">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-extrabold tracking-tight text-[var(--foreground)]">Property expenses</h2>
+              <p className="mt-1 text-sm leading-6 text-[#5f5b55]">Recent property costs. CMS expenses are not shown here.</p>
+            </div>
+            <Link className="inline-flex items-center gap-1 text-sm font-bold text-[var(--brand-ink)]" href="/owner/expenses">
+              View all
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-5 space-y-3">
+            {propertyExpenses.length === 0 ? (
+              <EmptyState>No property expenses have been logged for your account yet.</EmptyState>
+            ) : (
+              propertyExpenses.slice(0, 5).map((expense) => (
+                <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] p-4" key={expense.id}>
+                  <div className="rounded-xl bg-[var(--surface-2)] p-2.5 text-[var(--brand-ink)]">
+                    <IndianRupee className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold text-[var(--foreground)]">{expense.vendor || expense.category}</div>
+                    <div className="mt-1 truncate text-sm text-[#5f5b55]">{expense.note || expense.category}</div>
+                  </div>
+                  <div className="text-right text-sm font-bold text-[var(--foreground)]">{shortMoney(expense.amount)}</div>
+                </div>
+              ))
+            )}
           </div>
         </section>
       </div>
+
+      {openQuery ? (
+        <section className="flex flex-col gap-3 rounded-2xl border border-[#EDDFB1] bg-[var(--amber-soft)] p-4 text-sm text-[#6B4F00] sm:flex-row sm:items-start">
+          <Flag className="mt-0.5 h-5 w-5 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <div className="font-bold">Your query is being reviewed</div>
+            <div className="mt-1 leading-6">&quot;{openQuery.message}&quot; - raised {formatDate(openQuery.created_at)}</div>
+          </div>
+          <Badge className="w-fit whitespace-nowrap" tone="amber">Open</Badge>
+        </section>
+      ) : null}
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-[0_14px_34px_rgba(22,24,29,0.04)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-extrabold tracking-tight text-[var(--foreground)]">Queries and clarifications</h2>
+            <p className="mt-1 text-sm leading-6 text-[#5f5b55]">
+              Ask the operations team to review a statement or property item.
+            </p>
+          </div>
+          <Link className="inline-flex items-center gap-1 text-sm font-bold text-[var(--brand-ink)]" href="/owner/queries">
+            Manage
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+        <div className="mt-5 space-y-3">
+          {queries.length === 0 ? (
+            <EmptyState>No queries raised. Everything looks aligned.</EmptyState>
+          ) : (
+            queries.slice(0, 4).map((query) => (
+              <div className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] p-4 sm:flex-row sm:items-center" key={query.id}>
+                <div className="rounded-xl bg-[var(--surface-2)] p-2.5 text-[var(--brand-ink)]">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold text-[var(--foreground)]">{query.message}</div>
+                  <div className="mt-1 text-sm text-[#5f5b55]">Raised {formatDate(query.created_at)}</div>
+                </div>
+                <Badge className="w-fit whitespace-nowrap" tone={query.resolved ? "green" : "amber"}>
+                  {query.resolved ? "Resolved" : query.status}
+                </Badge>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-[0_14px_34px_rgba(22,24,29,0.04)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-extrabold tracking-tight text-[var(--foreground)]">Property summary</h2>
+            <p className="mt-1 text-sm leading-6 text-[#5f5b55]">
+              Reference details for the properties currently assigned to you.
+            </p>
+          </div>
+          <Link className="inline-flex items-center gap-1 text-sm font-bold text-[var(--brand-ink)]" href="/owner/property">
+            Details
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+          {properties.length === 0 ? (
+            <EmptyState>No property has been assigned to your owner account yet.</EmptyState>
+          ) : (
+            properties.map((property, index) => {
+              const active = property.id === selectedPropertyId;
+              const accent = propertyAccent[index % propertyAccent.length];
+
+              return (
+                <Link
+                  className={`flex items-center gap-3 rounded-2xl border p-4 transition hover:bg-[var(--surface-2)] ${
+                    active ? "bg-white shadow-sm" : "bg-[var(--surface-2)]/60"
+                  }`}
+                  href="/owner/property"
+                  key={property.id}
+                  style={{ borderColor: active ? accent : "var(--border)" }}
+                >
+                  <span
+                    className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-sm font-bold text-white"
+                    style={{ background: accent }}
+                  >
+                    {propertyInitials(property.name)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-bold text-[var(--foreground)]">{property.name}</span>
+                    <span className="mt-1 block truncate text-sm text-[#5f5b55]">
+                      {property.bedrooms ? `${property.bedrooms} BHK | ` : ""}
+                      {property.city || "Property details"}
+                    </span>
+                  </span>
+                  <Badge className="whitespace-nowrap capitalize" tone={property.status === "active" ? "green" : "neutral"}>
+                    {property.status}
+                  </Badge>
+                </Link>
+              );
+            })
+          )}
+        </div>
+      </section>
     </div>
   );
 }
-
