@@ -21,3 +21,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 17. Owner dashboards should prioritize calm hierarchy: current-month performance first, latest statement next, recent activity after that, and slower-changing property reference details lower on the page.
 18. Owner payout pages should clearly separate informational current-month live figures from reviewable stored statements, keep owner-facing status badges no-wrap, and keep eligible payout actions compact and explicit.
 19. Owner financial summaries that are not payout records must be labeled plainly, avoid owner-share/CMS/TDS language, and use compact read-only metric cards.
+20. Admin overview pages should prioritize fast scanning: compact context first, KPI cards next, then operational tables/lists with restrained color and clear empty states.

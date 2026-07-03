@@ -34,16 +34,16 @@ export const propertyPerformanceColumns: ColumnDef<PropertyPerformanceRow>[] = [
       const property = row.original;
 
       return (
-        <div className="flex items-center gap-2.5">
+        <div className="flex min-w-[220px] items-center gap-3">
           <div
-            className="grid h-[30px] w-[30px] place-items-center rounded-lg text-[10px] font-bold text-white"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-xs font-bold text-white"
             style={{ background: property.accent }}
           >
             {property.initials}
           </div>
-          <div>
-            <div className="text-[13px] font-bold">{property.name}</div>
-            <div className="text-xs text-[var(--muted)]">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-bold text-[var(--foreground)]">{property.name}</div>
+            <div className="mt-1 truncate text-xs text-[#5f5b55]">
               {property.bedrooms ? `${property.bedrooms} BHK - ` : ""}
               {property.city || "Property"}
             </div>
@@ -55,23 +55,23 @@ export const propertyPerformanceColumns: ColumnDef<PropertyPerformanceRow>[] = [
   {
     accessorKey: "owner_name",
     header: "Owner",
-    cell: ({ row }) => <span className="text-[13px]">{row.original.owner_name}</span>,
+    cell: ({ row }) => <span className="block min-w-[120px] truncate text-sm text-[#5f5b55]">{row.original.owner_name}</span>,
   },
   {
     accessorKey: "revenue",
     header: "Revenue",
-    cell: ({ row }) => <div className="text-right font-semibold">{shortMoney(row.original.revenue)}</div>,
+    cell: ({ row }) => <div className="whitespace-nowrap text-right font-semibold tabular-nums">{shortMoney(row.original.revenue)}</div>,
   },
   {
     accessorKey: "expense",
     header: "Expense",
-    cell: ({ row }) => <div className="text-right">{shortMoney(row.original.expense)}</div>,
+    cell: ({ row }) => <div className="whitespace-nowrap text-right tabular-nums text-[#5f5b55]">{shortMoney(row.original.expense)}</div>,
   },
   {
     accessorKey: "profit",
     header: "Profit",
     cell: ({ row }) => (
-      <div className={`text-right font-bold ${row.original.profit >= 0 ? "text-[var(--green)]" : "text-[var(--brand)]"}`}>
+      <div className={`whitespace-nowrap text-right font-bold tabular-nums ${row.original.profit >= 0 ? "text-[var(--green)]" : "text-[var(--brand)]"}`}>
         {shortMoney(row.original.profit)}
       </div>
     ),
@@ -83,7 +83,7 @@ export const propertyPerformanceColumns: ColumnDef<PropertyPerformanceRow>[] = [
       const property = row.original;
 
       return (
-        <div className="flex min-w-[120px] items-center gap-2">
+        <div className="flex min-w-[140px] items-center gap-2">
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--surface-2)]">
             <div className="h-full rounded-full" style={{ background: property.accent, width: `${property.occupancy}%` }} />
           </div>

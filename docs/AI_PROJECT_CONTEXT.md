@@ -233,6 +233,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 
 ## Admin Operations
 
+- `/dashboard` is the premium operational admin overview with a concise command-center header, KPI cards, property performance table, occupancy insights, upcoming check-ins, recent booking/expense activity, and a route-level loading skeleton. Its data calculations remain local to the page and read through `getAdminData()`.
 - Users: approve/change roles/status; protected admin remains active/admin and undeletable. `/dashboard/users` shows status/role summary cards, no-wrap role/status badges, row-level pending save feedback, user-only notice codes for update/delete results, AlertDialog delete confirmation for non-protected users, and a route-level loading skeleton.
 - Properties: CRUD and owner/share assignment. Edit mode remounts the existing form with the selected property id, server-side updates require that id, and successful saves redirect back to `/dashboard/properties` so edit mode resets. The image URL field is absent and existing `image_url` values are preserved on edit. Create/update/delete redirects use property-only notice codes for one-time success toasts, and property deletion is confirmed with an AlertDialog before submitting the existing delete action.
 - Bookings: CRUD, settings-backed source/concierge, automatic status, booking-only success notices, and AlertDialog delete confirmation.

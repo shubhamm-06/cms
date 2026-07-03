@@ -1,5 +1,13 @@
 # Changelog
 
+## Admin Dashboard Premium Overview Pass
+
+- Refined `/dashboard` as a premium operational admin overview with a stronger command-center header, clearer KPI cards, property performance, occupancy insights, upcoming check-ins, and recent booking/expense activity.
+- Added intentional empty states for no properties, no upcoming check-ins, and no recent booking/expense activity.
+- Added `/dashboard/loading.tsx` so the admin overview has a skeleton matching the final hierarchy.
+- Polished the dashboard property performance table cells for clearer property identity, owner, money, profit, and occupancy scanning.
+- Preserved existing admin data reads, dashboard calculations, occupancy logic, booking logic, P&L/payout behavior, permissions, routes, navigation, Supabase queries, schema, and unrelated pages.
+
 ## Owner Payout All-Time Property P&L
 
 - Added a compact read-only all-time property performance section to `/owner/payout` between current-month live performance and payout history.

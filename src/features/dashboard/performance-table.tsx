@@ -12,7 +12,7 @@ export function PropertyPerformanceTable({ rows }: { rows: PropertyPerformanceRo
       columns={propertyPerformanceColumns}
       data={rows}
       embedded
-      emptyMessage="No property performance rows found."
+      emptyMessage="No properties are available yet. Add active properties to see performance here."
       pageSize={Math.max(rows.length, 1)}
       showPagination={false}
       showSearch={false}
