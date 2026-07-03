@@ -2,6 +2,17 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle2, HelpCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,62 +47,126 @@ function ownerPayoutStatusLabel(status: PayoutTableRow["status"]) {
   return humanize(status);
 }
 
+function MoneyCell({ value, strong = false }: { strong?: boolean; value: number }) {
+  return (
+    <span className={`block whitespace-nowrap text-right tabular-nums ${strong ? "font-bold text-[var(--foreground)]" : ""}`}>
+      {formatMoney(value)}
+    </span>
+  );
+}
+
 export const ownerPayoutColumns: ColumnDef<PayoutTableRow>[] = [
   {
     accessorKey: "month",
     header: "Month",
+    cell: ({ row }) => <span className="block whitespace-nowrap font-semibold text-[var(--foreground)]">{row.original.month}</span>,
+    meta: {
+      cellClassName: "w-[112px] min-w-[112px]",
+      headerClassName: "w-[112px] min-w-[112px]",
+    },
   },
   {
     accessorKey: "revenue_total",
     header: "Revenue",
-    cell: ({ row }) => formatMoney(row.original.revenue_total),
+    cell: ({ row }) => <MoneyCell value={row.original.revenue_total} />,
+    meta: {
+      cellClassName: "w-[128px] min-w-[128px]",
+      headerClassName: "w-[128px] min-w-[128px] text-right",
+    },
   },
   {
     accessorKey: "expense_total",
     header: "Property expenses",
-    cell: ({ row }) => formatMoney(row.original.expense_total),
+    cell: ({ row }) => <MoneyCell value={row.original.expense_total} />,
+    meta: {
+      cellClassName: "w-[156px] min-w-[156px]",
+      headerClassName: "w-[156px] min-w-[156px] text-right",
+    },
   },
   {
     accessorKey: "net_profit",
     header: "Net profit",
-    cell: ({ row }) => formatMoney(row.original.net_profit),
+    cell: ({ row }) => <MoneyCell value={row.original.net_profit} />,
+    meta: {
+      cellClassName: "w-[132px] min-w-[132px]",
+      headerClassName: "w-[132px] min-w-[132px] text-right",
+    },
   },
   {
     accessorKey: "tds_amount",
     header: "TDS",
-    cell: ({ row }) => formatMoney(row.original.tds_amount),
+    cell: ({ row }) => <MoneyCell value={row.original.tds_amount} />,
+    meta: {
+      cellClassName: "w-[112px] min-w-[112px]",
+      headerClassName: "w-[112px] min-w-[112px] text-right",
+    },
   },
   {
     accessorKey: "final_payout_amount",
     header: "Final payout",
-    cell: ({ row }) => formatMoney(row.original.final_payout_amount),
+    cell: ({ row }) => <MoneyCell strong value={row.original.final_payout_amount} />,
+    meta: {
+      cellClassName: "w-[136px] min-w-[136px]",
+      headerClassName: "w-[136px] min-w-[136px] text-right",
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <Badge tone={payoutStatusTone(row.original.status)}>{ownerPayoutStatusLabel(row.original.status)}</Badge>,
+    cell: ({ row }) => (
+      <Badge className="whitespace-nowrap" tone={payoutStatusTone(row.original.status)}>
+        {ownerPayoutStatusLabel(row.original.status)}
+      </Badge>
+    ),
+    meta: {
+      cellClassName: "w-[150px] min-w-[150px]",
+      headerClassName: "w-[150px] min-w-[150px]",
+    },
   },
   {
     id: "actions",
     header: "Actions",
     enableSorting: false,
+    meta: {
+      cellClassName: "w-[300px] min-w-[300px]",
+      headerClassName: "w-[300px] min-w-[300px]",
+    },
     cell: ({ row }) => {
       if (!row.original.can_review) {
-        return <span className="text-sm text-[var(--muted)]">-</span>;
+        return <span className="whitespace-nowrap text-sm text-[var(--muted)]">No action needed</span>;
       }
 
       return (
-        <div className="flex min-w-[260px] flex-wrap items-start gap-2">
-          <form action={approveOwnerPayoutAction}>
-            <input name="id" type="hidden" value={row.original.id} />
-            <Button type="submit" variant="primary">
-              <CheckCircle2 className="h-4 w-4" />
-              Approve
-            </Button>
-          </form>
+        <div className="flex min-w-[280px] flex-wrap items-start gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button className="whitespace-nowrap" type="button" variant="primary">
+                <CheckCircle2 className="h-4 w-4" />
+                Approve
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Approve {row.original.month} payout?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This confirms you have reviewed the statement for {row.original.month}. The existing owner payout rules and admin payment workflow remain unchanged.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <form action={approveOwnerPayoutAction}>
+                  <input name="id" type="hidden" value={row.original.id} />
+                  <AlertDialogAction type="submit">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Approve statement
+                  </AlertDialogAction>
+                </form>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <details>
-            <summary className="cms-btn cursor-pointer list-none bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]">
+            <summary className="cms-btn cursor-pointer list-none whitespace-nowrap bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]">
               <HelpCircle className="h-4 w-4" />
               Raise query
             </summary>

@@ -38,6 +38,12 @@ export type OwnerLivePerformance = {
   revenue_total: number;
 };
 
+export type OwnerAllTimePropertyPnl = {
+  expense_total: number;
+  net_profit: number;
+  revenue_total: number;
+};
+
 function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
@@ -160,6 +166,41 @@ export function calculateOwnerLivePerformance({
     expense_total: combined.expense_total,
     net_profit: combined.current_month_net,
     revenue_total: combined.revenue_total,
+  };
+}
+
+export function calculateOwnerAllTimePropertyPnl({
+  ownerId,
+  properties,
+  bookings,
+  expenses,
+}: {
+  ownerId: string;
+  properties: Property[];
+  bookings: Booking[];
+  expenses: Expense[];
+}): OwnerAllTimePropertyPnl {
+  const ownerPropertyIds = new Set(properties.filter((property) => property.owner_id === ownerId).map((property) => property.id));
+  const revenueTotal = bookings
+    .filter(
+      (booking) =>
+        ownerPropertyIds.has(booking.property_id) &&
+        booking.status !== "cancelled" &&
+        booking.status !== "blocked",
+    )
+    .reduce((sum, booking) => {
+      const totalNights = booking.nights && booking.nights > 0 ? booking.nights : daysBetween(booking.check_in, booking.check_out);
+      const fallbackTotal = booking.nightly_rate && totalNights > 0 ? booking.nightly_rate * totalNights : 0;
+      return sum + (booking.total_amount > 0 ? booking.total_amount : fallbackTotal);
+    }, 0);
+  const expenseTotal = expenses
+    .filter((expense) => expense.expense_for === "property" && ownerPropertyIds.has(expense.property_id || ""))
+    .reduce((sum, expense) => sum + expense.amount, 0);
+
+  return {
+    expense_total: roundMoney(expenseTotal),
+    net_profit: roundMoney(revenueTotal - expenseTotal),
+    revenue_total: roundMoney(revenueTotal),
   };
 }
 

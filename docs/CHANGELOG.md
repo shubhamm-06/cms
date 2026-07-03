@@ -1,5 +1,20 @@
 # Changelog
 
+## Owner Payout All-Time Property P&L
+
+- Added a compact read-only all-time property performance section to `/owner/payout` between current-month live performance and payout history.
+- The summary shows all-time booking revenue, all-time property expenses, and all-time net property profit only.
+- The calculation uses owner-assigned property bookings, excludes cancelled/blocked bookings, excludes CMS expenses, and does not show owner share, CMS share, TDS, paid amount, estimated payout, or any payout action.
+- Preserved current-month live performance, stored payout history, payout creation/recalculation, carry-forward/share/TDS logic, review actions, statuses, permissions, owner scoping, admin payout pages, and `/owner`.
+
+## Owner Payout Premium UI Pass
+
+- Refined `/owner/payout` with a calmer owner-facing page header, clearer separation between informational current-month live performance and reviewable stored payout statements, and a route loading skeleton.
+- Updated the shared owner live-performance panel styling to match the refined owner dashboard language while keeping current-month values clearly non-final.
+- Stabilized owner payout table widths, no-wrap status badges, compact action cells, and mobile horizontal scrolling through optional table column metadata.
+- Added a simple AlertDialog confirmation before eligible owners approve a payout, while preserving the existing approval server action and review-window checks.
+- Preserved payout creation/recalculation, `calculateOwnerLivePerformance`, carry-forward/share/TDS rules, status transitions, owner-facing paid-as-Approved mapping, permissions, owner scoping, admin payout pages, and `/owner`.
+
 ## Owner Dashboard Order and Typography Refinement
 
 - Moved `/owner` property summary into a lower-page reference section after live performance, latest statement, recent bookings, expenses, and query sections.

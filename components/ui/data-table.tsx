@@ -27,6 +27,11 @@ type DataTableProps<TData, TValue> = {
   toolbar?: ReactNode;
 };
 
+type DataTableColumnMeta = {
+  cellClassName?: string;
+  headerClassName?: string;
+};
+
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -99,9 +104,13 @@ export function DataTable<TData, TValue>({
                 {headerGroup.headers.map((header) => {
                   const sortable = header.column.getCanSort();
                   const direction = header.column.getIsSorted();
+                  const meta = header.column.columnDef.meta as DataTableColumnMeta | undefined;
 
                   return (
-                    <th className="border-b border-[var(--border)] px-4 py-3 font-semibold" key={header.id}>
+                    <th
+                      className={`border-b border-[var(--border)] px-4 py-3 font-semibold ${meta?.headerClassName ?? ""}`}
+                      key={header.id}
+                    >
                       {header.isPlaceholder ? null : (
                         <button
                           className={`inline-flex items-center gap-1.5 text-left ${sortable ? "cursor-pointer hover:text-[var(--text)]" : "cursor-default"}`}
@@ -138,7 +147,12 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <tr className="transition hover:bg-[var(--surface-2)]/70" key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <td className="px-4 py-3 align-middle" key={cell.id}>
+                    <td
+                      className={`px-4 py-3 align-middle ${
+                        (cell.column.columnDef.meta as DataTableColumnMeta | undefined)?.cellClassName ?? ""
+                      }`}
+                      key={cell.id}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}

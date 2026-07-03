@@ -216,7 +216,9 @@ Exact formulas: [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md). HTT
 - `/owner` information order is current-month context, live financial performance, latest previous-month statement, recent activity/query sections, then lower-page property summary reference details.
 - `/owner/loading.tsx` provides a route-level skeleton matching the owner dashboard hierarchy and section order.
 - Live performance uses owner-scoped bookings and property expenses and creates no current-month payout row.
-- `/owner/payout` has one latest-first history table containing all owner payout records and no search/tabs.
+- `/owner/payout` has a premium owner-facing payout page: informational current-month live performance at the top, a compact read-only all-time property P&L summary, one latest-first history table containing all owner payout records, no search, and no tabs.
+- The all-time property P&L summary uses owner-scoped assigned-property bookings and property expenses, excludes cancelled/blocked bookings and CMS expenses, and never shows owner share, CMS share, TDS, paid amount, or estimated payout.
+- Owner payout status badges are kept compact/no-wrap; paid and approved remain owner-facing `Approved`, and eligible approve/query actions stay gated by existing server-side review rules.
 - Payable records are for the previous completed calendar month and are ensured on payout-page load.
 - Revenue is prorated by overlapping stay nights, check-in inclusive/check-out exclusive; cancelled/blocked are excluded.
 - Only property expenses are deducted; CMS expenses are excluded.
