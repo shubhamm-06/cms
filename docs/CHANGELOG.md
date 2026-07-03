@@ -1,5 +1,14 @@
 # Changelog
 
+## Admin Bookings UI Reference Pass
+
+- Improved `/dashboard/bookings` with clearer page hierarchy, separate booking form/list cards, grouped guest/property fields, related date fields, grouped nights/guests/rate/amount controls, full-width notes, and a route loading skeleton.
+- Added a pending save state to the existing booking server-action form while preserving field names, defaults, settings-backed source/concierge selects, and local booking auto-calculations.
+- Added booking-only success notice codes: `booking_created`, `booking_updated`, and `booking_deleted`, with a page-specific toast helper that removes the notice from the URL after display.
+- Replaced direct booking deletion with an AlertDialog confirmation that names the selected guest and property before submitting the existing delete action.
+- Polished admin booking table actions and status badges while keeping TanStack DataTable and the existing property filter behavior unchanged.
+- Preserved booking calculations, date validation, automatic status calculation, manual editability of nights/rate/amount, owner scoping assumptions, permissions, schema, and unrelated dashboard modules.
+
 ## Admin Properties UI Reference Pass
 
 - Improved `/dashboard/properties` as the first dashboard UI reference module with clearer form/list hierarchy, stronger labels, compact field sizing, grouped owner/CMS share controls, and mobile-safe one-column form behavior.

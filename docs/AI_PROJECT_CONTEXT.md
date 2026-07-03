@@ -191,6 +191,10 @@ Exact formulas: [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md). HTT
 - Status is calculated server-side: upcoming before check-in, in-house through the day before check-out, checked-out on/after check-out.
 - Current form submits no manual status override. Cancelled/blocked remain recognized in schema and revenue logic.
 - Booking source and concierge options come from settings.
+- Admin booking form UI groups guest/property, dates, amount helpers, calculated status, and full-width notes while preserving the same server-action field names and local calculation helpers.
+- Booking create/update/delete redirects use booking-only notice codes: `booking_created`, `booking_updated`, and `booking_deleted`; the page toast removes the notice from the URL after display.
+- Admin booking deletion is confirmed with an AlertDialog that names the guest and property before submitting the existing delete action.
+- `/dashboard/bookings/loading.tsx` provides a route-level skeleton for the booking form and list.
 - Cleaning UI is removed; schema column remains unused.
 
 ## Expense Workflow
@@ -222,7 +226,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 
 - Users: approve/change roles/status; protected admin remains active/admin and undeletable.
 - Properties: CRUD and owner/share assignment. Edit mode remounts the existing form with the selected property id, server-side updates require that id, and successful saves redirect back to `/dashboard/properties` so edit mode resets. The image URL field is absent and existing `image_url` values are preserved on edit. Create/update/delete redirects use property-only notice codes for one-time success toasts, and property deletion is confirmed with an AlertDialog before submitting the existing delete action.
-- Bookings: CRUD, settings-backed source/concierge, automatic status.
+- Bookings: CRUD, settings-backed source/concierge, automatic status, booking-only success notices, and AlertDialog delete confirmation.
 - Expenses: CRUD; CMS default and property requirement rules.
 - P&L: operational summary.
 - Payouts: previous-month page-load generation, combined owner rows, property breakup, mark paid.
@@ -258,6 +262,7 @@ Prefer direct authenticated Supabase queries and feature server actions. Keep co
 - Existing server-action forms use native selects unless a future focused task changes one safely.
 - Delete/destructive actions should use `AlertDialog`; success/failure feedback can use Sonner toasts.
 - Admin create/edit pages can use small page-specific notice query codes for one-time success toasts after server-action redirects.
+- Booking form feedback uses allowlisted booking notice codes and keeps the existing local date/night/rate/amount helper behavior intact.
 - Tables continue using TanStack Table, with controlled horizontal scrolling as the default mobile behavior.
 - Dashboard navigation active states use `usePathname` in `components/layout/navigation-links.tsx` with exact root matching and segment-bound child matching.
 - Admin navigation stays efficient and operational; owner navigation can be slightly calmer and more polished because owners are the primary product-facing users.

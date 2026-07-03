@@ -2,8 +2,18 @@
 
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil } from "lucide-react";
-import { ConfirmDeleteButton } from "@/components/forms/confirm-button";
+import { Pencil, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { deleteBookingAction } from "@/src/features/shared/actions";
 import { getBookingStatus } from "@/src/features/bookings/booking-calculations";
@@ -20,12 +30,58 @@ function displayStatus(row: BookingTableRow) {
   return getBookingStatus(row.check_in, row.check_out, row.status === "cancelled" || row.status === "blocked" ? row.status : null);
 }
 
+type BookingStatusTone = "neutral" | "green" | "teal" | "destructive";
+
+function bookingStatusTone(status: string): BookingStatusTone {
+  if (status === "in_house") return "green";
+  if (status === "upcoming") return "teal";
+  if (status === "cancelled" || status === "blocked") return "destructive";
+  return "neutral";
+}
+
+function BookingStatusBadge({ status }: { status: string }) {
+  return (
+    <Badge className="whitespace-nowrap" tone={bookingStatusTone(status)}>
+      {humanize(status)}
+    </Badge>
+  );
+}
+
+function DeleteBookingDialog({ booking }: { booking: BookingTableRow }) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger className="cms-btn border-red-200 bg-red-50 text-red-700 hover:bg-red-100">
+        <Trash2 className="h-4 w-4" />
+        Delete
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this booking?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will remove the booking for <span className="font-semibold text-[var(--foreground)]">{booking.guest_name}</span>
+            {" "}at <span className="font-semibold text-[var(--foreground)]">{booking.property_name}</span>. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <form action={deleteBookingAction}>
+            <input name="id" type="hidden" value={booking.id} />
+            <AlertDialogAction className="border-red-200 bg-red-600 text-white hover:bg-red-700" type="submit">
+              Delete booking
+            </AlertDialogAction>
+          </form>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 export const adminBookingColumns: ColumnDef<BookingTableRow>[] = [
   {
     accessorKey: "guest_name",
     header: "Guest",
     cell: ({ row }) => (
-      <div>
+      <div className="min-w-40 py-1">
         <div className="font-semibold">{row.original.guest_name}</div>
         <div className="text-xs text-[var(--muted)]">{row.original.guest_phone || "No phone"}</div>
       </div>
@@ -39,13 +95,19 @@ export const adminBookingColumns: ColumnDef<BookingTableRow>[] = [
     id: "dates",
     header: "Dates",
     accessorFn: (row) => `${row.check_in} ${row.check_out}`,
-    cell: ({ row }) => `${formatDate(row.original.check_in)} to ${formatDate(row.original.check_out)}`,
+    cell: ({ row }) => (
+      <div className="min-w-40 text-sm">
+        <span>{formatDate(row.original.check_in)}</span>
+        <span className="mx-2 text-[var(--muted)]">to</span>
+        <span>{formatDate(row.original.check_out)}</span>
+      </div>
+    ),
   },
   {
     id: "status",
     accessorFn: displayStatus,
     header: "Status",
-    cell: ({ row }) => <Badge>{humanize(displayStatus(row.original))}</Badge>,
+    cell: ({ row }) => <BookingStatusBadge status={displayStatus(row.original)} />,
   },
   {
     accessorKey: "total_amount",
@@ -57,15 +119,16 @@ export const adminBookingColumns: ColumnDef<BookingTableRow>[] = [
     header: "Actions",
     enableSorting: false,
     cell: ({ row }) => (
-      <div className="flex flex-wrap items-center gap-2">
-        <Link className="cms-btn bg-white hover:bg-[var(--surface-2)]" href={`/dashboard/bookings?edit=${row.original.id}`}>
+      <div className="flex min-w-44 flex-wrap items-center gap-2 py-1">
+        <Link
+          aria-label={`Edit booking for ${row.original.guest_name}`}
+          className="cms-btn bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+          href={`/dashboard/bookings?edit=${row.original.id}`}
+        >
           <Pencil className="h-4 w-4" />
           Edit
         </Link>
-        <form action={deleteBookingAction}>
-          <input name="id" type="hidden" value={row.original.id} />
-          <ConfirmDeleteButton />
-        </form>
+        <DeleteBookingDialog booking={row.original} />
       </div>
     ),
   },

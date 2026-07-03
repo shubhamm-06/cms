@@ -97,6 +97,7 @@ export async function saveBookingAction(formData: FormData) {
   else await supabase.from("bookings").insert(payload);
   revalidatePath("/dashboard/bookings");
   revalidatePath("/dashboard");
+  redirect(`/dashboard/bookings?notice=${id ? "booking_updated" : "booking_created"}`);
 }
 
 export async function deleteBookingAction(formData: FormData) {
@@ -104,6 +105,8 @@ export async function deleteBookingAction(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("bookings").delete().eq("id", String(formData.get("id") || ""));
   revalidatePath("/dashboard/bookings");
+  revalidatePath("/dashboard");
+  redirect("/dashboard/bookings?notice=booking_deleted");
 }
 
 export async function saveExpenseAction(formData: FormData) {
