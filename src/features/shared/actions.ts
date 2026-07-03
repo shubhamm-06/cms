@@ -126,6 +126,7 @@ export async function saveExpenseAction(formData: FormData) {
   else await supabase.from("expenses").insert(payload);
   revalidatePath("/dashboard/expenses");
   revalidatePath("/dashboard/pnl");
+  redirect(`/dashboard/expenses?notice=${id ? "expense_updated" : "expense_created"}`);
 }
 
 export async function deleteExpenseAction(formData: FormData) {
@@ -133,6 +134,7 @@ export async function deleteExpenseAction(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("expenses").delete().eq("id", String(formData.get("id") || ""));
   revalidatePath("/dashboard/expenses");
+  redirect("/dashboard/expenses?notice=expense_deleted");
 }
 
 export async function resolveQueryAction(formData: FormData) {

@@ -1,5 +1,14 @@
 # Changelog
 
+## Admin Expenses UI Reference Pass
+
+- Improved `/dashboard/expenses` with clearer page hierarchy, separate expense form/list cards, grouped CMS/property context, grouped category/date/amount/vendor controls, full-width notes, and a route loading skeleton.
+- Added a pending save state to the existing expense server-action form while preserving field names, defaults, native selects, settings-backed categories, and legacy edit-value handling.
+- Added expense-only success notice codes: `expense_created`, `expense_updated`, and `expense_deleted`, with a page-specific toast helper that removes the notice from the URL after display.
+- Replaced direct expense deletion with an AlertDialog confirmation that names the selected category, amount, and CMS/property context before submitting the existing delete action.
+- Polished admin expense table context badges and actions while keeping TanStack DataTable behavior unchanged.
+- Preserved CMS as the default, CMS property clearing/disabling, server-side null `property_id` storage for CMS, property expense validation, owner visibility rules, payout exclusion behavior, permissions, schema, and unrelated dashboard modules.
+
 ## Admin Bookings UI Reference Pass
 
 - Improved `/dashboard/bookings` with clearer page hierarchy, separate booking form/list cards, grouped guest/property fields, related date fields, grouped nights/guests/rate/amount controls, full-width notes, and a route loading skeleton.

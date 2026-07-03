@@ -16,3 +16,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 12. Admin create/edit pages can show success toasts through small page-specific notice codes after server-action redirects; remove the notice from the URL after the toast displays.
 13. Destructive table actions should confirm the selected record name and a concise operational impact note before submitting the existing server action.
 14. Booking form feedback stays booking-specific: use allowlisted notice codes, preserve local date/night/rate/amount helpers, and keep destructive booking deletes behind `AlertDialog`.
+15. Expense form feedback stays expense-specific: use allowlisted notice codes, keep CMS/property select behavior intact, and confirm expense deletes with category, amount, and context.

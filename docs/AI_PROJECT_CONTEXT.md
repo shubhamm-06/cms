@@ -203,6 +203,10 @@ Exact formulas: [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md). HTT
 - CMS is the default and always stores null property ID.
 - Property expenses require a valid property.
 - Expense categories come from settings.
+- Admin expense form UI makes CMS versus property expense context clear near the top, disables and clears the property selector for CMS, and uses full-width notes while preserving the same server-action field names and validation rules.
+- Expense create/update/delete redirects use expense-only notice codes: `expense_created`, `expense_updated`, and `expense_deleted`; the page toast removes the notice from the URL after display.
+- Admin expense deletion is confirmed with an AlertDialog that names the category, amount, and CMS/property context before submitting the existing delete action.
+- `/dashboard/expenses/loading.tsx` provides a route-level skeleton for the expense form and list.
 - Owners read only property expenses for assigned properties.
 
 ## Owner Payout Workflow
@@ -227,7 +231,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 - Users: approve/change roles/status; protected admin remains active/admin and undeletable.
 - Properties: CRUD and owner/share assignment. Edit mode remounts the existing form with the selected property id, server-side updates require that id, and successful saves redirect back to `/dashboard/properties` so edit mode resets. The image URL field is absent and existing `image_url` values are preserved on edit. Create/update/delete redirects use property-only notice codes for one-time success toasts, and property deletion is confirmed with an AlertDialog before submitting the existing delete action.
 - Bookings: CRUD, settings-backed source/concierge, automatic status, booking-only success notices, and AlertDialog delete confirmation.
-- Expenses: CRUD; CMS default and property requirement rules.
+- Expenses: CRUD; CMS default, property requirement rules, expense-only success notices, and AlertDialog delete confirmation.
 - P&L: operational summary.
 - Payouts: previous-month page-load generation, combined owner rows, property breakup, mark paid.
 - Queries: resolve/delete; linked payout state is updated/restored safely.
@@ -263,6 +267,7 @@ Prefer direct authenticated Supabase queries and feature server actions. Keep co
 - Delete/destructive actions should use `AlertDialog`; success/failure feedback can use Sonner toasts.
 - Admin create/edit pages can use small page-specific notice query codes for one-time success toasts after server-action redirects.
 - Booking form feedback uses allowlisted booking notice codes and keeps the existing local date/night/rate/amount helper behavior intact.
+- Expense form feedback uses allowlisted expense notice codes and preserves CMS/property select behavior.
 - Tables continue using TanStack Table, with controlled horizontal scrolling as the default mobile behavior.
 - Dashboard navigation active states use `usePathname` in `components/layout/navigation-links.tsx` with exact root matching and segment-bound child matching.
 - Admin navigation stays efficient and operational; owner navigation can be slightly calmer and more polished because owners are the primary product-facing users.

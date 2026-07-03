@@ -1,6 +1,6 @@
 "use client";
 
-import { Save } from "lucide-react";
+import { Building2, ReceiptText, Save, WalletCards } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,17 @@ function PropertySubmitButton({ isEditing }: { isEditing: boolean }) {
     <Button pending={pending} type="submit" variant="primary">
       {pending ? null : <Save className="h-4 w-4" />}
       {pending ? "Saving..." : isEditing ? "Save changes" : "Save property"}
+    </Button>
+  );
+}
+
+function ExpenseSubmitButton({ isEditing }: { isEditing: boolean }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button pending={pending} type="submit" variant="primary">
+      {pending ? null : <Save className="h-4 w-4" />}
+      {pending ? "Saving..." : isEditing ? "Save changes" : "Save expense"}
     </Button>
   );
 }
@@ -146,6 +157,7 @@ export function ExpenseForm({
   properties: Property[];
   expense?: Expense;
 }) {
+  const isEditing = Boolean(expense);
   const [expenseFor, setExpenseFor] = useState<"cms" | "property">(expense?.expense_for || "cms");
   const [propertyId, setPropertyId] = useState(expense?.property_id || "");
   const categoryOptions = expense?.category && !categories.includes(expense.category)
@@ -153,65 +165,101 @@ export function ExpenseForm({
     : categories;
 
   return (
-    <form action={saveExpenseAction} className="grid gap-3 md:grid-cols-4">
+    <form action={saveExpenseAction} className="grid gap-5" key={expense?.id || "new-expense-form"}>
       <input name="id" type="hidden" value={expense?.id || ""} />
-      <Field label="Expense for">
-        <select
-          className="cms-input"
-          name="expense_for"
-          onChange={(event) => {
-            const value = event.target.value as "cms" | "property";
-            setExpenseFor(value);
-            if (value === "cms") setPropertyId("");
-          }}
-          value={expenseFor}
-        >
-          <option value="cms">CMS</option>
-          <option value="property">Property</option>
-        </select>
-      </Field>
-      <Field label="Property">
-        <select
-          className="cms-input"
-          disabled={expenseFor === "cms"}
-          name="property_id"
-          onChange={(event) => setPropertyId(event.target.value)}
-          required={expenseFor === "property"}
-          value={propertyId}
-        >
-          <option value="">CMS / none</option>
-          {properties.map((property) => (
-            <option key={property.id} value={property.id}>
-              {property.name}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field label="Date">
-        <Input defaultValue={expense?.date || ""} name="date" required type="date" />
-      </Field>
-      <Field label="Category">
-        <select className="cms-input" defaultValue={expense?.category || ""} name="category" required>
-          <option value="">{categoryOptions.length ? "Select category" : "No categories configured"}</option>
-          {categoryOptions.map((category) => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
-      </Field>
-      <Field label="Amount">
-        <Input defaultValue={expense?.amount || 0} name="amount" required type="number" />
-      </Field>
-      <Field label="Vendor">
-        <Input defaultValue={expense?.vendor || ""} name="vendor" />
-      </Field>
-      <Field label="Note">
-        <Input defaultValue={expense?.note || ""} name="note" />
-      </Field>
-      <div className="self-end">
-        <Button type="submit" variant="primary">
-          <Save className="h-4 w-4" />
-          Save expense
-        </Button>
+
+      <section className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-4">
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <ReceiptText className="h-4 w-4 text-[var(--brand)]" />
+              <h3 className="text-sm font-bold text-[var(--foreground)]">Expense context</h3>
+            </div>
+            <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+              CMS expenses stay internal. Property expenses require a property and appear in owner reporting.
+            </p>
+          </div>
+          <span className="hidden rounded-full border border-[var(--border)] bg-white px-3 py-1 text-xs font-bold text-[var(--foreground)] sm:inline-flex">
+            {expenseFor === "cms" ? "CMS expense" : "Property expense"}
+          </span>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-12">
+          <PropertyField className="md:col-span-4" helper="Defaults to CMS for internal company costs." label="Expense type">
+            <select
+              className="cms-input min-h-11"
+              name="expense_for"
+              onChange={(event) => {
+                const value = event.target.value as "cms" | "property";
+                setExpenseFor(value);
+                if (value === "cms") setPropertyId("");
+              }}
+              value={expenseFor}
+            >
+              <option value="cms">CMS</option>
+              <option value="property">Property</option>
+            </select>
+          </PropertyField>
+          <PropertyField
+            className="md:col-span-8"
+            helper={expenseFor === "cms" ? "Disabled for CMS expenses; the server stores no property." : "Required for property expenses."}
+            label="Property"
+          >
+            <select
+              className="cms-input min-h-11 disabled:cursor-not-allowed disabled:bg-[var(--surface-2)] disabled:text-[var(--muted)]"
+              disabled={expenseFor === "cms"}
+              name="property_id"
+              onChange={(event) => setPropertyId(event.target.value)}
+              required={expenseFor === "property"}
+              value={propertyId}
+            >
+              <option value="">CMS / none</option>
+              {properties.map((property) => (
+                <option key={property.id} value={property.id}>
+                  {property.name}
+                </option>
+              ))}
+            </select>
+          </PropertyField>
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-[var(--border)] bg-white p-4">
+        <div className="mb-4 flex items-center gap-2">
+          <WalletCards className="h-4 w-4 text-[var(--brand)]" />
+          <h3 className="text-sm font-bold text-[var(--foreground)]">Expense details</h3>
+        </div>
+        <div className="grid gap-4 md:grid-cols-12">
+          <PropertyField className="md:col-span-4" label="Category">
+            <select className="cms-input min-h-11" defaultValue={expense?.category || ""} name="category" required>
+              <option value="">{categoryOptions.length ? "Select category" : "No categories configured"}</option>
+              {categoryOptions.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </PropertyField>
+          <PropertyField className="md:col-span-3" label="Date">
+            <Input defaultValue={expense?.date || ""} name="date" required type="date" />
+          </PropertyField>
+          <PropertyField className="md:col-span-3" label="Amount">
+            <Input defaultValue={expense?.amount || 0} name="amount" required type="number" />
+          </PropertyField>
+          <PropertyField className="md:col-span-2" label="Vendor">
+            <Input defaultValue={expense?.vendor || ""} name="vendor" />
+          </PropertyField>
+        </div>
+      </section>
+
+      <PropertyField label="Note">
+        <Textarea defaultValue={expense?.note || ""} name="note" placeholder="Internal note or receipt context" rows={4} />
+      </PropertyField>
+
+      <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="flex items-center gap-2 text-sm leading-6 text-[var(--muted)]">
+          <Building2 className="h-4 w-4 text-[var(--muted)]" />
+          {expenseFor === "cms" ? "CMS expenses stay hidden from owners." : "Property expenses are visible only to the assigned owner."}
+        </p>
+        <ExpenseSubmitButton isEditing={isEditing} />
       </div>
     </form>
   );
