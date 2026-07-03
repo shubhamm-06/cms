@@ -1,5 +1,12 @@
 # Changelog
 
+## Owner Property Premium Read-Only Page
+
+- Refined `/owner/property` as a calm owner-facing read-only property details page.
+- Added stronger page hierarchy, owner-scope/helper copy, property summary cards, address/location display, restrained status badges, owner/CMS share cards, and a reassuring empty state for owners without an assigned property.
+- Added `/owner/property/loading.tsx` to avoid blank loading states and match the final page hierarchy.
+- Preserved owner-scoped reads through `getOwnerData()`, read-only owner behavior, permissions, auth, routes, schema, navigation, admin pages, owner dashboard, payout pages, bookings, expenses, queries, profile, analytics, and middleware.
+
 ## Admin Dashboard Premium Overview Pass
 
 - Refined `/dashboard` as a premium operational admin overview with a stronger command-center header, clearer KPI cards, property performance, occupancy insights, upcoming check-ins, and recent booking/expense activity.

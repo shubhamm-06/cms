@@ -215,6 +215,7 @@ Exact formulas: [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md). HTT
 - `/owner` presents the current-month live figures in a premium owner-facing dashboard layout with clear revenue, property expense, net profit, and estimated payout cards.
 - `/owner` information order is current-month context, live financial performance, latest previous-month statement, recent activity/query sections, then lower-page property summary reference details.
 - `/owner/loading.tsx` provides a route-level skeleton matching the owner dashboard hierarchy and section order.
+- `/owner/property` is a premium read-only property reference page for owner-assigned properties, with clear property identity, address/location, bedroom count, status, owner/CMS share, reassuring no-property empty state, and route-level loading skeleton.
 - Live performance uses owner-scoped bookings and property expenses and creates no current-month payout row.
 - `/owner/payout` has a premium owner-facing payout page: informational current-month live performance at the top, a compact read-only all-time property P&L summary, one latest-first history table containing all owner payout records, no search, and no tabs.
 - The all-time property P&L summary uses owner-scoped assigned-property bookings and property expenses, excludes cancelled/blocked bookings and CMS expenses, and never shows owner share, CMS share, TDS, paid amount, or estimated payout.
