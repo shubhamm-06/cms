@@ -13,3 +13,5 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 9. Dashboard navigation active states use exact or segment-bound route matching, set `aria-current="page"`, and should never highlight more than one item.
 10. Admin UI should remain efficient, dense, and operational for repeated back-office work.
 11. Owner UI should be slightly more polished, calm, and user-friendly because owners are the main product-facing users.
+12. Admin create/edit pages can show success toasts through small page-specific notice codes after server-action redirects; remove the notice from the URL after the toast displays.
+13. Destructive table actions should confirm the selected record name and a concise operational impact note before submitting the existing server action.

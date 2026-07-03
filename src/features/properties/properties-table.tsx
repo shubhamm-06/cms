@@ -9,7 +9,7 @@ export function PropertiesTable({ properties }: { properties: PropertyTableRow[]
       columns={propertyColumns}
       data={properties}
       embedded
-      emptyMessage="No properties found."
+      emptyMessage="No properties are available yet. Add the first property using the form above."
       searchPlaceholder="Search properties..."
     />
   );

@@ -4,7 +4,6 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import type { ComponentPropsWithoutRef, ElementRef } from "react";
 import { forwardRef } from "react";
 import { cn } from "@/src/lib/utils/cn";
-import { Button } from "@/components/ui/button";
 
 const AlertDialog = AlertDialogPrimitive.Root;
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
@@ -78,10 +77,8 @@ function AlertDialogAction({
   ...props
 }: ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>) {
   return (
-    <AlertDialogPrimitive.Action asChild {...props}>
-      <Button className={className} variant="primary">
-        {children}
-      </Button>
+    <AlertDialogPrimitive.Action className={cn("cms-btn cms-btn-primary", className)} {...props}>
+      {children}
     </AlertDialogPrimitive.Action>
   );
 }
@@ -92,10 +89,11 @@ function AlertDialogCancel({
   ...props
 }: ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>) {
   return (
-    <AlertDialogPrimitive.Cancel asChild {...props}>
-      <Button className={className} variant="secondary">
-        {children}
-      </Button>
+    <AlertDialogPrimitive.Cancel
+      className={cn("cms-btn bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]", className)}
+      {...props}
+    >
+      {children}
     </AlertDialogPrimitive.Cancel>
   );
 }

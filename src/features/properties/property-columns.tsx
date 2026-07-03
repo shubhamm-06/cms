@@ -2,9 +2,19 @@
 
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil } from "lucide-react";
-import { ConfirmDeleteButton } from "@/components/forms/confirm-button";
+import { Pencil, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { deletePropertyAction } from "@/src/features/shared/actions";
 import type { Database } from "@/types/database.types";
 
@@ -12,14 +22,47 @@ export type PropertyTableRow = Database["public"]["Tables"]["properties"]["Row"]
   owner_name: string;
 };
 
+function DeletePropertyDialog({ property }: { property: PropertyTableRow }) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger
+        aria-label={`Delete ${property.name}`}
+        className="cms-btn min-h-9 border-red-200 bg-red-50 px-3 py-1.5 text-xs text-red-700 hover:bg-red-100"
+        type="button"
+      >
+        <Trash2 className="h-4 w-4" />
+        Delete
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {property.name}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will remove the selected property. Linked operational records such as bookings, expenses, and payout
+            rows may also be affected by database relationships.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <form action={deletePropertyAction}>
+            <input name="id" type="hidden" value={property.id} />
+            <Button type="submit" variant="danger">
+              Delete property
+            </Button>
+          </form>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 export const propertyColumns: ColumnDef<PropertyTableRow>[] = [
   {
     accessorKey: "name",
     header: "Property",
     cell: ({ row }) => (
-      <div>
-        <div className="font-semibold">{row.original.name}</div>
-        <div className="text-xs text-[var(--muted)]">{row.original.city || "No city"}</div>
+      <div className="min-w-[220px]">
+        <div className="font-semibold text-[var(--foreground)]">{row.original.name}</div>
+        <div className="mt-1 text-xs text-[var(--muted)]">{row.original.city || "No city"}</div>
       </div>
     ),
   },
@@ -30,7 +73,11 @@ export const propertyColumns: ColumnDef<PropertyTableRow>[] = [
   {
     accessorKey: "owner_share",
     header: "Share",
-    cell: ({ row }) => `${row.original.owner_share}/${row.original.cms_share}`,
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap font-semibold text-[var(--foreground)]">
+        {row.original.owner_share}/{row.original.cms_share}
+      </span>
+    ),
   },
   {
     accessorKey: "bedrooms",
@@ -40,27 +87,28 @@ export const propertyColumns: ColumnDef<PropertyTableRow>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <Badge tone={row.original.status === "active" ? "green" : "neutral"}>{row.original.status}</Badge>,
+    cell: ({ row }) => (
+      <Badge className="whitespace-nowrap capitalize" tone={row.original.status === "active" ? "green" : "neutral"}>
+        {row.original.status}
+      </Badge>
+    ),
   },
   {
     id: "actions",
     header: "Actions",
     enableSorting: false,
     cell: ({ row }) => (
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-[188px] flex-wrap items-center gap-2">
         <Link
           aria-label={`Edit ${row.original.name}`}
-          className="cms-btn bg-white hover:bg-[var(--surface-2)]"
+          className="cms-btn min-h-9 bg-white px-3 py-1.5 text-xs hover:bg-[var(--surface-2)]"
           href={`/dashboard/properties?edit=${row.original.id}`}
           title="Edit property"
         >
           <Pencil className="h-4 w-4" />
           Edit
         </Link>
-        <form action={deletePropertyAction}>
-          <input name="id" type="hidden" value={row.original.id} />
-          <ConfirmDeleteButton />
-        </form>
+        <DeletePropertyDialog property={row.original} />
       </div>
     ),
   },

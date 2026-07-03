@@ -221,7 +221,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 ## Admin Operations
 
 - Users: approve/change roles/status; protected admin remains active/admin and undeletable.
-- Properties: CRUD and owner/share assignment. Edit mode remounts the existing form with the selected property id, server-side updates require that id, and successful saves redirect back to `/dashboard/properties` so edit mode resets. The image URL field is absent and existing `image_url` values are preserved on edit.
+- Properties: CRUD and owner/share assignment. Edit mode remounts the existing form with the selected property id, server-side updates require that id, and successful saves redirect back to `/dashboard/properties` so edit mode resets. The image URL field is absent and existing `image_url` values are preserved on edit. Create/update/delete redirects use property-only notice codes for one-time success toasts, and property deletion is confirmed with an AlertDialog before submitting the existing delete action.
 - Bookings: CRUD, settings-backed source/concierge, automatic status.
 - Expenses: CRUD; CMS default and property requirement rules.
 - P&L: operational summary.
@@ -257,6 +257,7 @@ Prefer direct authenticated Supabase queries and feature server actions. Keep co
 - Business forms stay in `components/forms` and keep current server-action submission flows.
 - Existing server-action forms use native selects unless a future focused task changes one safely.
 - Delete/destructive actions should use `AlertDialog`; success/failure feedback can use Sonner toasts.
+- Admin create/edit pages can use small page-specific notice query codes for one-time success toasts after server-action redirects.
 - Tables continue using TanStack Table, with controlled horizontal scrolling as the default mobile behavior.
 - Dashboard navigation active states use `usePathname` in `components/layout/navigation-links.tsx` with exact root matching and segment-bound child matching.
 - Admin navigation stays efficient and operational; owner navigation can be slightly calmer and more polished because owners are the primary product-facing users.

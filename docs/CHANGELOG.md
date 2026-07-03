@@ -1,5 +1,15 @@
 # Changelog
 
+## Admin Properties UI Reference Pass
+
+- Improved `/dashboard/properties` as the first dashboard UI reference module with clearer form/list hierarchy, stronger labels, compact field sizing, grouped owner/CMS share controls, and mobile-safe one-column form behavior.
+- Added a pending save button state for the existing property server-action form.
+- Added property-only success notice codes: `property_created`, `property_updated`, and `property_deleted`, with a page-specific toast helper that removes the notice from the URL after display.
+- Replaced direct property deletion controls with an AlertDialog confirmation that names the selected property and explains linked operational records may be affected.
+- Added a route loading skeleton and property-specific empty table message while keeping TanStack DataTable behavior unchanged.
+- Preserved the existing `?edit=<id>` flow, form remount key, hidden `id`/`mode` fields, server-side update-id guard, image URL retention, owner/share/status rules, redirects, and delete permissions.
+- No bookings, expenses, payouts, auth, analytics, homepage, middleware, Supabase queries, RLS assumptions, schema, shared navigation, or package changes were made.
+
 ## Dashboard Active Navigation
 
 - Added a small client navigation link component for admin and owner dashboard navigation so active states update correctly during App Router client navigation.

@@ -70,7 +70,7 @@ export async function savePropertyAction(formData: FormData) {
   }
   revalidatePath("/dashboard/properties");
   revalidatePath("/dashboard");
-  redirect("/dashboard/properties");
+  redirect(`/dashboard/properties?notice=${mode === "edit" ? "property_updated" : "property_created"}`);
 }
 
 export async function deletePropertyAction(formData: FormData) {
@@ -78,6 +78,8 @@ export async function deletePropertyAction(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("properties").delete().eq("id", String(formData.get("id") || ""));
   revalidatePath("/dashboard/properties");
+  revalidatePath("/dashboard");
+  redirect("/dashboard/properties?notice=property_deleted");
 }
 
 export async function saveBookingAction(formData: FormData) {

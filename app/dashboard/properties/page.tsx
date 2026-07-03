@@ -2,16 +2,21 @@ import Link from "next/link";
 import { PropertyForm } from "@/components/forms/admin-forms";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { PropertyNoticeToast } from "@/src/features/properties/property-notice-toast";
 import { PropertiesTable } from "@/src/features/properties/properties-table";
 import { getAdminData } from "@/src/features/shared/data";
 
 export default async function PropertiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ edit?: string | string[] }>;
+  searchParams: Promise<{ edit?: string | string[]; notice?: string | string[] }>;
 }) {
-  const editParam = (await searchParams).edit;
+  const params = await searchParams;
+  const editParam = params.edit;
+  const noticeParam = params.notice;
   const editId = Array.isArray(editParam) ? editParam[0] : editParam;
+  const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
   const { profiles, properties } = await getAdminData();
   const propertyToEdit = editId ? properties.find((property) => property.id === editId) : undefined;
   const owners = profiles.filter((profile) => profile.role === "owner");
@@ -23,8 +28,12 @@ export default async function PropertiesPage({
 
   return (
     <>
-      <PageHeader title="Properties" subtitle="Assign one owner per property and keep share percentages explicit." />
-      <Card className="mb-5">
+      <PropertyNoticeToast notice={notice} />
+      <PageHeader
+        title="Properties"
+        subtitle="Create and maintain owner-assigned properties. Share percentages stay explicit and must total 100."
+      />
+      <Card className="mb-6 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
         <CardHeader
           action={
             propertyToEdit ? (
@@ -33,15 +42,32 @@ export default async function PropertiesPage({
               </Link>
             ) : null
           }
-          subtitle={propertyToEdit ? `Editing ${propertyToEdit.name}` : undefined}
-          title={propertyToEdit ? "Edit property" : "Add property"}
-        />
+        >
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-base font-bold tracking-tight">{propertyToEdit ? "Edit property" : "Add property"}</h2>
+              {propertyToEdit ? <Badge tone="brand">Editing</Badge> : null}
+            </div>
+            <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+              {propertyToEdit
+                ? `Updating ${propertyToEdit.name}. Saving returns you to add mode.`
+                : "Add one property at a time with its owner assignment and operating split."}
+            </p>
+          </div>
+        </CardHeader>
         <CardBody>
           <PropertyForm key={propertyToEdit?.id || "new-property"} owners={owners} property={propertyToEdit} />
         </CardBody>
       </Card>
-      <Card>
-        <CardHeader title="Property list" />
+      <Card className="overflow-hidden shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+        <CardHeader>
+          <div>
+            <h2 className="text-base font-bold tracking-tight">Property list</h2>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              {properties.length} {properties.length === 1 ? "property" : "properties"} in the admin workspace.
+            </p>
+          </div>
+        </CardHeader>
         <CardBody className="p-0">
           <PropertiesTable properties={propertyRows} />
         </CardBody>
