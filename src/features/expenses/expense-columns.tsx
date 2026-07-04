@@ -123,30 +123,80 @@ export const ownerExpenseColumns: ColumnDef<ExpenseTableRow>[] = [
   {
     accessorKey: "date",
     header: "Date",
-    cell: ({ row }) => formatDate(row.original.date),
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap font-medium text-[var(--foreground)]">
+        {formatDate(row.original.date)}
+      </span>
+    ),
+    meta: {
+      cellClassName: "min-w-[140px]",
+      headerClassName: "min-w-[140px]",
+    },
   },
   {
     accessorKey: "category",
     header: "Category",
-    cell: ({ row }) => <span className="font-semibold">{row.original.category}</span>,
+    cell: ({ row }) => (
+      <div className="min-w-[220px] py-1">
+        <div className="font-semibold leading-5 text-[var(--foreground)]">{row.original.category}</div>
+        <div className="mt-1 text-xs font-medium leading-4 text-[#6a655f]">Property expense</div>
+      </div>
+    ),
+    meta: {
+      cellClassName: "min-w-[240px]",
+      headerClassName: "min-w-[240px]",
+    },
   },
   {
     accessorKey: "property_name",
     header: "Property",
+    cell: ({ row }) => (
+      <Badge className="whitespace-nowrap" tone="teal">
+        {row.original.property_name}
+      </Badge>
+    ),
+    meta: {
+      cellClassName: "min-w-[180px]",
+      headerClassName: "min-w-[180px]",
+    },
   },
   {
     accessorKey: "vendor",
     header: "Vendor",
-    cell: ({ row }) => row.original.vendor || "None",
+    cell: ({ row }) => (
+      <span className="block min-w-[150px] font-medium text-[var(--foreground)]">
+        {row.original.vendor || "None"}
+      </span>
+    ),
+    meta: {
+      cellClassName: "min-w-[170px]",
+      headerClassName: "min-w-[170px]",
+    },
   },
   {
     accessorKey: "note",
     header: "Note",
-    cell: ({ row }) => row.original.note || "None",
+    cell: ({ row }) => (
+      <span className="block max-w-[320px] whitespace-normal leading-5 text-[#5f5b55]">
+        {row.original.note || "No note added"}
+      </span>
+    ),
+    meta: {
+      cellClassName: "min-w-[260px]",
+      headerClassName: "min-w-[260px]",
+    },
   },
   {
     accessorKey: "amount",
     header: "Amount",
-    cell: ({ row }) => formatMoney(row.original.amount),
+    cell: ({ row }) => (
+      <span className="block whitespace-nowrap text-right font-bold tabular-nums text-[var(--foreground)]">
+        {formatMoney(row.original.amount)}
+      </span>
+    ),
+    meta: {
+      cellClassName: "min-w-[140px] text-right",
+      headerClassName: "min-w-[140px] text-right",
+    },
   },
 ];

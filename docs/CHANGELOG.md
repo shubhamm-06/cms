@@ -1,5 +1,12 @@
 # Changelog
 
+## Owner Expenses Premium Read-Only Page
+
+- Refined `/owner/expenses` as a calm owner-facing read-only property-expense history page.
+- Added stronger property-only hierarchy, CMS-expense exclusion copy, recorded property-expense total, clearer date/category/property/vendor/note/amount table presentation, and aligned tabular amounts.
+- Added `/owner/expenses/loading.tsx` to avoid blank loading states and match the final page hierarchy.
+- Preserved owner-scoped expense reads through `getOwnerData()`, CMS-expense exclusion, existing owner expense search behavior, TanStack Table pagination/horizontal scrolling, read-only owner behavior, permissions, auth, routes, schema, middleware, navigation, admin expenses, and unrelated pages.
+
 ## Owner Bookings Premium Read-Only Page
 
 - Refined `/owner/bookings` as a calm owner-facing read-only booking history page.

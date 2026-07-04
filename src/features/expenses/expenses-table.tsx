@@ -25,8 +25,8 @@ export function OwnerExpensesTable({ expenses }: { expenses: ExpenseTableRow[] }
       columns={ownerExpenseColumns}
       data={expenses}
       embedded
-      emptyMessage="No expenses found."
-      searchPlaceholder="Search expenses..."
+      emptyMessage="No property expenses are available yet. Once property-related expenses are recorded, they will appear here for review."
+      searchPlaceholder="Search property expenses..."
     />
   );
 }
