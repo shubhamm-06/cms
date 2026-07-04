@@ -21,7 +21,7 @@ export function OwnerQueriesTable({ queries }: { queries: QueryTableRow[] }) {
       columns={ownerQueryColumns}
       data={queries}
       embedded
-      emptyMessage="No queries found."
+      emptyMessage="No queries yet. Send your first question and it will appear here for tracking."
       searchPlaceholder="Search queries..."
     />
   );

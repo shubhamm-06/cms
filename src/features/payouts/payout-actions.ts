@@ -7,6 +7,7 @@ import {
   calculateOwnerCombinedPayout,
   calculatePreviousCarryForward,
 } from "@/src/features/payouts/payout-calculations";
+import { sendOwnerQueryAdminEmail } from "@/src/features/queries/owner-query-email";
 import { createClient } from "@/src/lib/supabase/server";
 import {
   getMonthRange,
@@ -187,7 +188,14 @@ export async function raisePayoutQueryAction(formData: FormData) {
 
   if (payout.data?.status !== "ready_for_review") return;
 
-  await supabase.from("owner_queries").insert({
+  const property = await supabase
+    .from("properties")
+    .select("name")
+    .eq("id", payout.data.property_id)
+    .eq("owner_id", profile.id)
+    .maybeSingle();
+
+  const queryInsert = await supabase.from("owner_queries").insert({
     owner_id: profile.id,
     property_id: payout.data.property_id,
     payout_id: payout.data.id,
@@ -195,12 +203,22 @@ export async function raisePayoutQueryAction(formData: FormData) {
     status: "open",
     resolved: false,
   });
+  if (queryInsert.error) return;
 
   await supabase
     .from("owner_payouts")
     .update({ status: "query_raised", owner_note: message })
     .eq("id", id)
     .eq("owner_id", profile.id);
+
+  await sendOwnerQueryAdminEmail({
+    message,
+    ownerEmail: profile.email,
+    ownerName: profile.name,
+    ownerPhone: profile.phone,
+    propertyName: property.data?.name ?? null,
+    queryType: "statement",
+  });
 
   revalidatePath("/owner/payout");
   revalidatePath("/owner/queries");

@@ -14,6 +14,14 @@ export type QueryTableRow = Database["public"]["Tables"]["owner_queries"]["Row"]
   property_name: string;
 };
 
+function QueryStatusBadge({ resolved }: { resolved: boolean }) {
+  return (
+    <Badge className="whitespace-nowrap" tone={resolved ? "green" : "amber"}>
+      {resolved ? "Resolved" : "Open"}
+    </Badge>
+  );
+}
+
 export const adminQueryColumns: ColumnDef<QueryTableRow>[] = [
   {
     accessorKey: "owner_name",
@@ -66,20 +74,50 @@ export const ownerQueryColumns: ColumnDef<QueryTableRow>[] = [
   {
     accessorKey: "message",
     header: "Message",
-    cell: ({ row }) => <span className="block max-w-xl whitespace-normal">{row.original.message}</span>,
+    cell: ({ row }) => (
+      <div className="min-w-[300px] max-w-xl py-1">
+        <div className="whitespace-normal text-sm font-medium leading-6 text-[var(--foreground)]">{row.original.message}</div>
+        {row.original.payout_id ? (
+          <div className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
+            Statement query
+          </div>
+        ) : null}
+      </div>
+    ),
+    meta: {
+      cellClassName: "min-w-[320px]",
+      headerClassName: "min-w-[320px]",
+    },
   },
   {
     accessorKey: "property_name",
     header: "Property",
+    cell: ({ row }) => (
+      <span className="block min-w-[160px] font-medium text-[var(--foreground)]">{row.original.property_name}</span>
+    ),
+    meta: {
+      cellClassName: "min-w-[180px]",
+      headerClassName: "min-w-[180px]",
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <Badge tone={row.original.resolved ? "green" : "amber"}>{row.original.status}</Badge>,
+    cell: ({ row }) => <QueryStatusBadge resolved={row.original.resolved} />,
+    meta: {
+      cellClassName: "min-w-[120px]",
+      headerClassName: "min-w-[120px]",
+    },
   },
   {
     accessorKey: "created_at",
     header: "Created",
-    cell: ({ row }) => formatDate(row.original.created_at),
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap font-medium text-[var(--foreground)]">{formatDate(row.original.created_at)}</span>
+    ),
+    meta: {
+      cellClassName: "min-w-[140px]",
+      headerClassName: "min-w-[140px]",
+    },
   },
 ];

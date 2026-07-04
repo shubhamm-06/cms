@@ -39,6 +39,7 @@ This guide describes the current admin workflows. Access details are in [Routes 
 
 ## Queries
 
+- New owner queries send an internal admin email to `ADMIN_CONTACT_EMAIL` after the owner query row is successfully created. Production should set this recipient to `curatemystay@gmail.com`.
 - Admin can resolve owner queries. Resolving a payout-linked query changes the payout from `query_raised` to `resolved`.
 - Admin can delete queries with confirmation and status feedback.
 - Deleting a linked query restores a queried payout to `ready_for_review` during days 1-5, or `approved` after day 5.

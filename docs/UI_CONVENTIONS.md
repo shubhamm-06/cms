@@ -24,3 +24,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 20. Admin overview pages should prioritize fast scanning: compact context first, KPI cards next, then operational tables/lists with restrained color and clear empty states.
 21. Owner read-only reference pages should make scope and immutability clear, use calm summary cards, and never expose admin edit controls.
 22. Owner read-only tables should keep data scoped server-side, preserve controlled horizontal scrolling on mobile, use no-wrap status badges, and avoid admin edit/delete actions.
+23. Owner support/query forms should keep native server-action flow, use route-specific success notices, show pending submit state, and avoid exposing internal admin workflow details.

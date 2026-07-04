@@ -1,5 +1,20 @@
 # Changelog
 
+## Owner Query Admin Email Notification
+
+- Added a server-side internal Resend notification after successful owner query creation.
+- Normal owner queries and payout/statement-linked owner queries notify `ADMIN_CONTACT_EMAIL` with owner name, email, phone, property, query message, query type, and the admin `/dashboard/queries` link built from `NEXT_PUBLIC_SITE_URL` when available.
+- Email delivery failures are logged server-side only and do not roll back, block, or falsely fail successful owner query creation.
+- Documented that production `ADMIN_CONTACT_EMAIL` should be `curatemystay@gmail.com` and added an owner-query email verification step to the deployment runbook.
+- Preserved owner query scoping, payout-linked query transitions, admin query resolution/deletion, existing owner toast behavior, public forecast emails, permissions, schema, routes, analytics, and navigation.
+
+## Owner Queries Premium Support Page
+
+- Refined `/owner/queries` as a calm owner-facing support page with a stronger heading, reassuring helper copy, separated new-query form and query history sections, and a route-level loading skeleton.
+- Added a comfortable message field, inline helper text, pending submit state, and route-specific `owner_query_created` success toast that removes the notice from the URL after display.
+- Improved owner query history readability with owner-facing Open/Resolved badges, clearer message/property/date hierarchy, and a simple statement-query label for payout-linked rows.
+- Preserved owner-scoped query reads, owner query creation ownership checks, payout-linked query behavior, payout status transitions, admin query resolution/deletion workflows, permissions, auth, routes, schema, middleware, analytics, navigation, admin queries, and admin payout workflows.
+
 ## Owner Expenses Premium Read-Only Page
 
 - Refined `/owner/expenses` as a calm owner-facing read-only property-expense history page.

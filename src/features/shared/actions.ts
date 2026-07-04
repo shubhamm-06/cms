@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/src/lib/supabase/server";
 import { requireProfile, requireRole } from "@/src/features/auth/auth-guards";
 import { getBookingStatus } from "@/src/features/bookings/booking-calculations";
+import { sendOwnerQueryAdminEmail } from "@/src/features/queries/owner-query-email";
 import { bookingSchema } from "@/src/lib/validators/bookings";
 import { expenseSchema } from "@/src/lib/validators/expenses";
 import { profileSchema } from "@/src/lib/validators/profile";
@@ -218,17 +219,31 @@ export async function createOwnerQueryAction(formData: FormData) {
   if (!message) return;
   const property_id = String(formData.get("property_id") || "") || null;
   const supabase = await createClient();
+  let propertyName: string | null = null;
   if (property_id) {
     const property = await supabase
       .from("properties")
-      .select("id")
+      .select("id,name")
       .eq("id", property_id)
       .eq("owner_id", profile.id)
       .maybeSingle();
     if (!property.data) return;
+    propertyName = property.data.name;
   }
-  await supabase.from("owner_queries").insert({ owner_id: profile.id, property_id, message });
+  const queryInsert = await supabase.from("owner_queries").insert({ owner_id: profile.id, property_id, message });
+  if (queryInsert.error) return;
+
+  await sendOwnerQueryAdminEmail({
+    message,
+    ownerEmail: profile.email,
+    ownerName: profile.name,
+    ownerPhone: profile.phone,
+    propertyName,
+    queryType: "normal",
+  });
+
   revalidatePath("/owner/queries");
+  redirect("/owner/queries?notice=owner_query_created");
 }
 
 export async function saveSettingsAction(formData: FormData) {

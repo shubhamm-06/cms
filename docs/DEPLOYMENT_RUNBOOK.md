@@ -13,7 +13,7 @@ Use this with [Local Setup](./SETUP.md) and [API Contracts](./API_CONTRACTS.md).
 | `APPS_SCRIPT_SECRET` | Server-only secret | Shared webhook authentication value |
 | `RESEND_API_KEY` | Server-only secret | Email delivery |
 | `RESEND_FROM_EMAIL` | Server-only | Verified sender used by forecast emails |
-| `ADMIN_CONTACT_EMAIL` | Server-only config | Admin recipient address |
+| `ADMIN_CONTACT_EMAIL` | Server-only config | Admin recipient address; production value should be `curatemystay@gmail.com` |
 | `NEXT_PUBLIC_CMS_WHATSAPP_NUMBER` | Browser-safe | Digits-only WhatsApp follow-up number |
 | `NEXT_PUBLIC_SITE_URL` | Browser-safe | Canonical site origin used for auth callbacks |
 
@@ -38,9 +38,10 @@ Use this with [Local Setup](./SETUP.md) and [API Contracts](./API_CONTRACTS.md).
 
 1. Verify the production sending domain in Resend.
 2. Set `RESEND_API_KEY` and a verified `RESEND_FROM_EMAIL` value.
-3. Set the admin recipient address.
+3. Set the admin recipient address to `curatemystay@gmail.com` for production.
 4. Test both proposal-success and proposal-failure admin emails.
 5. Test owner link-only delivery after successful PDF generation.
+6. Test owner query notification delivery by creating a normal owner query and confirming the admin email reaches `ADMIN_CONTACT_EMAIL`.
 
 Note: `/api/contact` currently uses the fixed Resend development sender in source, while forecast emails use `RESEND_FROM_EMAIL`. Verify that general contact delivery is acceptable for the production Resend account.
 
@@ -79,6 +80,7 @@ Use the provider's standard Next.js start/runtime command.
 - Owner sees only assigned properties/bookings/property expenses.
 - Current-month owner performance matches between `/owner` and `/owner/payout`.
 - Previous-month payout generation, review-window action, query resolution, and mark-paid behavior work.
+- Creating an owner query succeeds, shows the owner success toast, and sends an internal admin email to `ADMIN_CONTACT_EMAIL`.
 - Forecast returns before proposal generation completes.
 - Successful proposal enables `pdfDownloadUrl`, sends admin email, and sends the owner link-only email.
 - Failed proposal leaves the forecast visible and sends no owner email.
