@@ -23,3 +23,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 19. Owner financial summaries that are not payout records must be labeled plainly, avoid owner-share/CMS/TDS language, and use compact read-only metric cards.
 20. Admin overview pages should prioritize fast scanning: compact context first, KPI cards next, then operational tables/lists with restrained color and clear empty states.
 21. Owner read-only reference pages should make scope and immutability clear, use calm summary cards, and never expose admin edit controls.
+22. Owner read-only tables should keep data scoped server-side, preserve controlled horizontal scrolling on mobile, use no-wrap status badges, and avoid admin edit/delete actions.

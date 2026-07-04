@@ -1,5 +1,12 @@
 # Changelog
 
+## Owner Bookings Premium Read-Only Page
+
+- Refined `/owner/bookings` as a calm owner-facing read-only booking history page.
+- Added stronger owner-scope hierarchy, booking count context, clearer guest/property/date/amount table presentation, compact no-wrap booking status badges, and an owner-only property filter treatment for multi-property owners.
+- Added `/owner/bookings/loading.tsx` to avoid blank loading states and match the final page hierarchy.
+- Preserved owner-scoped booking reads, guest name/phone visibility, property filtering behavior, TanStack Table pagination/horizontal scrolling, read-only owner behavior, permissions, auth, routes, schema, middleware, navigation, admin bookings, and unrelated pages.
+
 ## Owner Property Premium Read-Only Page
 
 - Refined `/owner/property` as a calm owner-facing read-only property details page.

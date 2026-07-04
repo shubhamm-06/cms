@@ -42,6 +42,34 @@ function PropertyFilter({
   );
 }
 
+function OwnerPropertyFilter({
+  onChange,
+  properties,
+  value,
+}: {
+  onChange: (value: string) => void;
+  properties: BookingPropertyOption[];
+  value: string;
+}) {
+  return (
+    <label className="flex w-full flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--cream)] px-3 py-2 sm:w-auto sm:min-w-[260px]">
+      <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--muted)]">Filter by property</span>
+      <Select
+        className="cms-input h-10 border-[var(--border)] bg-white text-sm font-semibold text-[var(--foreground)]"
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      >
+        <option value="all">All my properties</option>
+        {properties.map((property) => (
+          <option key={property.id} value={property.id}>
+            {property.name}
+          </option>
+        ))}
+      </Select>
+    </label>
+  );
+}
+
 export function AdminBookingsTable({
   bookings,
   properties,
@@ -100,13 +128,11 @@ export function OwnerBookingsTable({
       columns={ownerBookingColumns}
       data={filteredBookings}
       embedded
-      emptyMessage="No bookings found."
+      emptyMessage="No bookings are available yet. Confirmed stays for your assigned property will appear here."
       showSearch={false}
       toolbar={
         showPropertyFilter ? (
-          <PropertyFilter
-            allLabel="All my properties"
-            label="Filter by property"
+          <OwnerPropertyFilter
             onChange={setSelectedPropertyId}
             properties={properties}
             value={selectedPropertyId}

@@ -47,6 +47,11 @@ function BookingStatusBadge({ status }: { status: string }) {
   );
 }
 
+function nightsLabel(nights: number | null) {
+  if (!nights) return "Stay duration not set";
+  return `${nights} ${nights === 1 ? "night" : "nights"}`;
+}
+
 function DeleteBookingDialog({ booking }: { booking: BookingTableRow }) {
   return (
     <AlertDialog>
@@ -139,42 +144,95 @@ export const ownerBookingColumns: ColumnDef<BookingTableRow>[] = [
     accessorKey: "guest_name",
     header: "Guest",
     cell: ({ row }) => (
-      <div>
-        <div className="font-semibold">{row.original.guest_name}</div>
-        <div className="text-xs text-[var(--muted)]">{row.original.property_name}</div>
+      <div className="min-w-[220px] py-1">
+        <div className="font-semibold leading-5 text-[var(--foreground)]">{row.original.guest_name}</div>
+        <div className="mt-1 text-xs font-medium leading-4 text-[#6a655f]">{row.original.property_name}</div>
       </div>
     ),
+    meta: {
+      cellClassName: "min-w-[240px]",
+      headerClassName: "min-w-[240px]",
+    },
   },
   {
     accessorKey: "guest_phone",
     header: "Phone",
-    cell: ({ row }) => row.original.guest_phone || "None",
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap text-sm font-medium text-[var(--foreground)]">
+        {row.original.guest_phone || "None"}
+      </span>
+    ),
+    meta: {
+      cellClassName: "min-w-[140px]",
+      headerClassName: "min-w-[140px]",
+    },
   },
   {
     accessorKey: "source",
     header: "Source",
-    cell: ({ row }) => row.original.source || "None",
+    cell: ({ row }) => (
+      <Badge className="whitespace-nowrap" tone="neutral">
+        {row.original.source || "None"}
+      </Badge>
+    ),
+    meta: {
+      cellClassName: "min-w-[130px]",
+      headerClassName: "min-w-[130px]",
+    },
   },
   {
     id: "dates",
     header: "Dates",
     accessorFn: (row) => `${row.check_in} ${row.check_out}`,
-    cell: ({ row }) => `${formatDate(row.original.check_in)} to ${formatDate(row.original.check_out)}`,
+    cell: ({ row }) => (
+      <div className="min-w-[220px] py-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-medium text-[var(--foreground)]">
+          <span className="whitespace-nowrap">{formatDate(row.original.check_in)}</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">to</span>
+          <span className="whitespace-nowrap">{formatDate(row.original.check_out)}</span>
+        </div>
+        <div className="mt-1 text-xs font-medium text-[#6a655f]">{nightsLabel(row.original.nights)}</div>
+      </div>
+    ),
+    meta: {
+      cellClassName: "min-w-[240px]",
+      headerClassName: "min-w-[240px]",
+    },
   },
   {
     accessorKey: "guests",
     header: "Guests",
-    cell: ({ row }) => row.original.guests ?? "None",
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap text-sm font-semibold text-[var(--foreground)]">
+        {row.original.guests ? `${row.original.guests} ${row.original.guests === 1 ? "guest" : "guests"}` : "None"}
+      </span>
+    ),
+    meta: {
+      cellClassName: "min-w-[110px]",
+      headerClassName: "min-w-[110px]",
+    },
   },
   {
     id: "status",
     accessorFn: displayStatus,
     header: "Status",
-    cell: ({ row }) => <Badge>{humanize(displayStatus(row.original))}</Badge>,
+    cell: ({ row }) => <BookingStatusBadge status={displayStatus(row.original)} />,
+    meta: {
+      cellClassName: "min-w-[140px]",
+      headerClassName: "min-w-[140px]",
+    },
   },
   {
     accessorKey: "total_amount",
     header: "Total",
-    cell: ({ row }) => formatMoney(row.original.total_amount),
+    cell: ({ row }) => (
+      <span className="block whitespace-nowrap text-right font-bold tabular-nums text-[var(--foreground)]">
+        {formatMoney(row.original.total_amount)}
+      </span>
+    ),
+    meta: {
+      cellClassName: "min-w-[130px] text-right",
+      headerClassName: "min-w-[130px] text-right",
+    },
   },
 ];
