@@ -25,3 +25,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 21. Owner read-only reference pages should make scope and immutability clear, use calm summary cards, and never expose admin edit controls.
 22. Owner read-only tables should keep data scoped server-side, preserve controlled horizontal scrolling on mobile, use no-wrap status badges, and avoid admin edit/delete actions.
 23. Owner support/query forms should keep native server-action flow, use route-specific success notices, show pending submit state, and avoid exposing internal admin workflow details.
+24. Owner self-service profile forms should clearly separate editable contact details from read-only account fields and use route-specific success notices.

@@ -24,8 +24,10 @@ export async function saveProfileAction(formData: FormData) {
   const parsed = profileSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return;
   const supabase = await createClient();
-  await supabase.from("profiles").update(emptyToNull(parsed.data)).eq("id", profile.id);
+  const result = await supabase.from("profiles").update(emptyToNull(parsed.data)).eq("id", profile.id);
+  if (result.error) return;
   revalidatePath(profile.role === "admin" ? "/dashboard/profile" : "/owner/profile");
+  if (profile.role === "owner") redirect("/owner/profile?notice=owner_profile_updated");
 }
 
 export async function updateUserAction(formData: FormData) {

@@ -1,5 +1,13 @@
 # Changelog
 
+## Owner Profile Premium Self-Service Page
+
+- Refined `/owner/profile` as a calm owner-facing self-service profile page.
+- Added stronger hierarchy, editable personal contact details, read-only account information for email/role/status, pending save state, and route-level loading skeleton.
+- Added owner-specific profile notice handling with allowlisted `owner_profile_updated`, which removes the notice from the URL after the success toast displays.
+- Updated `saveProfileAction` to redirect owners with the success notice only after a successful profile update while preserving admin profile behavior.
+- Preserved owner self-profile field scope: owners can update only their own name, phone, and avatar URL; no role, status, email, password, delete, auth, schema, route, navigation, or admin profile controls changed.
+
 ## Owner Query Admin Email Notification
 
 - Added a server-side internal Resend notification after successful owner query creation.
