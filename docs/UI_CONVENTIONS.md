@@ -27,3 +27,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 23. Owner support/query forms should keep native server-action flow, use route-specific success notices, show pending submit state, and avoid exposing internal admin workflow details.
 24. Owner self-service profile forms should clearly separate editable contact details from read-only account fields and use route-specific success notices.
 25. Admin financial tables should keep money columns right-aligned/tabular, keep statuses no-wrap, and confirm payment actions before submitting existing server actions.
+26. Admin query actions should use route-specific success notices, pending resolve/delete states, and deletion confirmation that identifies linked payout-statement impact.

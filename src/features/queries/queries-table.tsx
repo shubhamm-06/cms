@@ -9,7 +9,7 @@ export function AdminQueriesTable({ queries }: { queries: QueryTableRow[] }) {
       columns={adminQueryColumns}
       data={queries}
       embedded
-      emptyMessage="No queries found."
+      emptyMessage="No owner queries are waiting here yet. New owner questions and statement queries will appear in this inbox."
       showSearch={false}
     />
   );

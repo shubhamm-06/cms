@@ -1,5 +1,12 @@
 # Changelog
 
+## Admin Queries Premium Operations Page
+
+- Refined `/dashboard/queries` as a cleaner operational admin query inbox with a stronger header, open/resolved/statement-related summary cards, polished query table cells, and a route-level loading skeleton.
+- Added admin query success notices for `admin_query_resolved` and `admin_query_deleted`, with URL cleanup after the toast displays.
+- Added pending feedback for resolve/delete actions and replaced direct query deletion with an AlertDialog that identifies the owner, property context, query preview, and payout-statement impact when linked.
+- Preserved owner query creation, owner query admin email notifications, admin permissions, query scoping, search/filter behavior, payout-linked query resolution, delete restoration rules, failure restoration handling, payout calculations, review windows, auto-approval, owner query pages, and admin payout pages.
+
 ## Admin Payouts Premium Operations Page
 
 - Refined `/dashboard/payouts` as a cleaner admin payout-management screen with an operational header, payable-month context, KPI summary cards, polished payout table columns, clearer property-wise breakup sections, and a route-level loading skeleton.

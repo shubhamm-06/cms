@@ -146,11 +146,14 @@ export async function resolveQueryAction(formData: FormData) {
   await requireRole("admin");
   const supabase = await createClient();
   const id = String(formData.get("id") || "");
-  const query = await supabase.from("owner_queries").select("id,payout_id").eq("id", id).maybeSingle();
-  await supabase
+  const query = await supabase.from("owner_queries").select("id,payout_id,resolved").eq("id", id).maybeSingle();
+  if (!query.data || query.data.resolved) redirect("/dashboard/queries?error=resolve-failed");
+
+  const resolvedQuery = await supabase
     .from("owner_queries")
     .update({ resolved: true, status: "resolved", resolved_at: new Date().toISOString() })
     .eq("id", id);
+  if (resolvedQuery.error) redirect("/dashboard/queries?error=resolve-failed");
 
   if (query.data?.payout_id) {
     await supabase
@@ -163,6 +166,7 @@ export async function resolveQueryAction(formData: FormData) {
   revalidatePath("/dashboard/queries");
   revalidatePath("/dashboard/payouts");
   revalidatePath("/owner/payout");
+  redirect("/dashboard/queries?notice=admin_query_resolved");
 }
 
 export async function deleteOwnerQueryAction(formData: FormData) {
@@ -212,7 +216,7 @@ export async function deleteOwnerQueryAction(formData: FormData) {
   revalidatePath("/dashboard/payouts");
   revalidatePath("/owner/payout");
   revalidatePath("/owner/queries");
-  redirect("/dashboard/queries?deleted=1");
+  redirect("/dashboard/queries?notice=admin_query_deleted");
 }
 
 export async function createOwnerQueryAction(formData: FormData) {

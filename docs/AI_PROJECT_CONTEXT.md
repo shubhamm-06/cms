@@ -246,7 +246,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 - Expenses: CRUD; CMS default, property requirement rules, expense-only success notices, and AlertDialog delete confirmation.
 - P&L: operational summary.
 - Payouts: premium admin payout operations page with previous-month page-load generation, combined owner rows, property breakup, query clarity, confirmed mark-paid action, and `admin_payout_marked_paid` success notice. Existing mark-paid eligibility remains approved/resolved payouts only.
-- Queries: resolve/delete; linked payout state is updated/restored safely.
+- Queries: premium admin query inbox with open/resolved/statement context, pending resolve/delete actions, AlertDialog delete confirmation, `admin_query_resolved`/`admin_query_deleted` notices, and unchanged linked-payout resolve/restoration behavior.
 - Settings: newline-managed arrays for sources/categories/concierge.
 
 Practical details: [Admin Operations Guide](./ADMIN_OPERATIONS_GUIDE.md).
