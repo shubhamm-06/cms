@@ -245,7 +245,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 - Bookings: CRUD, settings-backed source/concierge, automatic status, booking-only success notices, and AlertDialog delete confirmation.
 - Expenses: CRUD; CMS default, property requirement rules, expense-only success notices, and AlertDialog delete confirmation.
 - P&L: operational summary.
-- Payouts: previous-month page-load generation, combined owner rows, property breakup, mark paid.
+- Payouts: premium admin payout operations page with previous-month page-load generation, combined owner rows, property breakup, query clarity, confirmed mark-paid action, and `admin_payout_marked_paid` success notice. Existing mark-paid eligibility remains approved/resolved payouts only.
 - Queries: resolve/delete; linked payout state is updated/restored safely.
 - Settings: newline-managed arrays for sources/categories/concierge.
 

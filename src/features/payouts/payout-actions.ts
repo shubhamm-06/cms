@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireRole } from "@/src/features/auth/auth-guards";
 import {
   calculateBreakupsForOwnerMonth,
@@ -235,11 +236,13 @@ export async function markPayoutPaidAction(formData: FormData) {
   const payout = await supabase.from("owner_payouts").select("id,status").eq("id", id).maybeSingle();
   if (!payout.data || !["approved", "resolved"].includes(payout.data.status)) return;
 
-  await supabase
+  const updateResult = await supabase
     .from("owner_payouts")
     .update({ status: "paid", paid_at: new Date().toISOString() })
     .eq("id", id);
+  if (updateResult.error) return;
 
   revalidatePath("/dashboard/payouts");
   revalidatePath("/owner/payout");
+  redirect("/dashboard/payouts?notice=admin_payout_marked_paid");
 }

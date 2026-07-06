@@ -10,7 +10,7 @@ export function AdminPayoutsTable({ payouts }: { payouts: PayoutTableRow[] }) {
       columns={adminPayoutColumns}
       data={payouts}
       embedded
-      emptyMessage="No payouts found."
+      emptyMessage="No payout statements are available yet. Previous-month statements are created when payout processing runs on page load for active owners."
       searchPlaceholder="Search payouts..."
     />
   );

@@ -1,5 +1,12 @@
 # Changelog
 
+## Admin Payouts Premium Operations Page
+
+- Refined `/dashboard/payouts` as a cleaner admin payout-management screen with an operational header, payable-month context, KPI summary cards, polished payout table columns, clearer property-wise breakup sections, and a route-level loading skeleton.
+- Added an AlertDialog confirmation and pending state before the existing admin mark-paid action submits, plus a route-specific `admin_payout_marked_paid` success toast that removes the notice from the URL after display.
+- Improved admin payout statuses, query context, money alignment, no-wrap badges, compact actions, and no-payout empty copy while keeping admin search, sorting, pagination, and controlled horizontal scrolling.
+- Preserved previous-month payout creation, recalculation, carry-forward, owner/CMS share, fixed 10% TDS, review-window rules, auto-approval, query transitions, mark-paid eligibility, owner payout pages, permissions, schema, routes, and payout formulas.
+
 ## Owner Profile Premium Self-Service Page
 
 - Refined `/owner/profile` as a calm owner-facing self-service profile page.
