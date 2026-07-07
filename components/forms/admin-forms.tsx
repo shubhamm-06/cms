@@ -4,7 +4,7 @@ import { Building2, ReceiptText, Save, WalletCards } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   saveExpenseAction,
@@ -20,6 +20,7 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 type Expense = Database["public"]["Tables"]["expenses"]["Row"];
 type Setting = Database["public"]["Tables"]["settings"]["Row"];
+type EditableProfile = Pick<Profile, "avatar_url" | "name" | "phone">;
 
 function PropertyField({
   children,
@@ -70,6 +71,17 @@ function SettingsSubmitButton() {
     <Button pending={pending} type="submit" variant="primary">
       {pending ? null : <Save className="h-4 w-4" />}
       {pending ? "Saving..." : "Save settings"}
+    </Button>
+  );
+}
+
+function ProfileSubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button className="w-full sm:w-auto" pending={pending} type="submit" variant="primary">
+      {pending ? null : <Save className="h-4 w-4" />}
+      {pending ? "Saving..." : "Save profile"}
     </Button>
   );
 }
@@ -336,22 +348,54 @@ export function SettingsForm({ settings }: { settings: Setting[] }) {
   );
 }
 
-export function ProfileForm({ profile }: { profile: Profile }) {
+export function ProfileForm({ profile }: { profile: EditableProfile }) {
   return (
-    <form action={saveProfileAction} className="grid max-w-xl gap-4">
-      <Field label="Name">
-        <Input defaultValue={profile.name || ""} name="name" required />
-      </Field>
-      <Field label="Phone">
-        <Input defaultValue={profile.phone || ""} name="phone" />
-      </Field>
-      <Field label="Avatar URL">
-        <Input defaultValue={profile.avatar_url || ""} name="avatar_url" />
-      </Field>
-      <Button type="submit" variant="primary">
-        <Save className="h-4 w-4" />
-        Save profile
-      </Button>
+    <form action={saveProfileAction} className="grid gap-5">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <PropertyField
+          helper="Use the name CurateMyStay should show in internal admin context."
+          label="Name"
+        >
+          <Input
+            className="min-h-11 text-base font-semibold"
+            defaultValue={profile.name || ""}
+            minLength={2}
+            name="name"
+            required
+          />
+        </PropertyField>
+        <PropertyField
+          helper="Optional contact number for internal coordination."
+          label="Phone"
+        >
+          <Input
+            className="min-h-11"
+            defaultValue={profile.phone || ""}
+            name="phone"
+            type="tel"
+          />
+        </PropertyField>
+      </div>
+
+      <PropertyField
+        helper="Optional. Paste a hosted image URL; upload/storage behavior is unchanged."
+        label="Avatar URL"
+      >
+        <Input
+          className="min-h-11"
+          defaultValue={profile.avatar_url || ""}
+          name="avatar_url"
+          placeholder="https://..."
+          type="url"
+        />
+      </PropertyField>
+
+      <div className="flex flex-col items-start justify-between gap-3 border-t border-[var(--border)] pt-5">
+        <ProfileSubmitButton />
+        <p className="text-xs leading-6 text-[#5f5b55]">
+          Only your own personal contact details are updated here. Role, status, email, and protected-account controls are managed elsewhere.
+        </p>
+      </div>
     </form>
   );
 }

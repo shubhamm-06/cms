@@ -1,5 +1,12 @@
 # Changelog
 
+## Admin Profile Self-Service UI Pass
+
+- Refined `/dashboard/profile` as a calm admin self-profile page with a stronger header, editable personal contact details, read-only account details, compact role/status/protection badges, and a route-level loading skeleton.
+- Added pending save feedback and an allowlisted `admin_profile_updated` success toast that removes the notice from the URL after display.
+- Narrowed the shared profile form props to editable profile fields while preserving submitted field names and existing `saveProfileAction` validation.
+- Preserved self-profile-only updates, protected-admin safeguards, role/status/email read-only behavior, owner profile page behavior, auth, permissions, schema, routes, navigation, and unrelated dashboard pages.
+
 ## Admin Settings Operational UI Pass
 
 - Refined `/dashboard/settings` as a clearer admin dropdown-option management page with a stronger header, separate Booking Sources, Expense Categories, and Concierge Options sections, one-option-per-line guidance, historical-value caution copy, and a route-level loading skeleton.

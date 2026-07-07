@@ -248,6 +248,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 - Payouts: premium admin payout operations page with previous-month page-load generation, combined owner rows, property breakup, query clarity, confirmed mark-paid action, and `admin_payout_marked_paid` success notice. Existing mark-paid eligibility remains approved/resolved payouts only.
 - Queries: premium admin query inbox with open/resolved/statement context, pending resolve/delete actions, AlertDialog delete confirmation, `admin_query_resolved`/`admin_query_deleted` notices, and unchanged linked-payout resolve/restoration behavior.
 - Settings: operational dropdown option management page for newline-managed `booking_sources`, `expense_categories`, and `concierge_options` arrays, with one-option-per-line guidance, pending save state, `settings_updated` notice, and unchanged downstream booking/expense form behavior.
+- Profile: calm admin self-profile page with editable own name, phone, and avatar URL only; read-only email, role, status, protected-account context; pending save state; `admin_profile_updated` notice; and route-level loading skeleton.
 
 Practical details: [Admin Operations Guide](./ADMIN_OPERATIONS_GUIDE.md).
 

@@ -30,3 +30,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 26. Admin query actions should use route-specific success notices, pending resolve/delete states, and deletion confirmation that identifies linked payout-statement impact.
 27. Admin financial overview pages should summarize only existing report values, keep amount columns right-aligned/tabular, and avoid adding new formulas during UI-only passes.
 28. Admin settings forms should keep one-option-per-line native textareas, use route-specific success notices, and warn before removing values used by historical records.
+29. Admin self-profile pages should separate editable personal contact fields from read-only account identity/status fields and use route-specific success notices.

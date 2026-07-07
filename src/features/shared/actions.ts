@@ -27,6 +27,7 @@ export async function saveProfileAction(formData: FormData) {
   const result = await supabase.from("profiles").update(emptyToNull(parsed.data)).eq("id", profile.id);
   if (result.error) return;
   revalidatePath(profile.role === "admin" ? "/dashboard/profile" : "/owner/profile");
+  if (profile.role === "admin") redirect("/dashboard/profile?notice=admin_profile_updated");
   if (profile.role === "owner") redirect("/owner/profile?notice=owner_profile_updated");
 }
 
