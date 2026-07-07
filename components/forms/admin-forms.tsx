@@ -63,6 +63,17 @@ function ExpenseSubmitButton({ isEditing }: { isEditing: boolean }) {
   );
 }
 
+function SettingsSubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button pending={pending} type="submit" variant="primary">
+      {pending ? null : <Save className="h-4 w-4" />}
+      {pending ? "Saving..." : "Save settings"}
+    </Button>
+  );
+}
+
 export function UserEditForm({ profile }: { profile: Profile }) {
   return (
     <form action={updateUserAction} className="grid gap-2 md:grid-cols-6">
@@ -270,23 +281,56 @@ export function SettingsForm({ settings }: { settings: Setting[] }) {
     const value = settings.find((setting) => setting.key === key)?.value;
     return Array.isArray(value) ? value.join("\n") : "";
   };
+  const settingGroups = [
+    {
+      description: "Sources available on the booking form, such as Airbnb, Booking.com, direct, or walk-in.",
+      key: "booking_sources",
+      label: "Booking Sources",
+    },
+    {
+      description: "Categories available when admins record property or CMS expenses.",
+      key: "expense_categories",
+      label: "Expense Categories",
+    },
+    {
+      description: "Concierge services selectable while creating or editing bookings.",
+      key: "concierge_options",
+      label: "Concierge Options",
+    },
+  ];
 
   return (
-    <form action={saveSettingsAction} className="grid gap-4 md:grid-cols-2">
-      {[
-        ["booking_sources", "Booking sources"],
-        ["expense_categories", "Expense categories"],
-        ["concierge_options", "Concierge options"],
-      ].map(([key, label]) => (
-        <Field key={key} label={label}>
-          <Textarea defaultValue={valueFor(key)} name={key} />
-        </Field>
-      ))}
-      <div className="md:col-span-2">
-        <Button type="submit" variant="primary">
-          <Save className="h-4 w-4" />
-          Save settings
-        </Button>
+    <form action={saveSettingsAction} className="space-y-5">
+      <div className="grid gap-4 lg:grid-cols-3">
+        {settingGroups.map((setting) => (
+          <label
+            className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-[0_10px_24px_rgba(34,34,34,0.03)]"
+            key={setting.key}
+          >
+            <span className="cms-label">{setting.label}</span>
+            <span className="mt-1 block min-h-10 text-sm leading-5 text-[#5f5b55]">{setting.description}</span>
+            <span className="mt-3 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
+              One option per line
+            </span>
+            <Textarea
+              className="mt-2 min-h-52 resize-y leading-6"
+              defaultValue={valueFor(setting.key)}
+              name={setting.key}
+              spellCheck={false}
+            />
+          </label>
+        ))}
+      </div>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--cream)]/70 px-4 py-3 text-sm leading-6 text-[#5f5b55]">
+        Existing values may appear in historical bookings or expenses. Add new options freely, but avoid removing options unless you understand how older records and edit forms should behave.
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm leading-6 text-[var(--muted)]">
+          Saved values continue to be stored as JSON arrays in the existing settings table.
+        </p>
+        <SettingsSubmitButton />
       </div>
     </form>
   );

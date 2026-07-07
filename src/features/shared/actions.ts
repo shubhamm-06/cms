@@ -256,7 +256,7 @@ export async function saveSettingsAction(formData: FormData) {
   await requireRole("admin");
   const supabase = await createClient();
   const keys = ["booking_sources", "expense_categories", "concierge_options"];
-  await Promise.all(
+  const results = await Promise.all(
     keys.map((key) =>
       supabase.from("settings").upsert(
         {
@@ -270,5 +270,7 @@ export async function saveSettingsAction(formData: FormData) {
       ),
     ),
   );
+  if (results.some((result) => result.error)) redirect("/dashboard/settings?error=settings-save-failed");
   revalidatePath("/dashboard/settings");
+  redirect("/dashboard/settings?notice=settings_updated");
 }

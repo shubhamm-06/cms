@@ -1,5 +1,12 @@
 # Changelog
 
+## Admin Settings Operational UI Pass
+
+- Refined `/dashboard/settings` as a clearer admin dropdown-option management page with a stronger header, separate Booking Sources, Expense Categories, and Concierge Options sections, one-option-per-line guidance, historical-value caution copy, and a route-level loading skeleton.
+- Added a pending save state to the existing settings form and route-specific `settings_updated` success toast that removes the notice from the URL after display.
+- Updated the settings save action to keep the same three keys and newline-to-JSON-array parsing while redirecting only after successful upserts; failed saves route back with an inline error message.
+- Preserved existing settings keys, values, JSON-array storage, booking/expense/concierge downstream form behavior, legacy edit-value behavior, permissions, schema, routes, navigation, and unrelated workflows.
+
 ## Admin P&L Premium Financial Overview
 
 - Refined `/dashboard/pnl` as a cleaner operational financial overview with a stronger header, CMS expense callout, existing-value summary cards, polished property P&L table columns, improved empty copy, and a route-level loading skeleton.
