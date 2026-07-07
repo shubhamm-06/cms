@@ -9,7 +9,7 @@ export function PnlTable({ rows }: { rows: PnlTableRow[] }) {
       columns={pnlColumns}
       data={rows}
       embedded
-      emptyMessage="No P&L rows found."
+      emptyMessage="No property P&L records are available yet. Add properties, bookings, and property expenses to populate this report."
       searchPlaceholder="Search properties..."
     />
   );

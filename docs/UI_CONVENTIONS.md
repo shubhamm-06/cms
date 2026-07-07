@@ -28,3 +28,4 @@ CurateMyStay keeps UI code simple, Tailwind-first, and easy to edit later.
 24. Owner self-service profile forms should clearly separate editable contact details from read-only account fields and use route-specific success notices.
 25. Admin financial tables should keep money columns right-aligned/tabular, keep statuses no-wrap, and confirm payment actions before submitting existing server actions.
 26. Admin query actions should use route-specific success notices, pending resolve/delete states, and deletion confirmation that identifies linked payout-statement impact.
+27. Admin financial overview pages should summarize only existing report values, keep amount columns right-aligned/tabular, and avoid adding new formulas during UI-only passes.

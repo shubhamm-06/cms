@@ -244,7 +244,7 @@ Exact rules and statuses: [Payout Logic](./PAYOUT_LOGIC.md).
 - Properties: CRUD and owner/share assignment. Edit mode remounts the existing form with the selected property id, server-side updates require that id, and successful saves redirect back to `/dashboard/properties` so edit mode resets. The image URL field is absent and existing `image_url` values are preserved on edit. Create/update/delete redirects use property-only notice codes for one-time success toasts, and property deletion is confirmed with an AlertDialog before submitting the existing delete action.
 - Bookings: CRUD, settings-backed source/concierge, automatic status, booking-only success notices, and AlertDialog delete confirmation.
 - Expenses: CRUD; CMS default, property requirement rules, expense-only success notices, and AlertDialog delete confirmation.
-- P&L: operational summary.
+- P&L: premium operational financial overview with report-level existing-value summary cards, CMS expenses called out separately, aligned property P&L table amounts, and unchanged revenue/expense/share calculations.
 - Payouts: premium admin payout operations page with previous-month page-load generation, combined owner rows, property breakup, query clarity, confirmed mark-paid action, and `admin_payout_marked_paid` success notice. Existing mark-paid eligibility remains approved/resolved payouts only.
 - Queries: premium admin query inbox with open/resolved/statement context, pending resolve/delete actions, AlertDialog delete confirmation, `admin_query_resolved`/`admin_query_deleted` notices, and unchanged linked-payout resolve/restoration behavior.
 - Settings: newline-managed arrays for sources/categories/concierge.

@@ -1,5 +1,11 @@
 # Changelog
 
+## Admin P&L Premium Financial Overview
+
+- Refined `/dashboard/pnl` as a cleaner operational financial overview with a stronger header, CMS expense callout, existing-value summary cards, polished property P&L table columns, improved empty copy, and a route-level loading skeleton.
+- Improved amount alignment, tabular financial values, property row hierarchy, and controlled mobile horizontal scrolling while preserving the existing TanStack search, sorting, and pagination behavior.
+- Preserved all existing P&L row formulas, revenue totals, property expense totals, net profit, owner share, CMS share, CMS expense total, Supabase reads, permissions, payout logic, owner pages, admin pages, schema, routes, and navigation.
+
 ## Admin Queries Premium Operations Page
 
 - Refined `/dashboard/queries` as a cleaner operational admin query inbox with a stronger header, open/resolved/statement-related summary cards, polished query table cells, and a route-level loading skeleton.
