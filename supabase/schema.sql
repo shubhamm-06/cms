@@ -90,8 +90,8 @@ create table if not exists public.owner_payouts (
 create table if not exists public.owner_queries (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references public.profiles(id),
-  property_id uuid references public.properties(id),
-  payout_id uuid references public.owner_payouts(id),
+  property_id uuid references public.properties(id) on delete cascade,
+  payout_id uuid references public.owner_payouts(id) on delete cascade,
   message text not null,
   status text not null default 'open' check (status in ('open', 'resolved')),
   resolved boolean not null default false,

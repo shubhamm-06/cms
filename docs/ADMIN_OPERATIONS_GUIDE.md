@@ -8,7 +8,9 @@ This guide describes the current admin workflows. Access details are in [Routes 
 - Activate an owner by changing status to active after verification.
 - Admin can change role, status, name, and phone.
 - The protected admin is identified by the protected flag or configured protected address. The application prevents deletion and forces role/status to admin/active on updates.
-- Supabase Auth user deletion is not implemented by the profile delete action.
+- Deleting an eligible user requires a configured server-only `SUPABASE_SERVICE_ROLE_KEY`. The action verifies the target Auth user first, removes the application profile row that blocks the checked-in foreign key, deletes the linked Supabase Auth account through the Auth admin API, then verifies both records are gone before showing success.
+- If Supabase Auth admin configuration is missing, invalid, or not allowed to delete users, the action shows a failure notice and does not report success.
+- User deletion is blocked when the user owns linked operational records such as assigned properties, payout statements, or owner queries. Reassign operational records first or mark the account inactive instead.
 
 ## Properties
 
@@ -16,7 +18,7 @@ This guide describes the current admin workflows. Access details are in [Routes 
 - Assign at most one owner and set active/inactive status.
 - Owner share plus CMS share must equal 100.
 - The Image URL control was removed. Editing a property does not submit `image_url`, so an existing stored value is preserved.
-- The schema declares cascade deletion for related bookings, property expenses, and payouts. Review linked query references before deleting a property because query foreign keys do not declare cascade behavior.
+- The schema declares cascade deletion for related bookings, property expenses, payout statements, owner queries linked directly to the property, and owner queries linked to payout statements that are deleted with the property.
 
 ## Bookings
 

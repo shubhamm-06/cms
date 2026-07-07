@@ -26,7 +26,7 @@ settings and contact_submissions are standalone
 | Constraints | Unique non-null email; role is `admin` or `owner`; status is `pending`, `active`, or `inactive` |
 | Reads | Current user reads own profile; admin dashboard reads profiles |
 | Writes | Signup/fallback profile creation, admin user management, self-profile update |
-| Business rules | Public signup creates pending owner; protected admin remains active/admin and cannot be deleted through actions |
+| Business rules | Public signup creates pending owner; protected admin remains active/admin and cannot be deleted through actions; hard user deletion is blocked when assigned properties, payout statements, or owner queries reference the profile |
 
 ### `properties`
 
@@ -84,11 +84,11 @@ The database has no unique constraint on `(owner_id, month)`. The application pr
 | --- | --- |
 | Purpose | Simple owner queries, including payout-linked queries |
 | Key fields | `owner_id`, optional `property_id`, optional `payout_id`, message, status, resolved fields |
-| Relationships | References profiles, properties, and optionally owner payouts |
+| Relationships | References profiles; optional `property_id` references properties with cascade delete; optional `payout_id` references owner payouts with cascade delete |
 | Constraints | Status is open/resolved; owner and message are required |
 | Reads | Admin reads all; owner reads own queries |
 | Writes | Owner creates; admin resolves/deletes |
-| Business rules | Resolving a payout query moves a queried payout to resolved; deleting an open linked query restores payout state according to review-window timing |
+| Business rules | Resolving a payout query moves a queried payout to resolved; deleting an open linked query through the admin query action restores payout state according to review-window timing. Property deletion cascades linked property and payout queries through database foreign keys |
 
 ### `settings`
 

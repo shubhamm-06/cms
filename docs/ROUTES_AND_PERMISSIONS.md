@@ -30,7 +30,7 @@ All `/dashboard/*` routes require an authenticated profile with `role = admin` a
 | Route | Purpose | Key behavior |
 | --- | --- | --- |
 | `/dashboard` | Operational overview | KPIs, property performance, occupancy, and upcoming check-ins |
-| `/dashboard/users` | User management | Activate/deactivate users and change roles; protected admin cannot be demoted, disabled, or deleted |
+| `/dashboard/users` | User management | Activate/deactivate users and change roles; protected admin cannot be demoted, disabled, or deleted; hard deletion is limited to users without linked operational records |
 | `/dashboard/properties` | Property management | Create/edit/delete properties, assign one owner, and maintain owner/CMS shares totaling 100 |
 | `/dashboard/bookings` | Booking management | Create/edit/delete; date status is server-calculated; property dropdown filtering |
 | `/dashboard/expenses` | Expense management | Create/edit/delete property and CMS expenses; CMS is default and has no property |

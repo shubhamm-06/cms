@@ -1,5 +1,26 @@
 # Changelog
 
+## Admin Property Delete Cascade Fix
+
+- Added a Supabase migration so `owner_queries.property_id` cascades with deleted properties and `owner_queries.payout_id` cascades with deleted owner payout statements.
+- Updated the reference schema to match the migration while preserving nullable owner query property and payout links.
+- Removed the application-level linked-query deletion block from `deletePropertyAction`; property deletion now relies on database cascades instead of manually deleting query rows or calling the query-delete action.
+- Kept active-admin guarding, valid property ID validation, property existence checks, normal authenticated Supabase server client usage, truthful delete error handling, post-delete verification, and success notice only after confirmed deletion.
+- Updated the property delete confirmation copy to clearly state that linked bookings, property expenses, payout statements, and owner queries are permanently removed.
+
+## Admin User Deletion Verification Repair
+
+- Repaired `/dashboard/users` deletion ordering and failure handling after the earlier Auth deletion patch remained unreliable in production.
+- The action now verifies service-role Auth admin access and the target Auth user before profile deletion, blocks linked operational records before any destructive step, removes the FK-blocking profile row, deletes the Supabase Auth user, and verifies both Auth and profile records are gone before showing `user_deleted`.
+- Added allowlisted failure notices for unavailable Auth admin deletion and linked-record blocking, with safe server-side diagnostic logging that does not expose credentials.
+- Preserved protected-admin safeguards, existing delete confirmation UI, table behavior, role/status updates, auth flow, schema, RLS assumptions, and unrelated modules.
+
+## Admin User Deletion Auth Fix
+
+- Fixed `/dashboard/users` deletion so success is shown only after an eligible profile is removed and the linked Supabase Auth user is deleted through the server-only Auth admin API.
+- Added linked-operational-data checks before deletion; users with assigned properties, owner payout statements, or owner queries are blocked with guidance to reassign records or mark the account inactive.
+- Preserved protected-admin blocking, existing AlertDialog confirmation, row/table behavior, role/status update logic, permissions, auth flow, schema, RLS assumptions, and unrelated modules.
+
 ## Admin Profile Self-Service UI Pass
 
 - Refined `/dashboard/profile` as a calm admin self-profile page with a stronger header, editable personal contact details, read-only account details, compact role/status/protection badges, and a route-level loading skeleton.

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { useFormStatus } from "react-dom";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -22,6 +23,20 @@ export type PropertyTableRow = Database["public"]["Tables"]["properties"]["Row"]
   owner_name: string;
 };
 
+function DeletePropertyDialogActions() {
+  const { pending } = useFormStatus();
+
+  return (
+    <AlertDialogFooter>
+      <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+      <Button disabled={pending} type="submit" variant="danger">
+        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        {pending ? "Deleting…" : "Delete property"}
+      </Button>
+    </AlertDialogFooter>
+  );
+}
+
 function DeletePropertyDialog({ property }: { property: PropertyTableRow }) {
   return (
     <AlertDialog>
@@ -37,19 +52,14 @@ function DeletePropertyDialog({ property }: { property: PropertyTableRow }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete {property.name}?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will remove the selected property. Linked operational records such as bookings, expenses, and payout
-            rows may also be affected by database relationships.
+            Deleting this property permanently removes linked bookings, property expenses, payout statements, and
+            related owner queries.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <form action={deletePropertyAction}>
-            <input name="id" type="hidden" value={property.id} />
-            <Button type="submit" variant="danger">
-              Delete property
-            </Button>
-          </form>
-        </AlertDialogFooter>
+        <form action={deletePropertyAction}>
+          <input name="id" type="hidden" value={property.id} />
+          <DeletePropertyDialogActions />
+        </form>
       </AlertDialogContent>
     </AlertDialog>
   );

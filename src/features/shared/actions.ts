@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createAdminClient } from "@/src/lib/supabase/admin";
 import { createClient } from "@/src/lib/supabase/server";
 import { requireProfile, requireRole } from "@/src/features/auth/auth-guards";
 import { getBookingStatus } from "@/src/features/bookings/booking-calculations";
@@ -17,6 +18,79 @@ import type { Database } from "@/types/database.types";
 
 function emptyToNull<T extends Record<string, unknown>>(data: T) {
   return Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value === "" ? null : value])) as T;
+}
+
+function hasLinkedUserData(counts: Array<number | null>) {
+  return counts.some((count) => (count ?? 0) > 0);
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function authFailureNotice(error: unknown) {
+  const status = typeof error === "object" && error && "status" in error ? Number(error.status) : undefined;
+  return status === 401 || status === 403 ? "user_delete_auth_unavailable" : "user_delete_failed";
+}
+
+function isAuthUserMissing(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const status = "status" in error ? Number(error.status) : undefined;
+  const code = "code" in error ? String(error.code || "") : "";
+  return status === 404 || code === "user_not_found" || code === "not_found";
+}
+
+function logSafeAuthDeleteFailure(message: string, error: unknown, userId: string) {
+  const details =
+    error && typeof error === "object"
+      ? {
+          code: "code" in error ? error.code : undefined,
+          status: "status" in error ? error.status : undefined,
+        }
+      : {};
+  console.error(message, { ...details, userId });
+}
+
+function postgresErrorString(error: unknown, key: "details" | "message") {
+  return error && typeof error === "object" && key in error ? String((error as Record<string, unknown>)[key] || "") : "";
+}
+
+function postgresErrorCode(error: unknown) {
+  return error && typeof error === "object" && "code" in error ? String(error.code || "") : undefined;
+}
+
+function postgresConstraintName(error: unknown) {
+  const text = `${postgresErrorString(error, "message")} ${postgresErrorString(error, "details")}`;
+  return text.match(/constraint "([^"]+)"/i)?.[1];
+}
+
+function postgresTableName(error: unknown) {
+  const text = `${postgresErrorString(error, "message")} ${postgresErrorString(error, "details")}`;
+  return text.match(/table "([^"]+)"/i)?.[1] ?? text.match(/relation "([^"]+)"/i)?.[1];
+}
+
+function logSafePropertyDeleteFailure(error: unknown, propertyId: string) {
+  console.error("Property deletion failed", {
+    code: postgresErrorCode(error),
+    constraint: postgresConstraintName(error),
+    table: postgresTableName(error),
+    propertyId,
+  });
+}
+
+function propertyDeleteFailureNotice(error: unknown) {
+  const code = postgresErrorCode(error);
+  const constraint = postgresConstraintName(error);
+
+  if (code === "23503" && constraint?.startsWith("owner_queries_")) {
+    return "property_delete_blocked_owner_queries";
+  }
+
+  if (code === "23503") {
+    return "property_delete_blocked_dependency";
+  }
+
+  return "property_delete_failed";
 }
 
 export async function saveProfileAction(formData: FormData) {
@@ -47,11 +121,108 @@ export async function updateUserAction(formData: FormData) {
 export async function deleteUserAction(formData: FormData) {
   await requireRole("admin");
   const id = String(formData.get("id") || "");
+  if (!isUuid(id)) redirect("/dashboard/users?notice=user_delete_failed");
   const supabase = await createClient();
-  const current = await supabase.from("profiles").select("email,is_protected").eq("id", id).maybeSingle();
+  const current = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
   // Protected admin deletion is blocked here as well as hidden in the UI.
-  if (!current.data || isProtectedAdmin(current.data)) redirect("/dashboard/users?notice=user_delete_blocked");
-  await supabase.from("profiles").delete().eq("id", id);
+  if (current.error || !current.data) redirect("/dashboard/users?notice=user_delete_failed");
+  if (isProtectedAdmin(current.data)) redirect("/dashboard/users?notice=user_delete_blocked");
+
+  const [assignedProperties, payoutStatements, ownerQueries] = await Promise.all([
+    supabase.from("properties").select("id", { count: "exact", head: true }).eq("owner_id", id),
+    supabase.from("owner_payouts").select("id", { count: "exact", head: true }).eq("owner_id", id),
+    supabase.from("owner_queries").select("id", { count: "exact", head: true }).eq("owner_id", id),
+  ]);
+
+  if (assignedProperties.error || payoutStatements.error || ownerQueries.error) {
+    redirect("/dashboard/users?notice=user_delete_failed");
+  }
+
+  if (hasLinkedUserData([assignedProperties.count, payoutStatements.count, ownerQueries.count])) {
+    redirect("/dashboard/users?notice=user_delete_blocked_linked_records");
+  }
+
+  let adminSupabase: ReturnType<typeof createAdminClient>;
+  try {
+    adminSupabase = createAdminClient();
+  } catch (error) {
+    logSafeAuthDeleteFailure("Supabase Auth admin client is unavailable for user deletion", error, id);
+    redirect("/dashboard/users?notice=user_delete_auth_unavailable");
+  }
+
+  let authBeforeDelete: Awaited<ReturnType<typeof adminSupabase.auth.admin.getUserById>>;
+  try {
+    authBeforeDelete = await adminSupabase.auth.admin.getUserById(id);
+  } catch (error) {
+    logSafeAuthDeleteFailure("Supabase Auth user lookup threw before user deletion", error, id);
+    redirect("/dashboard/users?notice=user_delete_auth_unavailable");
+  }
+  if (authBeforeDelete.error || !authBeforeDelete.data.user) {
+    logSafeAuthDeleteFailure("Supabase Auth user lookup failed before user deletion", authBeforeDelete.error, id);
+    redirect(`/dashboard/users?notice=${authFailureNotice(authBeforeDelete.error)}`);
+  }
+
+  // The checked-in schema has public.profiles(id) referencing auth.users(id)
+  // without ON DELETE CASCADE, so the profile row must be removed before the
+  // Auth admin delete can satisfy the foreign key.
+  const profileDelete = await supabase.from("profiles").delete().eq("id", id).select("id").maybeSingle();
+  if (profileDelete.error || !profileDelete.data) redirect("/dashboard/users?notice=user_delete_failed");
+
+  let authDelete: Awaited<ReturnType<typeof adminSupabase.auth.admin.deleteUser>>;
+  try {
+    authDelete = await adminSupabase.auth.admin.deleteUser(id);
+  } catch (error) {
+    const restoreProfile = await supabase.from("profiles").insert(current.data);
+    if (restoreProfile.error) {
+      console.error("Failed to restore profile after thrown Auth user deletion failure", {
+        error: restoreProfile.error,
+        userId: id,
+      });
+    }
+    logSafeAuthDeleteFailure("Supabase Auth user deletion threw", error, id);
+    redirect("/dashboard/users?notice=user_delete_auth_unavailable");
+  }
+  if (authDelete.error) {
+    const restoreProfile = await supabase.from("profiles").insert(current.data);
+    if (restoreProfile.error) {
+      console.error("Failed to restore profile after Auth user deletion failure", {
+        error: restoreProfile.error,
+        userId: id,
+      });
+    }
+    logSafeAuthDeleteFailure("Failed to delete Supabase Auth user", authDelete.error, id);
+    redirect(`/dashboard/users?notice=${authFailureNotice(authDelete.error)}`);
+  }
+
+  let authAfterDelete: Awaited<ReturnType<typeof adminSupabase.auth.admin.getUserById>>;
+  try {
+    authAfterDelete = await adminSupabase.auth.admin.getUserById(id);
+  } catch (error) {
+    const restoreProfile = await supabase.from("profiles").insert(current.data);
+    if (restoreProfile.error) {
+      console.error("Failed to restore profile after thrown Auth deletion verification failure", {
+        error: restoreProfile.error,
+        userId: id,
+      });
+    }
+    logSafeAuthDeleteFailure("Supabase Auth user deletion verification threw", error, id);
+    redirect("/dashboard/users?notice=user_delete_auth_unavailable");
+  }
+  if (authAfterDelete.data.user || (authAfterDelete.error && !isAuthUserMissing(authAfterDelete.error))) {
+    const restoreProfile = await supabase.from("profiles").insert(current.data);
+    if (restoreProfile.error) {
+      console.error("Failed to restore profile after Auth deletion verification failure", {
+        error: restoreProfile.error,
+        userId: id,
+      });
+    }
+    logSafeAuthDeleteFailure("Supabase Auth user deletion could not be verified", authAfterDelete.error, id);
+    redirect("/dashboard/users?notice=user_delete_failed");
+  }
+
+  const profileAfterDelete = await supabase.from("profiles").select("id").eq("id", id).maybeSingle();
+  if (profileAfterDelete.error || profileAfterDelete.data) redirect("/dashboard/users?notice=user_delete_failed");
+
   revalidatePath("/dashboard/users");
   redirect("/dashboard/users?notice=user_deleted");
 }
@@ -81,8 +252,31 @@ export async function savePropertyAction(formData: FormData) {
 
 export async function deletePropertyAction(formData: FormData) {
   await requireRole("admin");
+  const id = String(formData.get("id") || "");
+  if (!isUuid(id)) redirect("/dashboard/properties?notice=property_delete_failed");
+
   const supabase = await createClient();
-  await supabase.from("properties").delete().eq("id", String(formData.get("id") || ""));
+  const property = await supabase.from("properties").select("id").eq("id", id).maybeSingle();
+  if (property.error) redirect("/dashboard/properties?notice=property_delete_failed");
+  if (!property.data) redirect("/dashboard/properties?notice=property_delete_not_found");
+
+  const deleted = await supabase.from("properties").delete().eq("id", id).select("id").maybeSingle();
+  if (deleted.error) {
+    logSafePropertyDeleteFailure(deleted.error, id);
+    redirect(`/dashboard/properties?notice=${propertyDeleteFailureNotice(deleted.error)}`);
+  }
+  if (!deleted.data) {
+    console.error("Property deletion returned no deleted row", { propertyId: id });
+    redirect("/dashboard/properties?notice=property_delete_failed");
+  }
+
+  const afterDelete = await supabase.from("properties").select("id").eq("id", id).maybeSingle();
+  if (afterDelete.error) {
+    logSafePropertyDeleteFailure(afterDelete.error, id);
+    redirect("/dashboard/properties?notice=property_delete_failed");
+  }
+  if (afterDelete.data) redirect("/dashboard/properties?notice=property_delete_failed");
+
   revalidatePath("/dashboard/properties");
   revalidatePath("/dashboard");
   redirect("/dashboard/properties?notice=property_deleted");
@@ -137,8 +331,20 @@ export async function saveExpenseAction(formData: FormData) {
 
 export async function deleteExpenseAction(formData: FormData) {
   await requireRole("admin");
+  const id = String(formData.get("id") || "");
+  if (!isUuid(id)) redirect("/dashboard/expenses?notice=expense_delete_failed");
+
   const supabase = await createClient();
-  await supabase.from("expenses").delete().eq("id", String(formData.get("id") || ""));
+  const expense = await supabase.from("expenses").select("id").eq("id", id).maybeSingle();
+  if (expense.error) redirect("/dashboard/expenses?notice=expense_delete_failed");
+  if (!expense.data) redirect("/dashboard/expenses?notice=expense_delete_not_found");
+
+  const deleted = await supabase.from("expenses").delete().eq("id", id).select("id").maybeSingle();
+  if (deleted.error || !deleted.data) redirect("/dashboard/expenses?notice=expense_delete_failed");
+
+  const afterDelete = await supabase.from("expenses").select("id").eq("id", id).maybeSingle();
+  if (afterDelete.error || afterDelete.data) redirect("/dashboard/expenses?notice=expense_delete_failed");
+
   revalidatePath("/dashboard/expenses");
   redirect("/dashboard/expenses?notice=expense_deleted");
 }

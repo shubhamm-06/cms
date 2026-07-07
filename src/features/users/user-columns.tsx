@@ -5,7 +5,6 @@ import { Save, ShieldCheck, Trash2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -63,6 +62,23 @@ function SaveUserButton({ isProtected }: { isProtected: boolean }) {
   );
 }
 
+function DeleteUserDialogActions() {
+  const { pending } = useFormStatus();
+
+  return (
+    <AlertDialogFooter>
+      <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+      <Button
+        className="border-red-200 bg-red-600 text-white hover:bg-red-700"
+        pending={pending}
+        type="submit"
+      >
+        {pending ? "Deleting..." : "Delete user"}
+      </Button>
+    </AlertDialogFooter>
+  );
+}
+
 function DeleteUserDialog({ profile }: { profile: UserTableRow }) {
   return (
     <AlertDialog>
@@ -75,18 +91,13 @@ function DeleteUserDialog({ profile }: { profile: UserTableRow }) {
           <AlertDialogTitle>Delete this user?</AlertDialogTitle>
           <AlertDialogDescription>
             This will delete <span className="font-semibold text-[var(--foreground)]">{displayName(profile)}</span>
-            {" "}with email <span className="font-semibold text-[var(--foreground)]">{profile.email}</span>. Supabase Auth user deletion is not part of this action.
+            {" "}with email <span className="font-semibold text-[var(--foreground)]">{profile.email}</span>. If the account has linked operational records, deletion will be blocked so you can reassign records or mark the user inactive instead.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <form action={deleteUserAction}>
-            <input name="id" type="hidden" value={profile.id} />
-            <AlertDialogAction className="border-red-200 bg-red-600 text-white hover:bg-red-700" type="submit">
-              Delete user
-            </AlertDialogAction>
-          </form>
-        </AlertDialogFooter>
+        <form action={deleteUserAction}>
+          <input name="id" type="hidden" value={profile.id} />
+          <DeleteUserDialogActions />
+        </form>
       </AlertDialogContent>
     </AlertDialog>
   );

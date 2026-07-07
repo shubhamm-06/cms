@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { useFormStatus } from "react-dom";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { deleteExpenseAction } from "@/src/features/shared/actions";
 import { formatDate } from "@/src/lib/utils/dates";
 import { formatMoney } from "@/src/lib/utils/money";
@@ -31,6 +32,20 @@ function ExpenseContextBadge({ expense }: { expense: ExpenseTableRow }) {
     <Badge className="whitespace-nowrap" tone={isCms ? "brand" : "teal"}>
       {isCms ? "CMS" : `Property: ${expense.property_name}`}
     </Badge>
+  );
+}
+
+function DeleteExpenseDialogActions() {
+  const { pending } = useFormStatus();
+
+  return (
+    <AlertDialogFooter>
+      <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+      <Button className="border-red-200 bg-red-600 text-white hover:bg-red-700" disabled={pending} type="submit">
+        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        {pending ? "Deleting…" : "Delete expense"}
+      </Button>
+    </AlertDialogFooter>
   );
 }
 
@@ -52,15 +67,10 @@ function DeleteExpenseDialog({ expense }: { expense: ExpenseTableRow }) {
             {" "}from <span className="font-semibold text-[var(--foreground)]">{context}</span>. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <form action={deleteExpenseAction}>
-            <input name="id" type="hidden" value={expense.id} />
-            <AlertDialogAction className="border-red-200 bg-red-600 text-white hover:bg-red-700" type="submit">
-              Delete expense
-            </AlertDialogAction>
-          </form>
-        </AlertDialogFooter>
+        <form action={deleteExpenseAction}>
+          <input name="id" type="hidden" value={expense.id} />
+          <DeleteExpenseDialogActions />
+        </form>
       </AlertDialogContent>
     </AlertDialog>
   );
