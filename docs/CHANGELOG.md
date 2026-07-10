@@ -1,5 +1,88 @@
 # Changelog
 
+## Final Calendly Popup Configuration and Documentation Audit
+
+- Finalized the current Calendly booking documentation around the shared on-page popup URL `https://calendly.com/curatemystay/30min?hide_gdpr_banner=1`, which uses Calendly's default appearance and hides its GDPR banner where supported.
+- Confirmed the custom CurateMyStay CTA design remains unchanged, the script and stylesheet load once, no floating badge or legacy booking modal is active, and `calendar_click` continues with non-PII `cta_location` plus `destination_type: calendly`.
+- Consolidated current CSV import safeguards for properties, bookings, and expenses: preview-first validation, native disabled confirmation, client/server defensive guards, visible invalid rows, replacement-file feedback reset, pending duplicate-submission prevention, and intentionally non-blocking duplicate rows.
+- Earlier coral and teal Calendly theme entries below remain as historical implementation steps and are superseded by this final configuration.
+
+## Neutral Calendly Popup Theme
+
+- Updated the canonical Calendly popup URL to use a clean white background (`#FFFFFF`), dark navy text (`#243B53`), and restrained deep-teal interactive accent (`#245C64`).
+- Removed the previous coral popup theme while preserving the existing CurateMyStay booking-button design, all CTA locations, the single popup loader, and `calendar_click` analytics behavior.
+- Added no badge, iframe styling, DOM manipulation, repeated scripts, or custom overlay behavior.
+
+## Branded Calendly Popup Theme
+
+- Updated the single canonical Calendly popup URL with CurateMyStay's warm off-white background (`#FFFBF7`), dark navy text (`#243B53`), and restrained coral primary accent (`#E45B5F`).
+- Preserved every public booking CTA's existing design and placement, the one-script popup loader, repeat open/close behavior, mobile handling, and the existing `calendar_click` analytics event.
+- Added no badge widget, iframe CSS, DOM manipulation, or cross-origin styling workaround.
+
+## CSV Import Blocking Validation UX
+
+- Updated property, booking, and expense CSV import dialogs so any file-level validation error or invalid preview row disables `Confirm Import` for the entire upload using the native disabled state and a clearly muted, non-interactive button treatment.
+- Added accessible footer summaries with singular/plural invalid-row counts, highlighted invalid preview rows, and defensive form-submit guards that prevent programmatic confirmation while errors exist or an import is pending.
+- Added matching server-action guards so re-validation never inserts partial ready rows when the same CSV also contains invalid rows; explicitly classified duplicate rows remain non-blocking and continue to be skipped by the existing import rules.
+- Selecting a replacement CSV now hides previous server results and notices before calculating the new preview state, while existing parsing, BOM/quoted-value handling, demo downloads, success behavior, and modal close resets remain unchanged.
+
+## Calendly Popup Booking CTA
+
+- Replaced the public homepage Google Appointment Schedule destination with the Calendly `30min` popup while preserving every existing CurateMyStay booking CTA's copy, styling, iconography, placement, and responsive behavior.
+- Added one homepage-only, typed Calendly loader using the App Router-compatible `next/script` pattern and the official external stylesheet; early clicks wait safely for script readiness and duplicate popup overlays are prevented.
+- Kept the existing `calendar_click` dataLayer event and non-PII `cta_location` values, changing only `destination_type` from `google_appointment_schedule` to `calendly`.
+- Removed the obsolete unreachable Google booking modal and left WhatsApp, forecast, auth, dashboard, Supabase, APIs, and business logic unchanged.
+
+## Basic Public SEO Metadata and Preview Assets
+
+- Added App Router metadata defaults for CurateMyStay with canonical title, description, keywords, `metadataBase`, Open Graph, and Twitter preview metadata driven by `NEXT_PUBLIC_SITE_URL` with `https://curatemystay.com` fallback.
+- Added file-based public SEO routes for `robots`, `sitemap`, `manifest`, generated Open Graph/Twitter preview images, and app icons reusing the existing CurateMyStay logo.
+- Marked private/auth route surfaces as noindex through route metadata on admin layout, owner layout, login, signup, pending approval, and account-disabled pages.
+- Added a small truthful homepage JSON-LD `ProfessionalService` block for CurateMyStay without inventing address, phone, or review data.
+- Preserved auth behavior, dashboard/owner logic, Supabase flows, GTM loading, APIs, payout behavior, and unrelated UI modules.
+
+## Admin CSV Import QA Hardening
+
+- Tightened the completed property, booking, and expense CSV imports with a final consistency pass across demo templates, parser behavior, row-level validation messages, and Excel-friendly downloads.
+- Demo downloads now include a UTF-8 BOM and quoted comma-containing sample values so Excel/Google Sheets open the files cleanly while exercising quoted CSV parsing.
+- Rows with more cells than the header row are now marked invalid with guidance to quote values containing commas instead of silently ignoring extra cells.
+- Documented the shared import limits, exact headers, required/optional fields, duplicate rules, preview-confirm workflow, dialog reset behavior, and no-overwrite behavior consistently for properties, bookings, and expenses.
+- Preserved normal property/booking/expense CRUD behavior, server-side active-admin checks, authenticated Supabase client usage, payout/P&L calculations, owner visibility rules, settings behavior, auth behavior, and schema.
+
+## Admin Expense CSV Import Phase 3
+
+- Added an admin-only CSV import workflow to `/dashboard/expenses` with `Download Demo CSV` and `Import CSV` actions next to the expense form controls.
+- Supported headers are `expense_date`, `expense_for`, `property_name`, `category`, `amount`, `vendor`, and `note`; the demo file includes one property expense and one CMS expense with no database IDs.
+- Added client preview and server re-validation for CSV extension, 5 MB size limit, 1,000 non-empty row limit, required headers, trimmed fields, quoted CSV values, `YYYY-MM-DD` dates, property-name resolution, CMS/property rules, settings-backed expense categories, positive amounts, and duplicate fingerprints.
+- Property expense rows require a matching `property_name`; CMS expense rows must leave `property_name` blank so the server stores `property_id` as null.
+- The duplicate fingerprint is expense date + expense type + resolved property or CMS context + normalized category + amount + normalized note.
+- Imported expenses insert only ready rows, skip existing/repeated duplicates and invalid rows, revalidate `/dashboard/expenses`, `/dashboard/pnl`, and `/dashboard`, reset dialog upload/preview/result state whenever the popup closes, and do not create or alter payout rows.
+- Preserved existing expense create/edit/delete behavior, CMS expense owner exclusion, payout logic, settings storage, properties/bookings imports, schema, permissions, and unrelated modules.
+
+## Admin Booking CSV Import Phase 2
+
+- Added an admin-only CSV import workflow to `/dashboard/bookings` with `Download Demo CSV` and `Import CSV` actions next to the booking form controls.
+- Supported headers are `property_name`, `guest_name`, `guest_phone`, `check_in`, `check_out`, `guests`, `nightly_rate`, `total_amount`, `booking_source`, `concierge`, and `notes`; the demo file uses human-readable property names and no database IDs.
+- Added client preview and server re-validation for CSV extension, 5 MB size limit, 1,000 non-empty row limit, required headers, trimmed fields, `YYYY-MM-DD` dates, property-name resolution, settings-backed booking source and concierge values, amount/rate rules, and duplicate fingerprints.
+- Imported bookings recalculate nights and status from dates, derive missing nightly rate or total amount with the existing booking helpers, reject contradictory rate/total values, insert only ready rows, skip existing/repeated duplicates, and revalidate `/dashboard/bookings`, `/dashboard`, and `/dashboard/pnl`.
+- The duplicate fingerprint is property + normalized guest name + normalized guest phone + check-in + check-out.
+- Preserved existing booking create/edit/delete behavior, property import behavior, payout logic, owner permissions, schema, settings behavior, and unrelated modules.
+
+## Admin Property CSV Import Refinement
+
+- Added `bedrooms` to the supported property CSV headers, demo CSV, client preview, server re-validation, and final insert payload.
+- Final supported headers are `property_name`, `owner_email`, `address`, `city`, `bedrooms`, `owner_share_percentage`, and `status`; address, city, and bedrooms remain optional supported property fields while property name, active owner email, owner share percentage, and status are required.
+- Polished the property import dialog with a darker blurred backdrop, warmer elevated surface, clearer requirements groups, improved file-upload selected state, stronger summary cards, wider controlled preview-table scrolling, and sticky footer actions.
+- Reset import dialog state on close so selected file, raw CSV, preview rows, validation errors, import result messages, and summary counts do not persist across sessions.
+
+## Admin Property CSV Import Phase 1
+
+- Added an admin-only CSV import workflow to `/dashboard/properties` with `Download Demo CSV` and `Import CSV` actions next to the property form controls.
+- Supported headers are `property_name`, `owner_email`, `address`, `city`, `owner_share_percentage`, and `status`; the demo file uses human-readable owner emails and no database IDs.
+- Added client preview and server re-validation for CSV extension, 5 MB size limit, 1,000 non-empty row limit, required headers, trimmed fields, active-owner email resolution, owner/CMS share validation through the existing property schema, allowed property status, and normalized property-name duplicates.
+- Confirm import inserts only ready rows, skips existing property names, repeated CSV property names, invalid owners, and invalid field rows, then revalidates `/dashboard/properties` and `/dashboard`.
+- Preserved existing single-property create/edit/delete behavior, property form field names, delete cascade behavior, permissions, schema, and unrelated modules.
+
 ## Admin Property Delete Cascade Fix
 
 - Added a Supabase migration so `owner_queries.property_id` cascades with deleted properties and `owner_queries.payout_id` cascades with deleted owner payout statements.

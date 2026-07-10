@@ -32,18 +32,19 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CalendlyPopupLoader, openCalendlyPopup } from "@/components/home/calendly-popup";
 import { trackDataLayerEvent } from "@/src/lib/analytics";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
 
 const photo = (name: string) => `/homepage/${name}`;
-const BOOK_CALL_URL = "https://calendar.app.google/U1j59uGweQoZ7hZd7";
 const WHATSAPP_URL = "https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa.";
 
 function trackCalendarClick(ctaLocation: string) {
   trackDataLayerEvent("calendar_click", {
     cta_location: ctaLocation,
-    destination_type: "google_appointment_schedule",
+    destination_type: "calendly",
   });
+  openCalendlyPopup();
 }
 
 function trackWhatsappClick(ctaLocation: string) {
@@ -361,7 +362,7 @@ function Header() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
-          <ButtonLink href={BOOK_CALL_URL} onClick={() => trackCalendarClick("header")} rel="noreferrer" size="sm" target="_blank" variant="ghost">
+          <ButtonLink onClick={() => trackCalendarClick("header")} size="sm" variant="ghost">
             Book a call
           </ButtonLink>
           <ButtonLink href="/dashboard" size="sm">
@@ -400,18 +401,16 @@ function Header() {
               </div>
               <div className="my-2 h-px bg-[#eadfd8]" />
               <div className="grid gap-2 sm:grid-cols-2">
-                <a
+                <button
                   className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-sm font-bold text-[#332c28] transition hover:border-[#ffb1b3] hover:bg-[#fff8f8]"
-                  href={BOOK_CALL_URL}
                   onClick={() => {
                     trackCalendarClick("mobile_menu");
                     setMenuOpen(false);
                   }}
-                  rel="noreferrer"
-                  target="_blank"
+                  type="button"
                 >
                   <Calendar className="h-4 w-4 text-[#d63e43]" /> Book a call
-                </a>
+                </button>
                 <a className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ff5a5f] px-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#e54b50]" href="/dashboard" onClick={() => setMenuOpen(false)}>
                   Dashboard <ArrowRight className="h-4 w-4" />
                 </a>
@@ -477,7 +476,7 @@ function Hero() {
             We help Goa homeowners earn more through fully managed short-term rentals, with complete financial transparency.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
-            <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("hero")} rel="noreferrer" size="lg" target="_blank">
+            <ButtonLink className="w-full sm:w-auto" onClick={() => trackCalendarClick("hero")} size="lg">
               Book a discovery call <ArrowRight className="h-4 w-4" />
             </ButtonLink>
             <ButtonLink className="w-full sm:w-auto" href="#calculator" onClick={() => trackForecastFormOpen("hero")} size="lg" variant="secondary">
@@ -1362,7 +1361,7 @@ function Testimonials() {
         ))}
       </div>
       <div className="mt-10 text-center">
-        <ButtonLink href={BOOK_CALL_URL} onClick={() => trackCalendarClick("testimonials")} rel="noreferrer" size="lg" target="_blank">
+        <ButtonLink onClick={() => trackCalendarClick("testimonials")} size="lg">
           Book a discovery call <ArrowRight className="h-4 w-4" />
         </ButtonLink>
       </div>
@@ -1477,7 +1476,7 @@ function Tiers() {
               ))}
             </ul>
             <div className="mt-7">
-              <ButtonLink className="w-full" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("tier_card")} rel="noreferrer" target="_blank" variant={tier.featured ? "primary" : "secondary"}>
+              <ButtonLink className="w-full" onClick={() => trackCalendarClick("tier_card")} variant={tier.featured ? "primary" : "secondary"}>
                 Choose {tier.name}
               </ButtonLink>
             </div>
@@ -1487,7 +1486,7 @@ function Tiers() {
       <div className="mt-12 text-center">
         <p className="mx-auto max-w-3xl text-base leading-7 text-[#717171]">Not sure which model fits? Tell us about your property in the calculator above and we will recommend one in your custom pitch deck.</p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("tiers")} rel="noreferrer" size="lg" target="_blank">
+          <ButtonLink className="w-full sm:w-auto" onClick={() => trackCalendarClick("tiers")} size="lg">
             Book a discovery call <ArrowRight className="h-4 w-4" />
           </ButtonLink>
           <ButtonLink className="w-full sm:w-auto" href="#calculator" onClick={() => trackForecastFormOpen("tiers")} size="lg" variant="secondary">
@@ -1838,7 +1837,7 @@ function InvestmentInline() {
       </div>
       <p className="mt-4 text-[12.5px] italic leading-5 text-[#b0b0b0]">These are illustrative scenarios based on current Goa market data. Actual returns depend on property specifics, location, season, and market dynamics.</p>
       <div className="mt-5">
-        <ButtonLink className="w-full" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("investment_accordion")} rel="noreferrer" size="lg" target="_blank">
+        <ButtonLink className="w-full" onClick={() => trackCalendarClick("investment_accordion")} size="lg">
           Thinking of buying? Get a custom analysis <ArrowRight className="h-4 w-4" />
         </ButtonLink>
       </div>
@@ -1855,7 +1854,7 @@ function FinalCTA() {
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">Book a 30-minute discovery call. We will look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move for you. If it&apos;s not, we&apos;ll say so.</p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink className="w-full sm:w-auto" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("footer_cta")} size="lg" variant="onDark">
+          <ButtonLink className="w-full sm:w-auto" onClick={() => trackCalendarClick("footer_cta")} size="lg" variant="onDark">
             <Calendar className="h-4 w-4" /> Book a discovery call
           </ButtonLink>
           <ButtonLink className="w-full sm:w-auto" href={WHATSAPP_URL} onClick={() => trackWhatsappClick("footer_cta")} size="lg" variant="outlineDark">
@@ -1933,46 +1932,10 @@ function FooterLinks({ items, title }: { items: Array<{ href: string; label: str
   );
 }
 
-function BookingModal({ onClose, open }: { onClose: () => void; open: boolean }) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-[200] grid place-items-center bg-[#140c08]/55 p-3 backdrop-blur sm:p-5" onClick={onClose}>
-      <div className="max-h-[92vh] w-full max-w-xl overflow-auto rounded-[20px] bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:max-h-[90vh] sm:rounded-[24px]" onClick={(event) => event.stopPropagation()}>
-        <div className="flex min-w-0 items-start justify-between gap-3 border-b border-[#ebebeb] p-5 sm:gap-4 sm:p-7">
-          <div className="min-w-0">
-            <div className="flex items-center gap-3">
-              <Logo />
-            </div>
-            <p className="mt-3 text-sm leading-6 text-[#484848]">30 minutes with the founder. We will look at your property, talk numbers, and tell you honestly if STR is the right move.</p>
-          </div>
-          <button aria-label="Close" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f7f7f7]" onClick={onClose} type="button">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="p-5 sm:p-7">
-          <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#717171]">Pick a slot</div>
-          <ButtonLink className="w-full" href={BOOK_CALL_URL} onClick={() => trackCalendarClick("booking_modal")} rel="noreferrer" size="lg" target="_blank">
-            <Calendar className="h-4 w-4" /> Book via Google Calendar
-          </ButtonLink>
-          <p className="mt-3 text-center text-xs text-[#b0b0b0]">Calendar: curatemystay@gmail.com</p>
-          <div className="my-5 flex items-center gap-3 text-xs text-[#717171]">
-            <span className="h-px flex-1 bg-[#ebebeb]" /> or <span className="h-px flex-1 bg-[#ebebeb]" />
-          </div>
-          <ButtonLink className="w-full" href={WHATSAPP_URL} onClick={() => trackWhatsappClick("booking_modal")} rel="noreferrer" size="lg" target="_blank" variant="secondary">
-            <MessageCircle className="h-4 w-4" /> WhatsApp us directly
-          </ButtonLink>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function ReferenceHome() {
-  const [bookingOpen, setBookingOpen] = useState(false);
-
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
+      <CalendlyPopupLoader />
       <Header />
       <Hero />
       <MathAnchor />
@@ -1985,7 +1948,6 @@ export function ReferenceHome() {
       <CollapsibleExtras />
       <FinalCTA />
       <Footer />
-      <BookingModal onClose={() => setBookingOpen(false)} open={bookingOpen} />
     </main>
   );
 }

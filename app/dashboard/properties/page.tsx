@@ -3,6 +3,7 @@ import { PropertyForm } from "@/components/forms/admin-forms";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PropertyImportDialog } from "@/src/features/properties/property-import-dialog";
 import { PropertyNoticeToast } from "@/src/features/properties/property-notice-toast";
 import { PropertiesTable } from "@/src/features/properties/properties-table";
 import { getAdminData } from "@/src/features/shared/data";
@@ -21,6 +22,11 @@ export default async function PropertiesPage({
   const propertyToEdit = editId ? properties.find((property) => property.id === editId) : undefined;
   const owners = profiles.filter((profile) => profile.role === "owner");
   const ownerNames = new Map(profiles.map((profile) => [profile.id, profile.name || profile.email]));
+  const importProfiles = profiles.map((profile) => ({
+    email: profile.email,
+    role: profile.role,
+    status: profile.status,
+  }));
   const propertyRows = properties.map((property) => ({
     ...property,
     owner_name: property.owner_id ? ownerNames.get(property.owner_id) || "Unassigned" : "Unassigned",
@@ -36,11 +42,17 @@ export default async function PropertiesPage({
       <Card className="mb-6 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
         <CardHeader
           action={
-            propertyToEdit ? (
-              <Link className="cms-btn bg-white hover:bg-[var(--surface-2)]" href="/dashboard/properties">
-                New property
-              </Link>
-            ) : null
+            <div className="flex flex-wrap justify-end gap-2">
+              {propertyToEdit ? (
+                <Link className="cms-btn bg-white hover:bg-[var(--surface-2)]" href="/dashboard/properties">
+                  New property
+                </Link>
+              ) : null}
+              <PropertyImportDialog
+                existingPropertyNames={properties.map((property) => property.name)}
+                profiles={importProfiles}
+              />
+            </div>
           }
         >
           <div className="min-w-0">

@@ -3,6 +3,7 @@ import { BookingForm } from "@/components/forms/booking-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { BookingImportDialog } from "@/src/features/bookings/booking-import-dialog";
 import { BookingNoticeToast } from "@/src/features/bookings/booking-notice-toast";
 import { AdminBookingsTable } from "@/src/features/bookings/bookings-table";
 import { getAdminData } from "@/src/features/shared/data";
@@ -23,6 +24,13 @@ export default async function BookingsPage({
   const activeProperties = properties
     .filter((property) => property.status === "active")
     .map((property) => ({ id: property.id, name: property.name }));
+  const importBookings = bookings.map((booking) => ({
+    checkIn: booking.check_in,
+    checkOut: booking.check_out,
+    guestName: booking.guest_name,
+    guestPhone: booking.guest_phone,
+    propertyName: propertyNames.get(booking.property_id) || "Unknown",
+  }));
   const bookingRows = bookings.map((booking) => ({
     ...booking,
     property_name: propertyNames.get(booking.property_id) || "Unknown",
@@ -45,11 +53,21 @@ export default async function BookingsPage({
       <Card className="mb-6 overflow-hidden border-[var(--border)]">
         <CardHeader
           action={
-            bookingToEdit ? (
-              <Link className="cms-btn bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]" href="/dashboard/bookings">
-                New booking
-              </Link>
-            ) : null
+            <div className="flex flex-wrap justify-end gap-2">
+              {bookingToEdit ? (
+                <Link className="cms-btn bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]" href="/dashboard/bookings">
+                  New booking
+                </Link>
+              ) : null}
+              <BookingImportDialog
+                bookings={importBookings}
+                properties={properties.map((property) => ({ name: property.name }))}
+                settings={{
+                  bookingSources: settingsOptions("booking_sources"),
+                  conciergeOptions: settingsOptions("concierge_options"),
+                }}
+              />
+            </div>
           }
         >
           <div className="space-y-2">

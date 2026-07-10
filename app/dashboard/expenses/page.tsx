@@ -3,6 +3,7 @@ import { ExpenseForm } from "@/components/forms/admin-forms";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { ExpenseImportDialog } from "@/src/features/expenses/expense-import-dialog";
 import { ExpenseNoticeToast } from "@/src/features/expenses/expense-notice-toast";
 import { AdminExpensesTable } from "@/src/features/expenses/expenses-table";
 import { getAdminData } from "@/src/features/shared/data";
@@ -28,6 +29,15 @@ export default async function ExpensesPage({
     ...expense,
     property_name: expense.property_id ? propertyNames.get(expense.property_id) || "Unknown" : "CMS",
   }));
+  const importExpenses = expenses.map((expense) => ({
+    amount: expense.amount,
+    category: expense.category,
+    date: expense.date,
+    expenseFor: expense.expense_for,
+    note: expense.note,
+    propertyName: expense.property_id ? propertyNames.get(expense.property_id) || "" : "CMS",
+  }));
+  const importProperties = properties.map((property) => ({ name: property.name }));
 
   return (
     <>
@@ -40,11 +50,18 @@ export default async function ExpensesPage({
       <Card className="mb-6 overflow-hidden border-[var(--border)]">
         <CardHeader
           action={
-            expenseToEdit ? (
-              <Link className="cms-btn bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]" href="/dashboard/expenses">
-                New expense
-              </Link>
-            ) : null
+            <div className="flex flex-wrap justify-end gap-2">
+              {expenseToEdit ? (
+                <Link className="cms-btn bg-white text-[var(--foreground)] hover:bg-[var(--surface-2)]" href="/dashboard/expenses">
+                  New expense
+                </Link>
+              ) : null}
+              <ExpenseImportDialog
+                expenses={importExpenses}
+                properties={importProperties}
+                settings={{ expenseCategories }}
+              />
+            </div>
           }
         >
           <div className="space-y-2">

@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { AuthForm } from "@/components/forms/auth-form";
+import { noIndexMetadata } from "@/app/seo";
+
+export const metadata: Metadata = {
+  title: "Signup",
+  ...noIndexMetadata,
+};
 
 export default function SignupPage() {
   return (

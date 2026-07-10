@@ -1,11 +1,46 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
+import {
+  metadataBase,
+  ogImage,
+  siteDescription,
+  siteKeywords,
+  siteName,
+  siteOrigin,
+  siteTitle,
+  twitterImage,
+} from "@/app/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CurateMyStay",
-  description: "Property management for short-term stays",
+  metadataBase,
+  title: {
+    default: siteTitle,
+    template: "%s | CurateMyStay",
+  },
+  description: siteDescription,
+  keywords: siteKeywords,
+  applicationName: siteName,
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName,
+    url: siteOrigin,
+    title: siteTitle,
+    description: siteDescription,
+    images: [ogImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: [twitterImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 const gtmId = process.env.NEXT_PUBLIC_GTM_ID;

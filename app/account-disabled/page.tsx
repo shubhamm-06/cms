@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { noIndexMetadata } from "@/app/seo";
+
+export const metadata: Metadata = {
+  title: "Account Disabled",
+  ...noIndexMetadata,
+};
 
 export default function AccountDisabledPage() {
   return (

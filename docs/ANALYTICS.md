@@ -13,7 +13,7 @@ Campaign / organic visitor
 → Forecast lead submitted
 → Pitch deck generated
 → Pitch deck downloaded
-→ WhatsApp or Google Calendar follow-up
+→ WhatsApp or Calendly follow-up
 ```
 
 The primary business conversion is:
@@ -35,7 +35,7 @@ GTM is installed globally on the website.
 GA4 base tracking is live.
 GA4 Realtime confirmed website traffic is being received.
 Homepage funnel events are being pushed to window.dataLayer.
-calendar_click was fully tested through GTM Preview and sent successfully to GA4.
+calendar_click was fully tested through GTM Preview and sent successfully to GA4. The homepage now keeps this event name while opening Calendly in an on-site popup.
 ```
 
 ### Pending Final Action
@@ -220,7 +220,7 @@ Analytics measures anonymous behavior only.
 
 | Event                   | When it fires                                                       | Allowed parameters                 | Business meaning              |
 | ----------------------- | ------------------------------------------------------------------- | ---------------------------------- | ----------------------------- |
-| `calendar_click`        | Visitor clicks a Google Appointment Schedule CTA                    | `cta_location`, `destination_type` | Appointment intent            |
+| `calendar_click`        | Visitor clicks a Calendly booking CTA                               | `cta_location`, `destination_type` | Appointment intent            |
 | `whatsapp_click`        | Visitor clicks a public WhatsApp CTA                                | `cta_location`, `destination_type` | Conversation intent           |
 | `forecast_form_open`    | Visitor clicks an existing CTA that takes them to the forecast form | `cta_location`, `form_name`        | Forecast interest             |
 | `forecast_form_started` | First forecast form interaction per page view                       | `form_name`, `form_step`           | Serious form engagement       |
@@ -233,7 +233,7 @@ Analytics measures anonymous behavior only.
 ### Current Shared Parameter Values
 
 ```txt
-destination_type = google_appointment_schedule | whatsapp
+destination_type = calendly | whatsapp
 form_name = owner_forecast
 lead_type = pitch_deck_forecast
 asset_type = pitch_deck_pdf
@@ -253,7 +253,6 @@ tiers
 investment_accordion
 footer_cta
 footer
-booking_modal
 ```
 
 ### Example Event Payload
@@ -262,7 +261,7 @@ booking_modal
 {
   event: "calendar_click",
   cta_location: "hero",
-  destination_type: "google_appointment_schedule"
+  destination_type: "calendly"
 }
 ```
 
@@ -416,7 +415,7 @@ The following payload was confirmed in GTM Preview:
 {
   event: "calendar_click",
   cta_location: "hero",
-  destination_type: "google_appointment_schedule"
+  destination_type: "calendly"
 }
 ```
 
@@ -427,17 +426,9 @@ Event Name: calendar_click
 Measurement ID: G-27JT5KQX4C
 ```
 
-### External Google Calendar Note
+### Calendly Popup Note
 
-When a Calendar CTA opens Google Calendar, Tag Assistant may show:
-
-```txt
-No Google tags found
-```
-
-This is expected because Google Calendar is an external website and does not contain CurateMyStay’s GTM container.
-
-Always inspect the event under the blue CurateMyStay session, not the external Google Calendar session.
+All public booking CTAs use the shared on-page Calendly popup with `https://calendly.com/curatemystay/30min?hide_gdpr_banner=1`. The homepage loads the Calendly script and stylesheet once, uses no floating badge, and does not redirect to another page. Each genuine CTA click emits one `calendar_click` event with the existing non-PII `cta_location` and `destination_type: calendly`; no name, email, phone, Calendly form value, full URL, cookie, or UTM value is sent through analytics.
 
 ---
 
@@ -592,18 +583,18 @@ Changing forecast API behavior for analytics-only work
 
 ## Troubleshooting
 
-### Tag Assistant shows no Google tags after Calendar click
+### Tag Assistant does not show calendar_click after a booking click
 
 Cause:
 
 ```txt
-You are viewing the external Google Calendar page.
+The CurateMyStay page session or booking click was not selected in Preview.
 ```
 
 Fix:
 
 ```txt
-Select the event under the blue CurateMyStay website session.
+Select the CurateMyStay website session and inspect the calendar_click event fired before the Calendly popup opened.
 ```
 
 ### GTM says unknown Data Layer Variable
