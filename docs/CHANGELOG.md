@@ -1,5 +1,32 @@
 # Changelog
 
+## Public About Page Refinement
+
+- Updated `/about` to match the final requested structure with a separate family-run "Who We Are" section before the Aravind founder section.
+- Reused the existing homepage family image for the company section and the existing Aravind image for the founder section.
+- Updated the About metadata copy to the final requested title, description, canonical URL, Open Graph title, Open Graph description, and standard Open Graph image.
+
+## Public FAQ Page
+
+- Added the compact public `/faq` page with the required introduction, twelve-question owner-focused FAQ accordion, and final WhatsApp/Calendly CTA.
+- Reused the existing public header, footer, typography, colours, accordion styling, WhatsApp destination, shared Calendly popup, and non-PII analytics with `cta_location: faq_page`.
+- Added the FAQ metadata and canonical URL `https://curatemystay.net/faq`, reused the standard Open Graph image, mirrored the visible FAQ content in `FAQPage` JSON-LD, and added the route only to the sitemap.
+- Kept the page free of a large hero, testimonials, pricing cards, statistics, service grids, forecast form, pitch-deck preview, unsupported claims, and navigation changes.
+
+## Public About Page
+
+- Added the short public `/about` page with the required compact introduction, service overview, three-part operating approach, owner-transparency summary, supported Aravind founder section, and closing contact CTA.
+- Reused the existing public header, footer, homepage imagery, WhatsApp destination, shared Calendly popup, button styling, typography, and non-PII analytics with `cta_location: about_page`; no new navigation link or Calendly loader was added.
+- Added the exact About metadata and canonical URL `https://curatemystay.net/about`, reused the standard Open Graph image, and added the route only to the sitemap.
+- Kept the page free of property counts, ratings, testimonials, case studies, pricing, forecast forms, unsupported services, and invented company claims.
+
+## Public Goa Property Management Proposal Page
+
+- Added the public `/property-management-proposal` SEO landing page with the required hero, four-step process, embedded forecast, six proposal inclusions, four CurateMyStay reasons, seven-question FAQ, and closing CTA sections.
+- Reused the existing homepage public header, footer, complete forecast and pitch-deck flow, WhatsApp behavior, shared Calendly popup, and analytics; the homepage keeps its existing default presentation and event labels.
+- Added the exact route metadata and canonical URL `https://curatemystay.net/property-management-proposal`, reused the standard Open Graph image, added matching visible `FAQPage` JSON-LD, and included the route in the sitemap without adding navigation links.
+- Kept forecast calculations, API routes, Apps Script generation, email behavior, authentication, dashboards, Supabase, payouts, and existing homepage content unchanged.
+
 ## Final Calendly Popup Configuration and Documentation Audit
 
 - Finalized the current Calendly booking documentation around the shared on-page popup URL `https://calendly.com/curatemystay/30min?hide_gdpr_banner=1`, which uses Calendly's default appearance and hides its GDPR banner where supported.

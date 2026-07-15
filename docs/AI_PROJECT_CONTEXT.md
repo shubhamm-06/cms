@@ -66,7 +66,7 @@ reference/          Visual prototype inputs, not production code.
 
 | Area | Active routes |
 | --- | --- |
-| Public | `/`, `/login`, `/signup`, `/auth/callback`, `/pending-approval`, `/account-disabled` |
+| Public | `/`, `/about`, `/property-management-proposal`, `/faq`, `/login`, `/signup`, `/auth/callback`, `/pending-approval`, `/account-disabled` |
 | Public API | `/api/contact`, `/api/owner-forecast`, `/api/owner-forecast/proposal` |
 | Admin | `/dashboard`, `/dashboard/users`, `/dashboard/properties`, `/dashboard/bookings`, `/dashboard/expenses`, `/dashboard/pnl`, `/dashboard/payouts`, `/dashboard/queries`, `/dashboard/settings`, `/dashboard/profile` |
 | Owner | `/owner`, `/owner/property`, `/owner/bookings`, `/owner/expenses`, `/owner/payout`, `/owner/queries`, `/owner/profile` |
@@ -77,7 +77,7 @@ See [Routes and Permissions](./ROUTES_AND_PERMISSIONS.md) for purpose and securi
 
 ### Visitor
 
-- Views homepage and submits contact/forecast requests.
+- Views the homepage, public About page, or property-management proposal page and submits contact/forecast requests.
 - Can log in or create a pending owner account.
 
 ### Pending or Inactive User
@@ -169,7 +169,7 @@ Homepage funnel event tracking uses `src/lib/analytics.ts` to push non-PII objec
 - Homepage typography is normalized with scoped `next/font/google` Figtree loading for the public landing page so the reference hierarchy is preserved without changing dashboard typography.
 - Header and footer both use `public/logo.png` as the official logo mark with `object-contain`; the header no longer adds an extra "For Property Owners" subtitle.
 - Header and mobile navigation use `Book a call` for the Calendly popup CTA and keep `Dashboard` linked to `/dashboard`.
-- All public booking CTAs open the Calendly `30min` popup through one homepage-only Calendly stylesheet/script loader using `https://calendly.com/curatemystay/30min?hide_gdpr_banner=1`. Calendly uses its default appearance; the loader queues an early click until the script is ready, does not use `window.onload`, adds no floating badge, and preserves the existing `calendar_click` analytics event with `destination_type: calendly`.
+- All public booking CTAs open the Calendly `30min` popup through one shared Calendly stylesheet/script loader using `https://calendly.com/curatemystay/30min?hide_gdpr_banner=1`. Calendly uses its default appearance; the loader queues an early click until the script is ready, does not use `window.onload`, adds no floating badge, and preserves the existing `calendar_click` analytics event with `destination_type: calendly`.
 - The page includes a timed hero carousel, responsive hamburger menu, service/proof sections, the shared Calendly popup, WhatsApp links, and the three-step owner forecast.
 - The proof section uses the reference portfolio metrics, the Panjim and Varca case studies, static first-month-normalized revenue ramp charts, and the approved testimonial copy rendered with placeholder initial avatars instead of profile photos.
 - The FAQ restores all ten approved questions/answers as a two-column accessible accordion with one open item at a time.
@@ -184,6 +184,12 @@ Homepage funnel event tracking uses `src/lib/analytics.ts` to push non-PII objec
 - Owner receives a link-only email only after successful PDF generation. Email failure does not invalidate a successful deck.
 - No owner/CMS split, TDS, payout, or fixed commercial terms are shown in the public funnel.
 - Dashboard routes, auth, APIs, Supabase access, and backend business logic are untouched by homepage-only visual/content passes.
+
+`/property-management-proposal` is the standalone SEO acquisition page for the keyword `Goa property management proposal`. It reuses the homepage public header, footer, complete three-step forecast, forecast result, background proposal generation, pitch-deck download, WhatsApp behavior, Calendly popup, and non-PII analytics without duplicating forecast business logic. Its metadata uses the canonical `https://curatemystay.net/property-management-proposal`, the existing Open Graph image, and visible seven-question FAQ content mirrored exactly in `FAQPage` JSON-LD. The page appears in the sitemap but is not added to public or dashboard navigation.
+
+`/about` is a short public company page based only on supported homepage and project information. It explains CurateMyStay's Goa short-term-rental operations, three-part owner working approach, owner-facing transparency, a separate family-run "Who We Are" section using the existing homepage family image, and a distinct Aravind founder section using the existing founder image. It reuses the homepage header, footer, WhatsApp URL, Calendly popup, imagery, typography, and non-PII analytics with `cta_location: about_page`. Its metadata uses the canonical `https://curatemystay.net/about` and the existing Open Graph image. The route appears in the sitemap but is not added to navigation.
+
+`/faq` is a compact public FAQ page for common property-owner questions about CurateMyStay's Goa property management service, forecast estimates, owner visibility, payout review, and onboarding. It reuses the homepage header, footer, typography, accordion styling, WhatsApp CTA, shared Calendly popup, and non-PII analytics with `cta_location: faq_page`. Its metadata uses the canonical `https://curatemystay.net/faq`, the existing Open Graph image, and visible twelve-question FAQ content mirrored exactly in `FAQPage` JSON-LD. The route appears in the sitemap but is not added to navigation.
 
 Exact formulas: [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md). HTTP shapes: [API Contracts](./API_CONTRACTS.md).
 

@@ -251,7 +251,7 @@ function ButtonLink({
   className?: string;
   disabled?: boolean;
   href?: string;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => void;
   rel?: string;
   size?: "sm" | "md" | "lg";
   target?: React.HTMLAttributeAnchorTarget;
@@ -323,20 +323,26 @@ function Heading({
 }: {
   align?: "center" | "left";
   dark?: boolean;
-  eyebrow: string;
+  eyebrow?: string | null;
   lead?: string;
   title: string;
 }) {
   return (
     <div className={align === "center" ? "mx-auto max-w-3xl text-center" : ""}>
-      <Eyebrow light={dark}>{eyebrow}</Eyebrow>
-      <h2 className="mt-4 text-[28px] font-extrabold leading-[1.12] sm:text-4xl md:text-[44px] md:leading-[1.08]">{title}</h2>
+      {eyebrow ? <Eyebrow light={dark}>{eyebrow}</Eyebrow> : null}
+      <h2 className={`${eyebrow ? "mt-4" : ""} text-[28px] font-extrabold leading-[1.12] sm:text-4xl md:text-[44px] md:leading-[1.08]`}>{title}</h2>
       {lead ? <p className={`mt-4 max-w-2xl text-base leading-7 sm:mt-[18px] sm:text-[18px] sm:leading-[1.6] md:text-[19px] ${align === "center" ? "mx-auto" : ""} ${dark ? "text-white/70" : "text-[#717171]"}`}>{lead}</p> : null}
     </div>
   );
 }
 
-function Header() {
+function Header({
+  analyticsLocation,
+  homeAnchorPrefix = "",
+}: {
+  analyticsLocation?: string;
+  homeAnchorPrefix?: string;
+} = {}) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -356,13 +362,13 @@ function Header() {
         </Link>
         <nav className="hidden items-center gap-8 lg:flex">
           {navLinks.map(([label, id]) => (
-            <a className="text-sm font-bold text-[#484848] transition hover:text-[#222222]" href={`#${id}`} key={id}>
+            <a className="text-sm font-bold text-[#484848] transition hover:text-[#222222]" href={`${homeAnchorPrefix}#${id}`} key={id}>
               {label}
             </a>
           ))}
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
-          <ButtonLink onClick={() => trackCalendarClick("header")} size="sm" variant="ghost">
+          <ButtonLink onClick={() => trackCalendarClick(analyticsLocation || "header")} size="sm" variant="ghost">
             Book a call
           </ButtonLink>
           <ButtonLink href="/dashboard" size="sm">
@@ -389,7 +395,7 @@ function Header() {
                 {navLinks.map(([label, id]) => {
                   const Icon = mobileNavIcons[id];
                   return (
-                    <a className="group flex min-h-12 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] font-bold text-[#332c28] transition hover:bg-white hover:text-[#d63e43]" href={`#${id}`} key={id} onClick={() => setMenuOpen(false)}>
+                    <a className="group flex min-h-12 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] font-bold text-[#332c28] transition hover:bg-white hover:text-[#d63e43]" href={`${homeAnchorPrefix}#${id}`} key={id} onClick={() => setMenuOpen(false)}>
                       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#ffd6d7] bg-[#fff1f1] text-[#d63e43] transition group-hover:border-[#ff9295]">
                         <Icon className="h-[18px] w-[18px]" />
                       </span>
@@ -404,7 +410,7 @@ function Header() {
                 <button
                   className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-sm font-bold text-[#332c28] transition hover:border-[#ffb1b3] hover:bg-[#fff8f8]"
                   onClick={() => {
-                    trackCalendarClick("mobile_menu");
+                    trackCalendarClick(analyticsLocation || "mobile_menu");
                     setMenuOpen(false);
                   }}
                   type="button"
@@ -704,6 +710,7 @@ function ForecastLoader() {
 }
 
 function ForecastResult({
+  analyticsLocation,
   data,
   onReset,
   ownerEmailSent,
@@ -711,6 +718,7 @@ function ForecastResult({
   pitchDeckStatus,
   response,
 }: {
+  analyticsLocation?: string;
   data: CalculatorData;
   onReset: () => void;
   ownerEmailSent: boolean;
@@ -756,7 +764,7 @@ function ForecastResult({
       </p>
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap [&>*]:w-full sm:[&>*]:w-auto">
         {whatsappUrl ? (
-          <ButtonLink href={whatsappUrl} onClick={() => trackWhatsappClick("forecast_result")} rel="noreferrer" size="lg" target="_blank">
+          <ButtonLink href={whatsappUrl} onClick={() => trackWhatsappClick(analyticsLocation || "forecast_result")} rel="noreferrer" size="lg" target="_blank">
             <MessageCircle className="h-4 w-4" /> WhatsApp us now
           </ButtonLink>
         ) : (
@@ -765,7 +773,7 @@ function ForecastResult({
           </ButtonLink>
         )}
         {pitchDeckStatus === "ready" && pdfDownloadUrl ? (
-          <ButtonLink href={pdfDownloadUrl} onClick={() => trackDataLayerEvent("pitch_deck_download", { asset_type: "pitch_deck_pdf", cta_location: "forecast_result" })} rel="noreferrer" size="lg" target="_blank" variant="secondary">
+          <ButtonLink href={pdfDownloadUrl} onClick={() => trackDataLayerEvent("pitch_deck_download", { asset_type: "pitch_deck_pdf", cta_location: analyticsLocation || "forecast_result" })} rel="noreferrer" size="lg" target="_blank" variant="secondary">
             <FileText className="h-4 w-4" /> Download full pitch deck
           </ButtonLink>
         ) : pitchDeckStatus === "generating" ? (
@@ -785,7 +793,23 @@ function ForecastResult({
   );
 }
 
-function CalculatorSection() {
+function CalculatorSection({
+  analyticsLocation,
+  eyebrow = "The ROI calculator",
+  id = "calculator",
+  lead = "Tell us about your property. We'll generate a transparent annual revenue, operating-cost, and net-profit forecast, plus a downloadable custom pitch deck.",
+  sectionClassName = "",
+  title = "What could your property actually earn?",
+  tone = "white",
+}: {
+  analyticsLocation?: string;
+  eyebrow?: string | null;
+  id?: string;
+  lead?: string;
+  sectionClassName?: string;
+  title?: string;
+  tone?: "white" | "cream";
+} = {}) {
   const [data, setData] = useState<CalculatorData>(emptyCalculatorData);
   const [result, setResult] = useState<ForecastApiResponse | null>(null);
   const [pitchDeckStatus, setPitchDeckStatus] = useState<PitchDeckStatus>("idle");
@@ -820,6 +844,7 @@ function CalculatorSection() {
     if (forecastStartedRef.current) return;
     forecastStartedRef.current = true;
     trackDataLayerEvent("forecast_form_started", {
+      ...(analyticsLocation ? { cta_location: analyticsLocation } : {}),
       form_name: "owner_forecast",
       form_step: `step_${step + 1}`,
     });
@@ -875,6 +900,7 @@ function CalculatorSection() {
       }
       setResult(body);
       trackDataLayerEvent("generate_lead", {
+        ...(analyticsLocation ? { cta_location: analyticsLocation } : {}),
         form_name: "owner_forecast",
         lead_type: "pitch_deck_forecast",
       });
@@ -905,6 +931,7 @@ function CalculatorSection() {
       }
       setProposal(body);
       trackDataLayerEvent("pitch_deck_ready", {
+        ...(analyticsLocation ? { cta_location: analyticsLocation } : {}),
         lead_type: "pitch_deck_forecast",
       });
       setPitchDeckStatus("ready");
@@ -914,15 +941,16 @@ function CalculatorSection() {
   }
 
   return (
-    <Section id="calculator">
+    <Section className={sectionClassName} id={id} tone={tone}>
       <Heading
-        eyebrow="The ROI calculator"
-        lead="Tell us about your property. We'll generate a transparent annual revenue, operating-cost, and net-profit forecast, plus a downloadable custom pitch deck."
-        title="What could your property actually earn?"
+        eyebrow={eyebrow}
+        lead={lead}
+        title={title}
       />
       <div className="mx-auto mt-8 min-w-0 max-w-[880px] sm:mt-12">
         {result ? (
           <ForecastResult
+            analyticsLocation={analyticsLocation}
             data={data}
             onReset={reset}
             ownerEmailSent={proposal?.ownerEmailSent === true}
@@ -1873,19 +1901,25 @@ function FinalCTA() {
   );
 }
 
-function Footer() {
+function Footer({
+  analyticsLocation,
+  homeAnchorPrefix = "",
+}: {
+  analyticsLocation?: string;
+  homeAnchorPrefix?: string;
+} = {}) {
   const siteLinks = [
-    { href: "#top", label: "For Owners" },
-    { href: "#top", label: "For Guests / Book a Stay" },
-    { href: "#about", label: "About" },
-    { href: "#proof", label: "Case Studies" },
-    { href: "#top", label: "Blog (soon)" },
+    { href: `${homeAnchorPrefix}#top`, label: "For Owners" },
+    { href: `${homeAnchorPrefix}#top`, label: "For Guests / Book a Stay" },
+    { href: `${homeAnchorPrefix}#about`, label: "About" },
+    { href: `${homeAnchorPrefix}#proof`, label: "Case Studies" },
+    { href: `${homeAnchorPrefix}#top`, label: "Blog (soon)" },
   ];
   const resourceLinks = [
-    { href: "#extras", label: "Sample P&L Statement" },
-    { href: "#extras", label: "Standard L&L Agreement" },
-    { href: "#tiers", label: "Tier System One-Pager" },
-            { href: "#calculator", label: "ROI Calculator", onClick: () => trackForecastFormOpen("footer") },
+    { href: `${homeAnchorPrefix}#extras`, label: "Sample P&L Statement" },
+    { href: `${homeAnchorPrefix}#extras`, label: "Standard L&L Agreement" },
+    { href: `${homeAnchorPrefix}#tiers`, label: "Tier System One-Pager" },
+    { href: `${homeAnchorPrefix}#calculator`, label: "ROI Calculator", onClick: () => trackForecastFormOpen(analyticsLocation || "footer") },
   ];
 
   return (
@@ -1898,7 +1932,7 @@ function Footer() {
             <div className="mt-5 grid gap-3 text-sm">
               <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-white/50" /> Goa, India</span>
               <a className="inline-flex min-w-0 items-center gap-2 break-all" href="mailto:curatemystay@gmail.com"><Mail className="h-4 w-4 shrink-0 text-white/50" /> curatemystay@gmail.com</a>
-              <a className="inline-flex items-center gap-2" href={WHATSAPP_URL} onClick={() => trackWhatsappClick("footer")} rel="noreferrer" target="_blank"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
+              <a className="inline-flex items-center gap-2" href={WHATSAPP_URL} onClick={() => trackWhatsappClick(analyticsLocation || "footer")} rel="noreferrer" target="_blank"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
             </div>
           </div>
           <FooterLinks items={siteLinks} title="Site" />
@@ -1929,6 +1963,580 @@ function FooterLinks({ items, title }: { items: Array<{ href: string; label: str
         ))}
       </div>
     </div>
+  );
+}
+
+type ProposalFaq = {
+  answer: string;
+  question: string;
+};
+
+function ProposalScrollLink({ children }: { children: React.ReactNode }) {
+  function handleClick(event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) {
+    event.preventDefault();
+    trackForecastFormOpen("property_management_proposal");
+
+    const form = document.getElementById("proposal-form");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    form?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }
+
+  return (
+    <ButtonLink className="w-full sm:w-auto" href="#proposal-form" onClick={handleClick} size="lg">
+      {children}
+    </ButtonLink>
+  );
+}
+
+export function PropertyManagementProposal({ faqs }: { faqs: ProposalFaq[] }) {
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+  const steps: Array<{ description: string; icon: LucideIcon; title: string }> = [
+    {
+      description: "Tell us about the property type, configuration, location, size, amenities and current setup.",
+      icon: FileText,
+      title: "Share Your Property Details",
+    },
+    {
+      description: "Receive an estimated seasonal and annual rental forecast based on the details provided.",
+      icon: TrendingUp,
+      title: "View Your Revenue Forecast",
+    },
+    {
+      description: "Your customised pitch deck is prepared using the same property information and forecast.",
+      icon: Sparkles,
+      title: "Generate Your Proposal",
+    },
+    {
+      description: "Connect with the CurateMyStay team to discuss management requirements and commercial terms.",
+      icon: MessageCircle,
+      title: "Discuss the Next Steps",
+    },
+  ];
+  const proposalItems: Array<{ description: string; icon: LucideIcon; title: string }> = [
+    {
+      description: "An estimated annual rental revenue based on the property details submitted.",
+      icon: TrendingUp,
+      title: "Estimated Annual Revenue",
+    },
+    {
+      description: "A month-by-month view showing how seasonal demand may affect property performance.",
+      icon: Calendar,
+      title: "Seasonal Revenue Forecast",
+    },
+    {
+      description: "An initial estimate of the operating costs associated with managing the property.",
+      icon: Banknote,
+      title: "Estimated Operating Costs",
+    },
+    {
+      description: "An estimated net profit after the operating-cost assumption used in the forecast.",
+      icon: Target,
+      title: "Estimated Net Profit",
+    },
+    {
+      description: "Initial recommendations related to furnishing, amenities and preparing the property for guests.",
+      icon: Building2,
+      title: "Property Setup Recommendations",
+    },
+    {
+      description: "A clear outline of what can happen next if you choose to discuss property management with CurateMyStay.",
+      icon: ArrowRight,
+      title: "Recommended Next Steps",
+    },
+  ];
+  const reasons: Array<{ description: string; icon: LucideIcon; title: string }> = [
+    {
+      description: "Our service is designed specifically around the operational requirements of short-term rental properties in Goa.",
+      icon: MapPin,
+      title: "Goa-Focused Property Management",
+    },
+    {
+      description: "Owners can view relevant property performance, bookings, expenses and payout information through their dashboard.",
+      icon: Eye,
+      title: "Transparent Owner Reporting",
+    },
+    {
+      description: "Operational and financial information is organised around the owner’s assigned property.",
+      icon: Building2,
+      title: "Property-Level Visibility",
+    },
+    {
+      description: "Owners can review property information and raise queries through a structured and transparent process.",
+      icon: MessageCircle,
+      title: "Clear Communication",
+    },
+  ];
+
+  return (
+    <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
+      <CalendlyPopupLoader />
+      <Header analyticsLocation="property_management_proposal" homeAnchorPrefix="/" />
+
+      <Section className="overflow-hidden [&>div]:pb-16 [&>div]:pt-12 sm:[&>div]:py-20 md:[&>div]:py-24" id="top" tone="cream">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="text-[34px] font-extrabold leading-[1.08] sm:text-[44px] lg:text-[60px] lg:leading-[1.04]">
+            Get a Custom Goa Property Management Proposal
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-[17px] leading-7 text-[#484848] sm:mt-6 sm:text-xl sm:leading-[1.55] lg:text-[22px]">
+            Share a few details about your property and receive an estimated rental revenue forecast along with a customised property management pitch deck.
+          </p>
+          <div className="mt-7 flex justify-center sm:mt-8">
+            <ProposalScrollLink>
+              Generate My Proposal <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
+            </ProposalScrollLink>
+          </div>
+          <p className="mt-4 text-[13.5px] font-medium text-[#717171]">Free to generate. No fixed commercial terms or guaranteed returns.</p>
+        </div>
+      </Section>
+
+      <Section>
+        <Heading
+          lead="Get an initial view of your property’s short-term rental potential in a few simple steps."
+          title="How It Works"
+        />
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 md:mt-12">
+          {steps.map((step) => {
+            const Icon = step.icon;
+            return (
+              <article className="h-full rounded-2xl border border-[#ebebeb] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.06)]" key={step.title}>
+                <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[#fff1f1] text-[#d63e43]">
+                  <Icon aria-hidden="true" className="h-6 w-6" />
+                </span>
+                <h3 className="mt-5 text-lg font-extrabold leading-6">{step.title}</h3>
+                <p className="mt-2 text-[14.5px] leading-6 text-[#484848]">{step.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </Section>
+
+      <CalculatorSection
+        analyticsLocation="property_management_proposal"
+        eyebrow={null}
+        id="proposal-form"
+        lead="Complete the form below to view your estimated rental forecast and generate your customised property management pitch deck."
+        sectionClassName="scroll-mt-20"
+        title="Generate Your Property Proposal"
+        tone="cream"
+      />
+
+      <Section>
+        <Heading
+          lead="The proposal gives you a practical initial view of your property’s rental potential and the next steps required to prepare it for short-term rental management."
+          title="What Your Proposal Includes"
+        />
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 md:mt-12">
+          {proposalItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article className="h-full rounded-2xl border border-[#ebebeb] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.06)]" key={item.title}>
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#fff1f1] text-[#d63e43]">
+                  <Icon aria-hidden="true" className="h-[22px] w-[22px]" />
+                </span>
+                <h3 className="mt-4 text-lg font-extrabold leading-6">{item.title}</h3>
+                <p className="mt-2 text-[14.5px] leading-6 text-[#484848]">{item.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section tone="cream">
+        <Heading
+          lead="CurateMyStay combines local property operations with clear owner visibility across bookings, revenue, expenses and payouts."
+          title="Why Property Owners Choose CurateMyStay"
+        />
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 md:mt-12">
+          {reasons.map((reason) => {
+            const Icon = reason.icon;
+            return (
+              <article className="flex h-full min-w-0 gap-4 rounded-2xl border border-[#ebebeb] bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.06)] sm:p-6" key={reason.title}>
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#fff1f1] text-[#d63e43]">
+                  <Icon aria-hidden="true" className="h-[22px] w-[22px]" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-lg font-extrabold leading-6">{reason.title}</h3>
+                  <p className="mt-2 text-[14.5px] leading-6 text-[#484848]">{reason.description}</p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section>
+        <Heading title="Frequently Asked Questions" />
+        <div className="mx-auto mt-10 grid max-w-[860px] gap-4 md:mt-12">
+          {faqs.map((faq, index) => {
+            const isOpen = openFaqIndex === index;
+            const answerId = `proposal-faq-answer-${index}`;
+            return (
+              <article className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-colors ${isOpen ? "border-[#ff9295]" : "border-[#ebebeb]"}`} key={faq.question}>
+                <button
+                  aria-controls={answerId}
+                  aria-expanded={isOpen}
+                  className="flex min-h-14 w-full min-w-0 items-center gap-3 px-4 py-4 text-left sm:gap-4 sm:px-5 sm:py-5"
+                  onClick={() => setOpenFaqIndex((current) => (current === index ? -1 : index))}
+                  type="button"
+                >
+                  <span className="min-w-0 flex-1 break-words text-[15px] font-extrabold leading-6 text-[#222222] sm:text-base">{faq.question}</span>
+                  <span aria-hidden="true" className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${isOpen ? "rotate-180 bg-[#ff5a5f] text-white" : "bg-[#f7f7f7] text-[#484848]"}`}>
+                    <ChevronDown className="h-4 w-4" />
+                  </span>
+                </button>
+                <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`} id={answerId}>
+                  <div className="overflow-hidden">
+                    <p className="px-4 pb-4 text-sm leading-6 text-[#484848] sm:px-5 sm:pb-5">{faq.answer}</p>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section tone="dark">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl font-extrabold leading-tight tracking-tight md:text-[50px]">Ready to Explore Your Property’s Rental Potential?</h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">
+            Generate your customised proposal or speak with the CurateMyStay team about your Goa property.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+            <ProposalScrollLink>Generate My Proposal</ProposalScrollLink>
+            <ButtonLink
+              className="w-full sm:w-auto"
+              href={WHATSAPP_URL}
+              onClick={() => trackWhatsappClick("property_management_proposal")}
+              rel="noreferrer"
+              size="lg"
+              target="_blank"
+              variant="outlineDark"
+            >
+              <MessageCircle aria-hidden="true" className="h-4 w-4" /> Talk to Our Team
+            </ButtonLink>
+          </div>
+          <div className="mt-3 flex justify-center">
+            <ButtonLink className="w-full sm:w-auto" onClick={() => trackCalendarClick("property_management_proposal")} size="lg" variant="onDark">
+              <Calendar aria-hidden="true" className="h-4 w-4" /> Book a discovery call
+            </ButtonLink>
+          </div>
+        </div>
+      </Section>
+
+      <Footer analyticsLocation="property_management_proposal" homeAnchorPrefix="/" />
+    </main>
+  );
+}
+
+export function AboutPublicPage() {
+  const serviceAreas = [
+    {
+      title: "Property Readiness",
+      description:
+        "We review the property details, existing setup, furnishing, amenities and rental potential before discussing the right next steps with the owner.",
+    },
+    {
+      title: "Short-Term Rental Operations",
+      description:
+        "The operating approach covers relevant booking activity, guest coordination, housekeeping, upkeep and property expenses for the managed home.",
+    },
+    {
+      title: "Owner Reporting and Communication",
+      description:
+        "Owners receive property-level visibility across relevant performance, bookings, expenses and payouts, with a structured way to raise questions.",
+    },
+  ];
+  const workingSteps = [
+    {
+      title: "Understand the Property",
+      description:
+        "CurateMyStay first reviews the property details, current setup and short-term rental potential. Prospective owners can also use the public forecast to receive an initial estimate and property proposal.",
+    },
+    {
+      title: "Manage the Operations",
+      description:
+        "Once a property is managed, the team handles the relevant local booking activity, property expenses and ongoing operations needed to support short-term stays.",
+    },
+    {
+      title: "Keep Owners Informed",
+      description:
+        "Owners can follow the information relevant to their assigned property, including bookings, property expenses, current performance and payout statements.",
+    },
+  ];
+  const transparencyItems = [
+    "Assigned property details",
+    "Booking visibility",
+    "Guest information where permitted",
+    "Property expenses",
+    "Current-month performance",
+    "Payout history and status",
+    "Owner queries",
+    "Profile information",
+  ];
+  const whoWeAreFacts = [
+    {
+      title: "Founded 2025",
+      description: "In active growth mode",
+    },
+    {
+      title: "Based in Goa",
+      description: "Operational team on the ground",
+    },
+    {
+      title: "Cross-domain expertise",
+      description: "20+ yrs facility management (Dubai) · Investment advisory & Fortune 500 background",
+    },
+  ];
+
+  return (
+    <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
+      <CalendlyPopupLoader />
+      <Header analyticsLocation="about_page" homeAnchorPrefix="/" />
+
+      <Section className="[&>div]:py-12 sm:[&>div]:py-16 md:[&>div]:py-20" tone="cream">
+        <div className="max-w-4xl">
+          <Eyebrow>About CurateMyStay</Eyebrow>
+          <h1 className="mt-4 max-w-3xl text-[34px] font-extrabold leading-[1.08] sm:text-[44px] md:text-[52px] md:leading-[1.05]">
+            Property Management Built Around Owner Visibility
+          </h1>
+          <div className="mt-5 max-w-3xl space-y-3 text-[16px] leading-7 text-[#484848] sm:text-lg sm:leading-8">
+            <p>
+              CurateMyStay is focused on short-term rental property management in Goa, combining local property operations with clear, practical visibility for owners.
+            </p>
+            <p>
+              We work with property owners who want hands-on management while retaining a useful view of their property, bookings, expenses, performance and payouts.
+            </p>
+          </div>
+        </div>
+      </Section>
+
+      <Section>
+        <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+          <div>
+            <h2 className="text-[28px] font-extrabold leading-tight sm:text-4xl">What We Do</h2>
+            <p className="mt-4 text-base leading-7 text-[#484848] sm:text-[17px] sm:leading-8">
+              CurateMyStay supports the journey from understanding a property’s rental potential to managing its day-to-day short-term rental operations and keeping the owner informed.
+            </p>
+          </div>
+          <div className="divide-y divide-[#ebebeb] border-y border-[#ebebeb]">
+            {serviceAreas.map((area) => (
+              <article className="py-5 first:pt-0 last:pb-0 sm:py-6" key={area.title}>
+                <h3 className="text-lg font-extrabold leading-6">{area.title}</h3>
+                <p className="mt-2 text-[15px] leading-7 text-[#484848]">{area.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section tone="cream">
+        <Heading title="How We Work" />
+        <div className="mx-auto mt-10 max-w-4xl divide-y divide-[#ded8d1] border-y border-[#ded8d1] md:mt-12">
+          {workingSteps.map((step, index) => (
+            <article className="grid gap-3 py-6 sm:grid-cols-[72px_1fr] sm:gap-5 sm:py-7" key={step.title}>
+              <span aria-hidden="true" className="text-sm font-extrabold text-[#d63e43]">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <h3 className="text-xl font-extrabold leading-7">{step.title}</h3>
+                <p className="mt-2 text-[15px] leading-7 text-[#484848] sm:text-base">{step.description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      <Section>
+        <div className="mx-auto max-w-4xl">
+          <Heading
+            lead="CurateMyStay is designed to give property owners a clearer view of what is happening with their property."
+            title="Built for Transparent Ownership"
+          />
+          <p className="mx-auto mt-6 max-w-3xl text-center text-[15px] leading-7 text-[#484848] sm:text-base">
+            The owner experience keeps operational and financial information organised around the assigned property. It excludes CMS expenses and admin-only information while presenting the records and communication relevant to the owner.
+          </p>
+          <ul className="mt-8 grid gap-x-8 gap-y-3 border-y border-[#ebebeb] py-6 sm:grid-cols-2">
+            {transparencyItems.map((item) => (
+              <li className="flex items-center gap-3 text-[15px] font-semibold text-[#484848]" key={item}>
+                <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-[#d63e43]" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Section>
+
+      <Section tone="cream">
+        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
+          <div>
+            <Eyebrow>Who We Are</Eyebrow>
+            <h2 className="mt-4 text-[28px] font-extrabold leading-tight sm:text-4xl">
+              A Family-Run Approach to Property Management
+            </h2>
+            <div className="mt-5 max-w-2xl space-y-4 text-base leading-7 text-[#484848] sm:text-[17px] sm:leading-8">
+              <p>
+                Curate My Stay is a Goa-based property management firm run by a family with two complementary backgrounds: facility management and investment-side thinking. We currently manage 5 properties and we are scaling deliberately.
+              </p>
+              <p>
+                We approach property management the way a wealth manager approaches a portfolio: every property is an asset with an ROI, an operational P&amp;L, and a strategy attached to it. That framing is what consistently delivers strong returns for our owners without compromising the property itself.
+              </p>
+              <p>
+                Communication stays direct, operations stay hands-on, and every property is managed with long-term value in mind.
+              </p>
+              <p className="font-semibold text-[#222222]">
+                It is how we built a 4.98 rating. It is how we plan to scale.
+              </p>
+            </div>
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              {whoWeAreFacts.map((fact) => (
+                <div className="rounded-2xl border border-[#ded8d1] bg-white p-4" key={fact.title}>
+                  <p className="text-sm font-extrabold text-[#222222]">{fact.title}</p>
+                  <p className="mt-2 text-[13px] leading-5 text-[#484848]">{fact.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mx-auto w-full max-w-md overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:mx-0">
+            <Image
+              alt="The Curate My Stay family"
+              className="aspect-[4/5] w-full object-cover"
+              height={640}
+              sizes="(min-width: 1024px) 430px, 100vw"
+              src={photo("founder.jpg")}
+              width={512}
+            />
+          </div>
+        </div>
+      </Section>
+
+      <Section>
+        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
+          <div className="mx-auto w-full max-w-md overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:mx-0">
+            <Image
+              alt="Aravind, Founder of Curate My Stay"
+              className="aspect-[4/5] w-full object-cover object-top"
+              height={640}
+              sizes="(min-width: 1024px) 430px, 100vw"
+              src={photo("aravind.jpg")}
+              width={512}
+            />
+          </div>
+          <div>
+            <h2 className="text-[28px] font-extrabold leading-tight sm:text-4xl">The People Behind CurateMyStay</h2>
+            <p className="mt-5 text-sm font-extrabold uppercase tracking-[0.04em] text-[#d63e43]">Aravind, Founder of Curate My Stay</p>
+            <p className="mt-2 text-lg font-extrabold text-[#222222]">Aravind - Founder</p>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[#484848] sm:text-[17px] sm:leading-8">
+              Curate My Stay is a Goa-based, family-run property management firm. Its approach combines facility-management and investment-side thinking, with direct communication, hands-on operations and long-term property value in mind.
+            </p>
+          </div>
+        </div>
+      </Section>
+
+      <Section tone="dark">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl font-extrabold leading-tight tracking-tight md:text-[50px]">Have a Property in Goa?</h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">
+            Connect with CurateMyStay to discuss your property, understand its short-term rental potential and explore the next steps.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+            <ButtonLink
+              className="w-full sm:w-auto"
+              href={WHATSAPP_URL}
+              onClick={() => trackWhatsappClick("about_page")}
+              rel="noreferrer"
+              size="lg"
+              target="_blank"
+              variant="onDark"
+            >
+              <MessageCircle aria-hidden="true" className="h-4 w-4" /> Talk to Our Team
+            </ButtonLink>
+            <ButtonLink className="w-full sm:w-auto" onClick={() => trackCalendarClick("about_page")} size="lg" variant="outlineDark">
+              <Calendar aria-hidden="true" className="h-4 w-4" /> Book a Call
+            </ButtonLink>
+          </div>
+        </div>
+      </Section>
+
+      <Footer analyticsLocation="about_page" homeAnchorPrefix="/" />
+    </main>
+  );
+}
+
+export function FaqPublicPage({ faqs }: { faqs: ProposalFaq[] }) {
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  return (
+    <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
+      <CalendlyPopupLoader />
+      <Header analyticsLocation="faq_page" homeAnchorPrefix="/" />
+
+      <Section className="[&>div]:py-12 sm:[&>div]:py-14 md:[&>div]:py-16" tone="cream">
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-[34px] font-extrabold leading-[1.08] sm:text-[44px] md:text-[52px] md:leading-[1.05]">
+            Frequently Asked Questions
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-[16px] leading-7 text-[#484848] sm:text-lg sm:leading-8">
+            Find answers to common questions about CurateMyStay&apos;s property management service, revenue forecasts, owner visibility and onboarding process.
+          </p>
+        </div>
+      </Section>
+
+      <Section>
+        <div className="mx-auto grid max-w-[860px] gap-4">
+          {faqs.map((faq, index) => {
+            const isOpen = openFaqIndex === index;
+            const answerId = `faq-answer-${index}`;
+
+            return (
+              <article className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-colors ${isOpen ? "border-[#ff9295]" : "border-[#ebebeb]"}`} key={faq.question}>
+                <button
+                  aria-controls={answerId}
+                  aria-expanded={isOpen}
+                  className="flex min-h-14 w-full min-w-0 items-center gap-3 px-4 py-4 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 sm:gap-4 sm:px-5 sm:py-5"
+                  onClick={() => setOpenFaqIndex((current) => (current === index ? -1 : index))}
+                  type="button"
+                >
+                  <span className="min-w-0 flex-1 break-words text-[15px] font-extrabold leading-6 text-[#222222] sm:text-base">{faq.question}</span>
+                  <span aria-hidden="true" className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${isOpen ? "rotate-180 bg-[#ff5a5f] text-white" : "bg-[#f7f7f7] text-[#484848]"}`}>
+                    <ChevronDown className="h-4 w-4" />
+                  </span>
+                </button>
+                <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`} id={answerId}>
+                  <div className="overflow-hidden">
+                    <p className="px-4 pb-4 text-sm leading-6 text-[#484848] sm:px-5 sm:pb-5">{faq.answer}</p>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section className="[&>div]:py-12 sm:[&>div]:py-16 md:[&>div]:py-20" tone="dark">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl font-extrabold leading-tight tracking-tight md:text-[50px]">Still Have a Question?</h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:text-lg sm:leading-8">
+            Speak with the CurateMyStay team about your Goa property and the next steps.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+            <ButtonLink
+              className="w-full sm:w-auto"
+              href={WHATSAPP_URL}
+              onClick={() => trackWhatsappClick("faq_page")}
+              rel="noreferrer"
+              size="lg"
+              target="_blank"
+              variant="onDark"
+            >
+              <MessageCircle aria-hidden="true" className="h-4 w-4" /> Talk to Our Team
+            </ButtonLink>
+            <ButtonLink className="w-full sm:w-auto" onClick={() => trackCalendarClick("faq_page")} size="lg" variant="outlineDark">
+              <Calendar aria-hidden="true" className="h-4 w-4" /> Book a Call
+            </ButtonLink>
+          </div>
+        </div>
+      </Section>
+
+      <Footer analyticsLocation="faq_page" homeAnchorPrefix="/" />
+    </main>
   );
 }
 
