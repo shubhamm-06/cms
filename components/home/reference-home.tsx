@@ -2,6 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  getCountries,
+  getCountryCallingCode,
+  type Country,
+} from "react-phone-number-input";
+import flags from "react-phone-number-input/flags";
+import countryLabels from "react-phone-number-input/locale/en.json";
+import { parsePhoneNumberFromString } from "libphonenumber-js/min";
+import { FaWhatsapp } from "react-icons/fa6";
 import {
   ArrowRight,
   Award,
@@ -9,13 +19,19 @@ import {
   BedDouble,
   Building2,
   Calendar,
+  CalendarDays,
   Check,
   ChevronDown,
+  CircleHelp,
+  CircleUser,
   Eye,
   FileCheck2,
   FileText,
   Globe,
+  House,
+  Info,
   LoaderCircle,
+  ListChecks,
   Mail,
   MapPin,
   Menu,
@@ -61,21 +77,13 @@ function trackForecastFormOpen(ctaLocation: string) {
   });
 }
 
-const navLinks = [
-  ["How it works", "services"],
-  ["Earnings", "calculator"],
-  ["Proof", "proof"],
-  ["FAQ", "risk"],
-  ["Pricing", "tiers"],
+const publicNavLinks = [
+  { activePath: "/", href: "/", label: "Home", icon: House },
+  { activePath: "/about", href: "/about", label: "About", icon: Info },
+  { activePath: "/property-management-proposal", href: "/property-management-proposal", label: "How It Works", icon: ListChecks },
+  { activePath: "/faq", href: "/faq", label: "FAQs", icon: CircleHelp },
+  { href: "/property-management-proposal#forecast", label: "Get Pitch Deck", emphasized: true, icon: FileText },
 ];
-
-const mobileNavIcons: Record<string, LucideIcon> = {
-  calculator: TrendingUp,
-  proof: Award,
-  risk: ShieldCheck,
-  services: BedDouble,
-  tiers: Banknote,
-};
 
 const carouselPhotos = [
   "IMG_0524.jpg",
@@ -148,7 +156,6 @@ type CalculatorData = {
   currentlyRented: string;
   email: string;
   name: string;
-  phone: string;
   residency: string;
   whatsappInterest: boolean;
 };
@@ -167,7 +174,19 @@ type ProposalApiResponse = {
 
 type PitchDeckStatus = "idle" | "generating" | "ready" | "failed";
 
-type ForecastRequestPayload = Omit<CalculatorData, "areaSqft"> & { areaSqft: number };
+type ForecastRequestPayload = Omit<CalculatorData, "areaSqft"> & { areaSqft: number; phone: string };
+
+const defaultPhoneCountry: Country = "IN";
+const phoneCountries = getCountries();
+
+function getPhoneCountryName(country: Country) {
+  return countryLabels[country] || country;
+}
+
+function getNormalizedPhone(country: Country, nationalPhone: string) {
+  const phoneNumber = parsePhoneNumberFromString(nationalPhone, country);
+  return phoneNumber?.isValid() ? phoneNumber.number : "";
+}
 
 const emptyCalculatorData: CalculatorData = {
   propertyCategory: "Apartment",
@@ -178,7 +197,6 @@ const emptyCalculatorData: CalculatorData = {
   furnishingStatus: "",
   location: "Assagao",
   name: "",
-  phone: "",
   poolType: "Private pool",
   amenities: [],
   currentlyRented: "",
@@ -338,12 +356,22 @@ function Heading({
 
 function Header({
   analyticsLocation,
-  homeAnchorPrefix = "",
 }: {
   analyticsLocation?: string;
-  homeAnchorPrefix?: string;
 } = {}) {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const currentPath = pathname === "/" ? "/" : pathname.replace(/\/$/, "");
+  const bookingCtaLocation = analyticsLocation || "header";
+
+  function isActivePath(activePath?: string) {
+    return Boolean(activePath && currentPath === activePath);
+  }
+
+  function handleMobileBookingClick() {
+    setMenuOpen(false);
+    window.requestAnimationFrame(() => trackCalendarClick(bookingCtaLocation));
+  }
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -354,72 +382,128 @@ function Header({
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [menuOpen]);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const closeOnDesktop = () => {
+      if (window.matchMedia("(min-width: 1280px)").matches) {
+        setMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", closeOnDesktop);
+    closeOnDesktop();
+
+    return () => window.removeEventListener("resize", closeOnDesktop);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [menuOpen]);
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/70 bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex min-h-[68px] max-w-[1180px] items-center justify-between gap-2 px-4 py-2.5 sm:min-h-[76px] sm:gap-5 sm:px-6 sm:py-3 md:px-8">
-        <Link aria-label="Curate My Stay home" href="/">
+      <div className="mx-auto grid min-h-[68px] max-w-[1180px] grid-cols-[auto_auto] items-center justify-between gap-3 px-4 py-2.5 sm:min-h-[74px] sm:px-6 sm:py-3 md:px-8 xl:grid-cols-[auto_1fr_auto] xl:gap-6">
+        <Link aria-label="Curate My Stay home" className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2" href="/">
           <Logo />
         </Link>
-        <nav className="hidden items-center gap-8 lg:flex">
-          {navLinks.map(([label, id]) => (
-            <a className="text-sm font-bold text-[#484848] transition hover:text-[#222222]" href={`${homeAnchorPrefix}#${id}`} key={id}>
-              {label}
-            </a>
-          ))}
+        <nav aria-label="Primary public navigation" className="hidden items-center justify-center gap-1 xl:flex">
+          {publicNavLinks.map((link) => {
+            const isActive = isActivePath(link.activePath);
+            const LinkIcon = link.icon;
+
+            return (
+              <Link
+                aria-current={isActive ? "page" : undefined}
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-[14px] leading-5 tracking-[-0.01em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 ${
+                  isActive
+                    ? "bg-[#fbf1ec] text-[#2f2a27]"
+                    : link.emphasized
+                      ? "font-semibold text-[#9e4347] hover:bg-[#fff4f0] hover:text-[#8c3c40]"
+                      : "font-medium text-[#403d39] hover:bg-[#f7f3f0] hover:text-[#222222]"
+                }`}
+                href={link.href}
+                key={link.href}
+              >
+                {LinkIcon ? <LinkIcon aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" /> : null}
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
-        <div className="hidden items-center gap-2 lg:flex">
-          <ButtonLink onClick={() => trackCalendarClick(analyticsLocation || "header")} size="sm" variant="ghost">
-            Book a call
+        <div className="hidden items-center justify-end gap-2 xl:flex">
+          <ButtonLink className="gap-2 !px-4 font-medium tracking-[-0.01em]" href="/login" size="sm" variant="ghost">
+            <CircleUser aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" /> Owner Portal
           </ButtonLink>
-          <ButtonLink href="/dashboard" size="sm">
-            Dashboard <ArrowRight className="h-4 w-4 shrink-0" />
+          <ButtonLink className="gap-2 !px-4 font-semibold tracking-[-0.01em]" onClick={() => trackCalendarClick(bookingCtaLocation)} size="sm">
+            <CalendarDays aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" /> Book a Call
           </ButtonLink>
         </div>
         <button
           aria-expanded={menuOpen}
           aria-controls="mobile-navigation"
           aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-          className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border transition lg:hidden ${menuOpen ? "border-[#ff9295] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#222222] hover:border-[#ffb1b3] hover:bg-[#fff8f8]"}`}
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 xl:hidden ${menuOpen ? "border-[#ff9295] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#222222] hover:border-[#ffb1b3] hover:bg-[#fff8f8]"}`}
           onClick={() => setMenuOpen((current) => !current)}
           type="button"
         >
-          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {menuOpen ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}
         </button>
       </div>
       {menuOpen ? (
-        <nav className="border-t border-[#ebebeb] bg-white/95 px-3 pb-4 pt-3 shadow-[0_16px_32px_rgba(0,0,0,0.12)] sm:px-6 lg:hidden" id="mobile-navigation">
+        <nav aria-label="Mobile public navigation" className="max-h-[calc(100vh-68px)] overflow-y-auto border-t border-[#ebebeb] bg-white/95 px-3 pb-4 pt-3 shadow-[0_16px_32px_rgba(0,0,0,0.12)] sm:px-6 xl:hidden" id="mobile-navigation">
           <div className="mx-auto max-w-[1180px]">
             <div className="ml-auto max-w-md overflow-hidden rounded-2xl border border-[#ebebeb] bg-[#fbf7f1] p-2 shadow-sm">
-              <div className="px-3 pb-2 pt-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#9a7770]">Explore</div>
+              <div className="px-3 pb-2 pt-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#9a7770]">Navigation</div>
               <div className="grid gap-1">
-                {navLinks.map(([label, id]) => {
-                  const Icon = mobileNavIcons[id];
+                {publicNavLinks.map((link) => {
+                  const isActive = isActivePath(link.activePath);
+                  const LinkIcon = link.icon;
+
                   return (
-                    <a className="group flex min-h-12 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] font-bold text-[#332c28] transition hover:bg-white hover:text-[#d63e43]" href={`${homeAnchorPrefix}#${id}`} key={id} onClick={() => setMenuOpen(false)}>
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#ffd6d7] bg-[#fff1f1] text-[#d63e43] transition group-hover:border-[#ff9295]">
-                        <Icon className="h-[18px] w-[18px]" />
-                      </span>
-                      <span className="min-w-0 flex-1">{label}</span>
-                      <ArrowRight className="h-4 w-4 shrink-0 text-[#b0a29d] transition group-hover:translate-x-0.5 group-hover:text-[#d63e43]" />
-                    </a>
+                    <Link
+                      aria-current={isActive ? "page" : undefined}
+                      className={`group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] leading-6 tracking-[-0.01em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 ${
+                        isActive
+                          ? "bg-white text-[#2f2a27] shadow-sm"
+                          : link.emphasized
+                            ? "font-semibold text-[#9e4347] hover:bg-white hover:text-[#8c3c40]"
+                            : "font-medium text-[#332c28] hover:bg-white hover:text-[#d63e43]"
+                      }`}
+                      href={link.href}
+                      key={link.href}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {LinkIcon ? <LinkIcon aria-hidden="true" className="h-[18px] w-[18px] shrink-0 stroke-[2]" /> : null}
+                      <span className="min-w-0 flex-1">{link.label}</span>
+                      <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-[#b0a29d] transition group-hover:translate-x-0.5 group-hover:text-[#d63e43]" />
+                    </Link>
                   );
                 })}
               </div>
               <div className="my-2 h-px bg-[#eadfd8]" />
               <div className="grid gap-2 sm:grid-cols-2">
+                <Link
+                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-[15px] font-medium leading-6 tracking-[-0.01em] text-[#332c28] outline-none transition hover:border-[#ffb1b3] hover:bg-[#fff8f8] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2"
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <CircleUser aria-hidden="true" className="h-[18px] w-[18px] shrink-0 stroke-[2]" /> Owner Portal
+                </Link>
                 <button
-                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-sm font-bold text-[#332c28] transition hover:border-[#ffb1b3] hover:bg-[#fff8f8]"
-                  onClick={() => {
-                    trackCalendarClick(analyticsLocation || "mobile_menu");
-                    setMenuOpen(false);
-                  }}
+                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ff5a5f] px-3 text-[15px] font-semibold leading-6 tracking-[-0.01em] text-white shadow-sm outline-none transition hover:bg-[#e54b50] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2"
+                  onClick={handleMobileBookingClick}
                   type="button"
                 >
-                  <Calendar className="h-4 w-4 text-[#d63e43]" /> Book a call
+                  <CalendarDays aria-hidden="true" className="h-[18px] w-[18px] shrink-0 stroke-[2]" /> Book a Call
                 </button>
-                <a className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ff5a5f] px-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#e54b50]" href="/dashboard" onClick={() => setMenuOpen(false)}>
-                  Dashboard <ArrowRight className="h-4 w-4" />
-                </a>
               </div>
             </div>
           </div>
@@ -648,12 +732,13 @@ function Segmented({
   value: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-wrap gap-2">
+    <div className="grid min-w-0 grid-cols-1 gap-2 min-[360px]:grid-cols-2 min-[480px]:grid-cols-3">
       {options.map((option) => {
         const active = value === option;
+        const narrowFullWidth = options.length === 3 && option === "None";
         return (
           <button
-            className={`min-h-11 min-w-0 flex-[1_1_88px] rounded-xl border px-2.5 py-2.5 text-[14px] font-semibold transition sm:px-3 sm:py-[11px] sm:text-[14.5px] ${active ? "border-[#ff5a5f] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#484848] hover:bg-[#f7f7f7]"}`}
+            className={`flex min-h-14 w-full min-w-0 items-center justify-center rounded-xl border px-2.5 py-3 text-center text-[14px] font-semibold leading-5 whitespace-normal break-words transition sm:px-3 sm:text-[14.5px] ${narrowFullWidth ? "min-[360px]:col-span-2 min-[480px]:col-span-1" : ""} ${active ? "border-[#ff5a5f] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#484848] hover:bg-[#f7f7f7]"}`}
             key={option}
             onClick={() => onChange(option)}
             type="button"
@@ -762,14 +847,17 @@ function ForecastResult({
       <p className="my-[18px] text-[12.5px] italic leading-normal text-[#b0b0b0]">
         These are estimates based on comparable Goa properties. Actual results depend on property condition, location, season, and market dynamics.
       </p>
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap [&>*]:w-full sm:[&>*]:w-auto">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center [&>*]:w-full sm:[&>*]:w-auto">
+        <ButtonLink onClick={() => trackCalendarClick("forecast_result")} size="lg">
+          <Calendar aria-hidden="true" className="h-4 w-4" /> Book a Call
+        </ButtonLink>
         {whatsappUrl ? (
-          <ButtonLink href={whatsappUrl} onClick={() => trackWhatsappClick(analyticsLocation || "forecast_result")} rel="noreferrer" size="lg" target="_blank">
-            <MessageCircle className="h-4 w-4" /> WhatsApp us now
+          <ButtonLink className="!border-transparent !bg-[#25d366] !text-white hover:!bg-[#128c7e]" href={whatsappUrl} onClick={() => trackWhatsappClick(analyticsLocation || "forecast_result")} rel="noreferrer" size="lg" target="_blank">
+            <FaWhatsapp aria-hidden="true" className="h-5 w-5" /> WhatsApp us now
           </ButtonLink>
         ) : (
-          <ButtonLink disabled size="lg">
-            <MessageCircle className="h-4 w-4" /> WhatsApp unavailable
+          <ButtonLink className="!border-transparent !bg-[#25d366] !text-white" disabled size="lg">
+            <FaWhatsapp aria-hidden="true" className="h-5 w-5" /> WhatsApp unavailable
           </ButtonLink>
         )}
         {pitchDeckStatus === "ready" && pdfDownloadUrl ? (
@@ -816,6 +904,8 @@ function CalculatorSection({
   const [proposal, setProposal] = useState<ProposalApiResponse | null>(null);
   const [step, setStep] = useState(0);
   const [touched, setTouched] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<Country>(defaultPhoneCountry);
+  const [nationalPhone, setNationalPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const forecastStartedRef = useRef(false);
@@ -832,7 +922,10 @@ function CalculatorSection({
       data.furnishingStatus &&
       data.currentlyRented,
   );
-  const step2Ok = Boolean(data.name.trim() && data.phone.trim().length >= 7 && emailOk && data.residency);
+  const normalizedPhone = getNormalizedPhone(selectedCountry, nationalPhone);
+  const phoneOk = Boolean(normalizedPhone);
+  const step2Ok = Boolean(data.name.trim() && phoneOk && emailOk && data.residency);
+  const showStep2Errors = step === 1 && touched;
   const configurationOptions = data.propertyCategory === "Apartment" ? apartmentConfigurations : villaConfigurations;
 
   function setField<Key extends keyof CalculatorData>(key: Key, value: CalculatorData[Key]) {
@@ -865,6 +958,8 @@ function CalculatorSection({
     setProposal(null);
     setStep(0);
     setTouched(false);
+    setSelectedCountry(defaultPhoneCountry);
+    setNationalPhone("");
     setSubmitError("");
   }
 
@@ -887,7 +982,7 @@ function CalculatorSection({
       const payload = {
         ...data,
         areaSqft: area,
-        phone: `+91 ${data.phone.trim()}`,
+        phone: normalizedPhone,
       };
       const response = await fetch("/api/owner-forecast", {
         method: "POST",
@@ -1038,23 +1133,61 @@ function CalculatorSection({
             {step === 1 ? (
               <div className="grid gap-[18px] md:grid-cols-2">
                 <Field label="Full name" required>
-                  <TextInput invalid={touched && !data.name.trim()} onChange={(event) => setField("name", event.target.value)} placeholder="Your name" value={data.name} />
+                  <TextInput invalid={showStep2Errors && !data.name.trim()} onChange={(event) => setField("name", event.target.value)} placeholder="Your name" value={data.name} />
+                  {showStep2Errors && !data.name.trim() ? <p className="mt-1 text-[13px] text-[#c13515]">Enter your full name.</p> : null}
                 </Field>
-                <Field hint="Default +91: change for international" label="Phone" required>
-                  <div className="flex min-w-0 gap-2">
-                    <span className="grid h-12 w-14 shrink-0 place-items-center rounded-xl border border-[#dddddd] bg-[#f7f7f7] text-[15px] font-semibold sm:w-16 sm:text-[15.5px]">+91</span>
-                    <div className="min-w-0 flex-1">
-                      <TextInput invalid={touched && data.phone.trim().length < 7} onChange={(event) => setField("phone", event.target.value)} placeholder="98765 43210" type="tel" value={data.phone} />
+                <Field hint={`${getPhoneCountryName(selectedCountry)} (+${getCountryCallingCode(selectedCountry)}) selected. Choose another country for international numbers.`} label="Phone" required>
+                  <div className={`cms-forecast-phone ${showStep2Errors && !phoneOk ? "cms-forecast-phone--invalid" : ""}`}>
+                    <div className="relative flex min-h-12 shrink-0 items-center gap-2 border-r border-[#ebebeb] pr-3">
+                      <span aria-hidden="true" className="cms-forecast-phone-flag">
+                        {(() => {
+                          const Flag = flags[selectedCountry];
+                          return Flag ? <Flag title={getPhoneCountryName(selectedCountry)} /> : null;
+                        })()}
+                      </span>
+                      <span className="whitespace-nowrap text-[15px] font-semibold text-[#484848]">+{getCountryCallingCode(selectedCountry)}</span>
+                      <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-[#717171]" />
+                      <select
+                        aria-label="Phone country"
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                        onChange={(event) => {
+                          trackForecastStarted();
+                          setSelectedCountry(event.target.value as Country);
+                        }}
+                        value={selectedCountry}
+                      >
+                        {phoneCountries.map((country) => (
+                          <option key={country} value={country}>
+                            {getPhoneCountryName(country)} (+{getCountryCallingCode(country)})
+                          </option>
+                        ))}
+                      </select>
                     </div>
+                    <input
+                      aria-invalid={showStep2Errors && !phoneOk}
+                      aria-label="National phone number"
+                      autoComplete="tel-national"
+                      className="min-h-12 min-w-0 flex-1 bg-transparent px-3 py-3 text-[15.5px] font-medium text-[#222222] outline-none placeholder:text-[#b0b0b0]"
+                      inputMode="tel"
+                      onChange={(event) => {
+                        trackForecastStarted();
+                        setNationalPhone(event.target.value);
+                      }}
+                      placeholder="98765 43210"
+                      type="tel"
+                      value={nationalPhone}
+                    />
                   </div>
+                  {showStep2Errors && !phoneOk ? <p className="mt-1 text-[13px] text-[#c13515]">Enter a valid phone number for the selected country.</p> : null}
                 </Field>
                 <Field label="Email" required>
-                  <TextInput invalid={touched && !emailOk} onChange={(event) => setField("email", event.target.value)} placeholder="you@email.com" type="email" value={data.email} />
+                  <TextInput invalid={showStep2Errors && !emailOk} onChange={(event) => setField("email", event.target.value)} placeholder="you@email.com" type="email" value={data.email} />
+                  {showStep2Errors && !emailOk ? <p className="mt-1 text-[13px] text-[#c13515]">Enter a valid email address.</p> : null}
                 </Field>
                 <Field hint="Helps us route your follow-up" label="Where are you based?" required>
-                  <SelectBox invalid={touched && !data.residency} onChange={(value) => setField("residency", value)} options={["In Goa", "In India (outside Goa)", "Abroad (NRI)"]} placeholder="Select" value={data.residency} />
+                  <SelectBox invalid={showStep2Errors && !data.residency} onChange={(value) => setField("residency", value)} options={["In Goa", "In India (outside Goa)", "Abroad (NRI)"]} placeholder="Select" value={data.residency} />
+                  {showStep2Errors && !data.residency ? <p className="mt-1 text-[13px] text-[#c13515]">Select where you&apos;re based.</p> : null}
                 </Field>
-                {touched && !step2Ok ? <div className="text-[13.5px] text-[#c13515] md:col-span-2">Please enter your name, a valid phone and email, and where you&apos;re based.</div> : null}
               </div>
             ) : null}
 
@@ -1976,13 +2109,13 @@ function ProposalScrollLink({ children }: { children: React.ReactNode }) {
     event.preventDefault();
     trackForecastFormOpen("property_management_proposal");
 
-    const form = document.getElementById("proposal-form");
+    const form = document.getElementById("forecast");
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     form?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   }
 
   return (
-    <ButtonLink className="w-full sm:w-auto" href="#proposal-form" onClick={handleClick} size="lg">
+    <ButtonLink className="w-full sm:w-auto" href="#forecast" onClick={handleClick} size="lg">
       {children}
     </ButtonLink>
   );
@@ -2070,7 +2203,7 @@ export function PropertyManagementProposal({ faqs }: { faqs: ProposalFaq[] }) {
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
-      <Header analyticsLocation="property_management_proposal" homeAnchorPrefix="/" />
+      <Header analyticsLocation="property_management_proposal" />
 
       <Section className="overflow-hidden [&>div]:pb-16 [&>div]:pt-12 sm:[&>div]:py-20 md:[&>div]:py-24" id="top" tone="cream">
         <div className="mx-auto max-w-4xl text-center">
@@ -2113,9 +2246,9 @@ export function PropertyManagementProposal({ faqs }: { faqs: ProposalFaq[] }) {
       <CalculatorSection
         analyticsLocation="property_management_proposal"
         eyebrow={null}
-        id="proposal-form"
+        id="forecast"
         lead="Complete the form below to view your estimated rental forecast and generate your customised property management pitch deck."
-        sectionClassName="scroll-mt-20"
+        sectionClassName="scroll-mt-24"
         title="Generate Your Property Proposal"
         tone="cream"
       />
@@ -2291,7 +2424,7 @@ export function AboutPublicPage() {
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
-      <Header analyticsLocation="about_page" homeAnchorPrefix="/" />
+      <Header analyticsLocation="about_page" />
 
       <Section className="[&>div]:py-12 sm:[&>div]:py-16 md:[&>div]:py-20" tone="cream">
         <div className="max-w-4xl">
@@ -2466,7 +2599,7 @@ export function FaqPublicPage({ faqs }: { faqs: ProposalFaq[] }) {
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
-      <Header analyticsLocation="faq_page" homeAnchorPrefix="/" />
+      <Header analyticsLocation="faq_page" />
 
       <Section className="[&>div]:py-12 sm:[&>div]:py-14 md:[&>div]:py-16" tone="cream">
         <div className="mx-auto max-w-3xl text-center">

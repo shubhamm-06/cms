@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidPhoneNumber } from "libphonenumber-js/min";
 import {
   AMENITIES,
   APARTMENT_CONFIGURATIONS,
@@ -34,10 +35,8 @@ export const ownerForecastSchema = z
     phone: z
       .string()
       .trim()
-      .min(7, "Enter a valid phone number.")
-      .max(24)
-      .regex(/^[+0-9()\-\s]+$/, "Enter a valid phone number.")
-      .refine((value) => value.replace(/\D/g, "").length >= 7, "Enter a valid phone number."),
+      .transform((value) => value.replace(/[()\s-]/g, ""))
+      .refine((value) => /^\+\d{7,15}$/.test(value) && isValidPhoneNumber(value), "Enter a valid international phone number."),
     email: z.string().trim().email("Enter a valid email address.").max(254),
     residency: z.enum(RESIDENCY_OPTIONS),
     whatsappInterest: z.boolean().default(false),

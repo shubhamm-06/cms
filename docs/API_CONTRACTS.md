@@ -50,7 +50,7 @@ The route sets `source_page = landing_page` rather than accepting it from the cl
 | `location`, `beachDistance`, `poolType` | Supported enums |
 | `amenities` | Unique supported amenity array |
 | `furnishingStatus`, `currentlyRented` | Supported enums |
-| `name`, `phone`, `email` | Validated contact fields |
+| `name`, `phone`, `email` | Validated contact fields; `phone` is normalized to E.164 (`+` plus 7-15 digits) and must be a valid international number |
 | `residency` | Supported residency enum |
 | `whatsappInterest` | Boolean, default false |
 

@@ -244,6 +244,9 @@ asset_type = pitch_deck_pdf
 ```txt
 header
 mobile_menu
+about_page
+faq_page
+property_management_proposal
 hero
 math_comparison
 forecast_result
@@ -428,7 +431,7 @@ Measurement ID: G-27JT5KQX4C
 
 ### Calendly Popup Note
 
-All public booking CTAs use the shared on-page Calendly popup with `https://calendly.com/curatemystay/30min?hide_gdpr_banner=1`. The homepage loads the Calendly script and stylesheet once, uses no floating badge, and does not redirect to another page. Each genuine CTA click emits one `calendar_click` event with the existing non-PII `cta_location` and `destination_type: calendly`; no name, email, phone, Calendly form value, full URL, cookie, or UTM value is sent through analytics.
+All public booking CTAs use the shared on-page Calendly popup with `https://calendly.com/curatemystay/30min?hide_gdpr_banner=1`. The shared public navbar reuses the same helper on `/`, `/about`, `/faq`, and `/property-management-proposal`; the homepage uses `header`, while the newer public pages use their existing page-safe `about_page`, `faq_page`, and `property_management_proposal` CTA locations. The homepage loads the Calendly script and stylesheet once, uses no floating badge, and does not redirect to another page. Each genuine CTA click emits one `calendar_click` event with the existing non-PII `cta_location` and `destination_type: calendly`; no name, email, phone, Calendly form value, full URL, cookie, or UTM value is sent through analytics.
 
 ---
 

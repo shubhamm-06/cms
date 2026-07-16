@@ -1,5 +1,26 @@
 # Changelog
 
+## Public Forecast Phone and Result CTA Correction
+
+- Kept the forecast phone country selector library-backed while preserving typed national digits across country changes, submitting the existing `phone` field as validated E.164, and replacing the Step 2 generic required-fields message with field-specific errors after a failed Continue attempt.
+- Reordered forecast-result actions in source order so `Book a Call` is the coral primary CTA, followed by green WhatsApp, the pitch-deck action, and quiet `Start over`, while preserving Calendly/WhatsApp destinations and non-PII analytics.
+
+## Public Forecast Contact and Result CTA Refinement
+
+- Replaced the fixed `+91` forecast phone prefix with an accessible international country selector using `react-phone-number-input`; India remains the default and submitted values are normalized and validated as E.164 numbers.
+- Added the maintained Font Awesome WhatsApp brand icon and a `Book a Call` action to the forecast result while preserving the existing WhatsApp destination, pitch-deck states, reset behavior, Calendly popup, and non-PII analytics events.
+
+## Shared Public Navbar
+
+- Centralized the public marketing navbar used by `/`, `/about`, `/faq`, and `/property-management-proposal`.
+- Updated the shared navbar to show Home, About, How It Works, FAQs, and Get Pitch Deck in the center, with quieter `Owner Portal` access to `/login` and a primary `Book a Call` Calendly popup action on the right.
+- Added exact active-route treatment with `aria-current="page"` for standard page links, kept Get Pitch Deck from becoming a second active item, and anchored the proposal forecast section at `/property-management-proposal#forecast`.
+- Preserved the shared Calendly popup URL, `calendar_click` analytics event, non-PII tracking helper, public-page CTA behavior, dashboard/owner navigation, auth, and forecast logic.
+
+## Shared Public Navbar Icon Refinement
+
+- Added a consistent, restrained Lucide icon to every shared public navbar link and action across desktop and mobile while preserving the existing order, active-route treatment, Calendly popup, analytics, and responsive behavior.
+
 ## Public About Page Refinement
 
 - Updated `/about` to match the final requested structure with a separate family-run "Who We Are" section before the Aravind founder section.

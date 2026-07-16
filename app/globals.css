@@ -22,6 +22,40 @@
   --orange-soft: #fdf0e0;
 }
 
+.cms-forecast-phone {
+  align-items: center;
+  border: 1px solid #dddddd;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  display: flex;
+  min-height: 3rem;
+  padding: 0 0.75rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  width: 100%;
+}
+
+.cms-forecast-phone:focus-within {
+  border-color: #ff5a5f;
+  box-shadow: 0 0 0 4px #ffe0e1;
+}
+
+.cms-forecast-phone--invalid {
+  border-color: #c13515;
+}
+
+.cms-forecast-phone-flag {
+  display: block;
+  flex: none;
+  line-height: 0;
+  width: 1.375rem;
+}
+
+.cms-forecast-phone-flag svg {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
