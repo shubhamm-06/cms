@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   getCountries,
   getCountryCallingCode,
@@ -19,22 +17,15 @@ import {
   BedDouble,
   Building2,
   Calendar,
-  CalendarDays,
   Check,
   ChevronDown,
-  CircleHelp,
-  CircleUser,
   Eye,
   FileCheck2,
   FileText,
   Globe,
-  House,
-  Info,
   LoaderCircle,
-  ListChecks,
   Mail,
   MapPin,
-  Menu,
   MessageCircle,
   Quote,
   Rocket,
@@ -43,17 +34,18 @@ import {
   Star,
   Target,
   TrendingUp,
-  X,
   Zap,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CalendlyPopupLoader, openCalendlyPopup } from "@/components/home/calendly-popup";
-import { trackDataLayerEvent } from "@/src/lib/analytics";
+import { PublicHeader } from "@/components/home/public-header";
+import { trackDataLayerEvent, trackWhatsAppClick } from "@/src/lib/analytics";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
+import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
 const photo = (name: string) => `/homepage/${name}`;
-const WHATSAPP_URL = "https://wa.me/916282627601?text=Hi%20CMS%20-%20I%20am%20interested%20in%20property%20management%20for%20my%20property%20in%20Goa.";
+const WHATSAPP_URL = getPublicWhatsAppUrl() || "#";
 
 function trackCalendarClick(ctaLocation: string) {
   trackDataLayerEvent("calendar_click", {
@@ -63,12 +55,7 @@ function trackCalendarClick(ctaLocation: string) {
   openCalendlyPopup();
 }
 
-function trackWhatsappClick(ctaLocation: string) {
-  trackDataLayerEvent("whatsapp_click", {
-    cta_location: ctaLocation,
-    destination_type: "whatsapp",
-  });
-}
+const trackWhatsappClick = trackWhatsAppClick;
 
 function trackForecastFormOpen(ctaLocation: string) {
   trackDataLayerEvent("forecast_form_open", {
@@ -76,14 +63,6 @@ function trackForecastFormOpen(ctaLocation: string) {
     form_name: "owner_forecast",
   });
 }
-
-const publicNavLinks = [
-  { activePath: "/", href: "/", label: "Home", icon: House },
-  { activePath: "/about", href: "/about", label: "About", icon: Info },
-  { activePath: "/property-management-proposal", href: "/property-management-proposal", label: "How It Works", icon: ListChecks },
-  { activePath: "/faq", href: "/faq", label: "FAQs", icon: CircleHelp },
-  { href: "/property-management-proposal#forecast", label: "Get Pitch Deck", emphasized: true, icon: FileText },
-];
 
 const carouselPhotos = [
   "IMG_0524.jpg",
@@ -351,165 +330,6 @@ function Heading({
       <h2 className={`${eyebrow ? "mt-4" : ""} text-[28px] font-extrabold leading-[1.12] sm:text-4xl md:text-[44px] md:leading-[1.08]`}>{title}</h2>
       {lead ? <p className={`mt-4 max-w-2xl text-base leading-7 sm:mt-[18px] sm:text-[18px] sm:leading-[1.6] md:text-[19px] ${align === "center" ? "mx-auto" : ""} ${dark ? "text-white/70" : "text-[#717171]"}`}>{lead}</p> : null}
     </div>
-  );
-}
-
-function Header({
-  analyticsLocation,
-}: {
-  analyticsLocation?: string;
-} = {}) {
-  const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const currentPath = pathname === "/" ? "/" : pathname.replace(/\/$/, "");
-  const bookingCtaLocation = analyticsLocation || "header";
-
-  function isActivePath(activePath?: string) {
-    return Boolean(activePath && currentPath === activePath);
-  }
-
-  function handleMobileBookingClick() {
-    setMenuOpen(false);
-    window.requestAnimationFrame(() => trackCalendarClick(bookingCtaLocation));
-  }
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    const closeOnDesktop = () => {
-      if (window.matchMedia("(min-width: 1280px)").matches) {
-        setMenuOpen(false);
-      }
-    };
-
-    window.addEventListener("resize", closeOnDesktop);
-    closeOnDesktop();
-
-    return () => window.removeEventListener("resize", closeOnDesktop);
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [menuOpen]);
-
-  return (
-    <header className="sticky top-0 z-50 border-b border-white/70 bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto grid min-h-[68px] max-w-[1180px] grid-cols-[auto_auto] items-center justify-between gap-3 px-4 py-2.5 sm:min-h-[74px] sm:px-6 sm:py-3 md:px-8 xl:grid-cols-[auto_1fr_auto] xl:gap-6">
-        <Link aria-label="Curate My Stay home" className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2" href="/">
-          <Logo />
-        </Link>
-        <nav aria-label="Primary public navigation" className="hidden items-center justify-center gap-1 xl:flex">
-          {publicNavLinks.map((link) => {
-            const isActive = isActivePath(link.activePath);
-            const LinkIcon = link.icon;
-
-            return (
-              <Link
-                aria-current={isActive ? "page" : undefined}
-                className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-[14px] leading-5 tracking-[-0.01em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 ${
-                  isActive
-                    ? "bg-[#fbf1ec] text-[#2f2a27]"
-                    : link.emphasized
-                      ? "font-semibold text-[#9e4347] hover:bg-[#fff4f0] hover:text-[#8c3c40]"
-                      : "font-medium text-[#403d39] hover:bg-[#f7f3f0] hover:text-[#222222]"
-                }`}
-                href={link.href}
-                key={link.href}
-              >
-                {LinkIcon ? <LinkIcon aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" /> : null}
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="hidden items-center justify-end gap-2 xl:flex">
-          <ButtonLink className="gap-2 !px-4 font-medium tracking-[-0.01em]" href="/login" size="sm" variant="ghost">
-            <CircleUser aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" /> Owner Portal
-          </ButtonLink>
-          <ButtonLink className="gap-2 !px-4 font-semibold tracking-[-0.01em]" onClick={() => trackCalendarClick(bookingCtaLocation)} size="sm">
-            <CalendarDays aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" /> Book a Call
-          </ButtonLink>
-        </div>
-        <button
-          aria-expanded={menuOpen}
-          aria-controls="mobile-navigation"
-          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-          className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 xl:hidden ${menuOpen ? "border-[#ff9295] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#222222] hover:border-[#ffb1b3] hover:bg-[#fff8f8]"}`}
-          onClick={() => setMenuOpen((current) => !current)}
-          type="button"
-        >
-          {menuOpen ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}
-        </button>
-      </div>
-      {menuOpen ? (
-        <nav aria-label="Mobile public navigation" className="max-h-[calc(100vh-68px)] overflow-y-auto border-t border-[#ebebeb] bg-white/95 px-3 pb-4 pt-3 shadow-[0_16px_32px_rgba(0,0,0,0.12)] sm:px-6 xl:hidden" id="mobile-navigation">
-          <div className="mx-auto max-w-[1180px]">
-            <div className="ml-auto max-w-md overflow-hidden rounded-2xl border border-[#ebebeb] bg-[#fbf7f1] p-2 shadow-sm">
-              <div className="px-3 pb-2 pt-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#9a7770]">Navigation</div>
-              <div className="grid gap-1">
-                {publicNavLinks.map((link) => {
-                  const isActive = isActivePath(link.activePath);
-                  const LinkIcon = link.icon;
-
-                  return (
-                    <Link
-                      aria-current={isActive ? "page" : undefined}
-                      className={`group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] leading-6 tracking-[-0.01em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 ${
-                        isActive
-                          ? "bg-white text-[#2f2a27] shadow-sm"
-                          : link.emphasized
-                            ? "font-semibold text-[#9e4347] hover:bg-white hover:text-[#8c3c40]"
-                            : "font-medium text-[#332c28] hover:bg-white hover:text-[#d63e43]"
-                      }`}
-                      href={link.href}
-                      key={link.href}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {LinkIcon ? <LinkIcon aria-hidden="true" className="h-[18px] w-[18px] shrink-0 stroke-[2]" /> : null}
-                      <span className="min-w-0 flex-1">{link.label}</span>
-                      <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-[#b0a29d] transition group-hover:translate-x-0.5 group-hover:text-[#d63e43]" />
-                    </Link>
-                  );
-                })}
-              </div>
-              <div className="my-2 h-px bg-[#eadfd8]" />
-              <div className="grid gap-2 sm:grid-cols-2">
-                <Link
-                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-[15px] font-medium leading-6 tracking-[-0.01em] text-[#332c28] outline-none transition hover:border-[#ffb1b3] hover:bg-[#fff8f8] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2"
-                  href="/login"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <CircleUser aria-hidden="true" className="h-[18px] w-[18px] shrink-0 stroke-[2]" /> Owner Portal
-                </Link>
-                <button
-                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#ff5a5f] px-3 text-[15px] font-semibold leading-6 tracking-[-0.01em] text-white shadow-sm outline-none transition hover:bg-[#e54b50] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2"
-                  onClick={handleMobileBookingClick}
-                  type="button"
-                >
-                  <CalendarDays aria-hidden="true" className="h-[18px] w-[18px] shrink-0 stroke-[2]" /> Book a Call
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      ) : null}
-    </header>
   );
 }
 
@@ -811,9 +631,8 @@ function ForecastResult({
   pitchDeckStatus: PitchDeckStatus;
   response: ForecastApiResponse;
 }) {
-  const number = (process.env.NEXT_PUBLIC_CMS_WHATSAPP_NUMBER || "").replace(/\D/g, "");
   const whatsappMessage = `Hi CurateMyStay, I generated a forecast for my ${data.configuration} ${data.propertyCategory} in ${data.location} and would like to discuss it.`;
-  const whatsappUrl = number ? `https://wa.me/${number}?text=${encodeURIComponent(whatsappMessage)}` : null;
+  const whatsappUrl = getPublicWhatsAppUrl(whatsappMessage);
   const summary = `${data.configuration} ${data.propertyCategory} - ${data.location} - ${data.areaSqft} sq.ft.`;
 
   return (
@@ -1662,9 +1481,9 @@ function Tiers() {
 function Team() {
   return (
     <Section id="about">
-      <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
-          <Image alt="The Curate My Stay family" className="h-full max-h-[560px] w-full object-contain" height={900} sizes="(min-width: 1024px) 460px, 100vw" src={photo("founder.jpg")} width={720} />
+      <div className="grid items-start gap-10 sm:gap-14 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="mx-auto w-full max-w-[420px] overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:mx-0">
+          <Image alt="The Curate My Stay family" className="block h-auto w-full" height={1067} sizes="(min-width: 1024px) 420px, calc(100vw - 2rem)" src={photo("founder.jpg")} width={800} />
         </div>
         <div>
           <Eyebrow>Who we are</Eyebrow>
@@ -2203,7 +2022,7 @@ export function PropertyManagementProposal({ faqs }: { faqs: ProposalFaq[] }) {
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
-      <Header analyticsLocation="property_management_proposal" />
+      <PublicHeader analyticsLocation="property_management_proposal" />
 
       <Section className="overflow-hidden [&>div]:pb-16 [&>div]:pt-12 sm:[&>div]:py-20 md:[&>div]:py-24" id="top" tone="cream">
         <div className="mx-auto max-w-4xl text-center">
@@ -2424,7 +2243,7 @@ export function AboutPublicPage() {
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
-      <Header analyticsLocation="about_page" />
+      <PublicHeader analyticsLocation="about_page" />
 
       <Section className="[&>div]:py-12 sm:[&>div]:py-16 md:[&>div]:py-20" tone="cream">
         <div className="max-w-4xl">
@@ -2498,7 +2317,7 @@ export function AboutPublicPage() {
       </Section>
 
       <Section tone="cream">
-        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
+        <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
           <div>
             <Eyebrow>Who We Are</Eyebrow>
             <h2 className="mt-4 text-[28px] font-extrabold leading-tight sm:text-4xl">
@@ -2527,14 +2346,16 @@ export function AboutPublicPage() {
               ))}
             </div>
           </div>
-          <div className="mx-auto w-full max-w-md overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:mx-0">
+          <div className="mx-auto w-full max-w-[420px] overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:mx-0">
             <Image
               alt="The Curate My Stay family"
-              className="aspect-[4/5] w-full object-cover"
-              height={640}
-              sizes="(min-width: 1024px) 430px, 100vw"
+              className="block h-auto w-full"
+              fetchPriority="high"
+              height={1067}
+              loading="eager"
+              sizes="(min-width: 1024px) 420px, calc(100vw - 2rem)"
               src={photo("founder.jpg")}
-              width={512}
+              width={800}
             />
           </div>
         </div>
@@ -2599,7 +2420,7 @@ export function FaqPublicPage({ faqs }: { faqs: ProposalFaq[] }) {
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
-      <Header analyticsLocation="faq_page" />
+      <PublicHeader analyticsLocation="faq_page" />
 
       <Section className="[&>div]:py-12 sm:[&>div]:py-14 md:[&>div]:py-16" tone="cream">
         <div className="mx-auto max-w-3xl text-center">
@@ -2677,7 +2498,7 @@ export function ReferenceHome() {
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
-      <Header />
+      <PublicHeader />
       <Hero />
       <MathAnchor />
       <CalculatorSection />

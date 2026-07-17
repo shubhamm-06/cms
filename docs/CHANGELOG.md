@@ -1,5 +1,16 @@
 # Changelog
 
+## Public Metadata Title and Canonical Cleanup
+
+- Updated the homepage, About, proposal, FAQ, and login metadata to use route-specific titles, descriptions, canonical URLs, and matching Open Graph/Twitter values through the shared SEO helper.
+- Standardized the canonical metadata host to `https://www.curatemystay.net`, removed sitewide keyword metadata, and kept `/login` noindex/nofollow with its own route-correct canonical and Open Graph URL.
+- Corrected the About page so it no longer inherits the homepage Twitter title.
+
+## Shared Public Header Extraction
+
+- Extracted the shared public marketing `PublicHeader` into `components/home/public-header.tsx` for the homepage, About, FAQ, and proposal pages.
+- Removed the duplicate desktop and mobile `How It Works` navigation item; `Get Pitch Deck` keeps the existing proposal forecast destination and behavior.
+
 ## Public Forecast Phone and Result CTA Correction
 
 - Kept the forecast phone country selector library-backed while preserving typed national digits across country changes, submitting the existing `phone` field as validated E.164, and replacing the Step 2 generic required-fields message with field-specific errors after a failed Continue attempt.
@@ -587,3 +598,7 @@
 - Updated README, setup, schema, routes, project overview, environment template, and AI context to reflect the current implementation.
 - Clarified the source-of-truth hierarchy, RLS deployment responsibility, and AI handoff workflow.
 - Preserved all prior changelog entries as historical records.
+
+## Public Floating WhatsApp CTA
+
+- Added one fixed, icon-only WhatsApp control for public marketing routes, using the configured public WhatsApp number and existing non-PII `whatsapp_click` tracking.

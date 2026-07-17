@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { FloatingWhatsApp } from "@/components/home/floating-whatsapp";
 import { Toaster } from "@/components/ui/sonner";
 import {
   metadataBase,
   ogImage,
   siteDescription,
-  siteKeywords,
   siteName,
-  siteOrigin,
   siteTitle,
   twitterImage,
 } from "@/app/seo";
@@ -20,13 +19,11 @@ export const metadata: Metadata = {
     template: "%s | CurateMyStay",
   },
   description: siteDescription,
-  keywords: siteKeywords,
   applicationName: siteName,
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName,
-    url: siteOrigin,
     title: siteTitle,
     description: siteDescription,
     images: [ogImage],
@@ -75,6 +72,7 @@ export default function RootLayout({
           </noscript>
         ) : null}
         {children}
+        <FloatingWhatsApp />
         <Toaster />
       </body>
     </html>

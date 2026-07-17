@@ -20,3 +20,10 @@ export function trackDataLayerEvent(event: string, params: DataLayerParams = {})
     ...safeParams,
   });
 }
+
+export function trackWhatsAppClick(ctaLocation: string) {
+  trackDataLayerEvent("whatsapp_click", {
+    cta_location: ctaLocation,
+    destination_type: "whatsapp",
+  });
+}

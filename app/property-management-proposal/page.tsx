@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
-import { ogImage, siteName } from "@/app/seo";
+import { buildMarketingMetadata } from "@/app/seo";
 import { PropertyManagementProposal } from "@/components/home/reference-home";
-
-const proposalCanonicalUrl =
-  "https://curatemystay.net/property-management-proposal";
 
 const proposalFaqs = [
   {
@@ -64,24 +61,12 @@ const proposalFont = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: {
-    absolute: "Goa Property Management Proposal | CurateMyStay",
-  },
-  description:
-    "Get a customised Goa property management proposal with an estimated rental revenue forecast, operating costs, net profit and property setup recommendations.",
-  keywords: ["Goa property management proposal"],
-  alternates: {
-    canonical: proposalCanonicalUrl,
-  },
-  openGraph: {
-    title: "Get a Custom Goa Property Management Proposal",
+  ...buildMarketingMetadata({
+    title: "Airbnb Income Calculator for Goa Properties | Curate My Stay",
     description:
-      "Discover the estimated rental potential of your Goa property and receive a customised property management proposal from CurateMyStay.",
-    images: [ogImage],
-    siteName,
-    type: "website",
-    url: proposalCanonicalUrl,
-  },
+      "What could your Goa apartment or villa earn on Airbnb? Free season-adjusted revenue forecast plus a custom pitch deck in two minutes. No commitment.",
+    canonicalPath: "/property-management-proposal",
+  }),
 };
 
 export default function PropertyManagementProposalPage() {

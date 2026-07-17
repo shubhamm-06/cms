@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { ReferenceHome } from "@/components/home/reference-home";
-import { homeJsonLd, siteDescription, siteTitle } from "@/app/seo";
+import { buildMarketingMetadata, homeJsonLd } from "@/app/seo";
 
 const homepageFont = Figtree({
   display: "swap",
@@ -10,11 +10,14 @@ const homepageFont = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: siteTitle,
-  description: siteDescription,
-  alternates: {
-    canonical: "/",
-  },
+  ...buildMarketingMetadata({
+    title: "Airbnb & Villa Property Management in Goa | Curate My Stay",
+    description:
+      "Full-service Airbnb & short-term rental management in Goa. Dynamic pricing, guests, housekeeping, compliance \u2014 with an owner-approved monthly P&L. 4.98\u2605 Superhost.",
+    canonicalPath: "/",
+    openGraphTitle:
+      "Your Goa Property, Professionally Managed \u2014 4.98\u2605 Across 200+ Stays",
+  }),
 };
 
 export default function Home() {

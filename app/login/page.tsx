@@ -1,9 +1,30 @@
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/forms/auth-form";
-import { noIndexMetadata } from "@/app/seo";
+import { noIndexMetadata, siteDescription, twitterImage, ogImage, siteName } from "@/app/seo";
 
 export const metadata: Metadata = {
-  title: "Login",
+  title: {
+    absolute: "Login | CurateMyStay",
+  },
+  description: siteDescription,
+  alternates: {
+    canonical: "/login",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName,
+    url: "/login",
+    title: "Login | CurateMyStay",
+    description: siteDescription,
+    images: [ogImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Login | CurateMyStay",
+    description: siteDescription,
+    images: [twitterImage],
+  },
   ...noIndexMetadata,
 };
 

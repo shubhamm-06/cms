@@ -1,20 +1,10 @@
 import type { Metadata } from "next";
 
 export const siteName = "CurateMyStay";
-export const siteTitle = "CurateMyStay | Goa Vacation Rental Property Management";
+export const siteTitle = "CurateMyStay";
 export const siteDescription =
-  "CurateMyStay helps Goa property owners manage vacation rentals with transparent reporting, full-service operations, and owner-first performance tracking.";
-export const siteKeywords = [
-  "Goa property management",
-  "vacation rental management Goa",
-  "Airbnb management Goa",
-  "villa management Goa",
-  "short term rental management Goa",
-  "CurateMyStay",
-];
-export const siteOrigin =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ||
-  "https://curatemystay.com";
+  "Full-service Airbnb and short-term rental management in Goa with owner-approved monthly P&L visibility.";
+export const siteOrigin = "https://www.curatemystay.net";
 
 export const metadataBase = new URL(siteOrigin);
 
@@ -31,6 +21,57 @@ export const twitterImage = {
   height: 630,
   alt: "CurateMyStay Goa vacation rental property management preview",
 } as const;
+
+type MarketingMetadataOptions = {
+  canonicalPath: string;
+  description: string;
+  openGraphDescription?: string;
+  openGraphTitle?: string;
+  title: string;
+  twitterDescription?: string;
+  twitterTitle?: string;
+};
+
+export function buildMarketingMetadata({
+  canonicalPath,
+  description,
+  openGraphDescription,
+  openGraphTitle,
+  title,
+  twitterDescription,
+  twitterTitle,
+}: MarketingMetadataOptions): Metadata {
+  const resolvedOpenGraphTitle = openGraphTitle ?? title;
+  const resolvedOpenGraphDescription = openGraphDescription ?? description;
+  const resolvedTwitterTitle = twitterTitle ?? resolvedOpenGraphTitle;
+  const resolvedTwitterDescription =
+    twitterDescription ?? resolvedOpenGraphDescription;
+
+  return {
+    title: {
+      absolute: title,
+    },
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      type: "website",
+      locale: "en_IN",
+      siteName,
+      url: canonicalPath,
+      title: resolvedOpenGraphTitle,
+      description: resolvedOpenGraphDescription,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: resolvedTwitterTitle,
+      description: resolvedTwitterDescription,
+      images: [twitterImage],
+    },
+  };
+}
 
 export const noIndexMetadata: Metadata = {
   robots: {

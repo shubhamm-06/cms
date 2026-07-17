@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
-import { ogImage, siteName } from "@/app/seo";
+import { buildMarketingMetadata } from "@/app/seo";
 import { FaqPublicPage } from "@/components/home/reference-home";
-
-const faqCanonicalUrl = "https://curatemystay.net/faq";
 
 const faqItems = [
   {
@@ -88,23 +86,12 @@ const faqFont = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: {
-    absolute: "Frequently Asked Questions | CurateMyStay",
-  },
-  description:
-    "Find answers about CurateMyStay's Goa property management services, revenue forecasts, owner reporting, property operations and onboarding process.",
-  alternates: {
-    canonical: faqCanonicalUrl,
-  },
-  openGraph: {
-    title: "CurateMyStay Frequently Asked Questions",
+  ...buildMarketingMetadata({
+    title: "Goa Property Management & Airbnb FAQs | Curate My Stay",
     description:
-      "Answers to common questions about CurateMyStay's property management services for Goa property owners.",
-    images: [ogImage],
-    siteName,
-    type: "website",
-    url: faqCanonicalUrl,
-  },
+      "Straight answers on Airbnb registration in Goa, management fees, TDS, payouts, guest damage and monsoon occupancy \u2014 before you hand over your property.",
+    canonicalPath: "/faq",
+  }),
 };
 
 export default function FaqPage() {

@@ -221,7 +221,7 @@ Analytics measures anonymous behavior only.
 | Event                   | When it fires                                                       | Allowed parameters                 | Business meaning              |
 | ----------------------- | ------------------------------------------------------------------- | ---------------------------------- | ----------------------------- |
 | `calendar_click`        | Visitor clicks a Calendly booking CTA                               | `cta_location`, `destination_type` | Appointment intent            |
-| `whatsapp_click`        | Visitor clicks a public WhatsApp CTA                                | `cta_location`, `destination_type` | Conversation intent           |
+| `whatsapp_click`        | Visitor clicks a public WhatsApp CTA, including the shared floating icon | `cta_location`, `destination_type` | Conversation intent           |
 | `forecast_form_open`    | Visitor clicks an existing CTA that takes them to the forecast form | `cta_location`, `form_name`        | Forecast interest             |
 | `forecast_form_started` | First forecast form interaction per page view                       | `form_name`, `form_step`           | Serious form engagement       |
 | `generate_lead`         | Valid forecast request succeeds and result is displayed             | `form_name`, `lead_type`           | **Primary lead conversion**   |
