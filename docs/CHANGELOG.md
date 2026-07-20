@@ -1,5 +1,11 @@
 # Changelog
 
+## Public Case Studies Page
+
+- Added `/case-studies`, a server-rendered public proof page for the Panjim apartment and Varca villa with current portfolio figures, property metrics, accessible revenue-progression charts, owner testimonials, guest reviews, local images, and direct Airbnb links.
+- Added Case Studies to the shared desktop/mobile public navigation, homepage teaser links, shared footer, sitemap, route matrix, public WhatsApp visibility, route metadata, and CollectionPage JSON-LD.
+- Added a focused public footer component so the new server-rendered page reuses the existing footer rather than duplicating it; existing homepage, About, FAQ, and proposal footer output remains the same aside from the Case Studies destination.
+
 ## Public Metadata Title and Canonical Cleanup
 
 - Updated the homepage, About, proposal, FAQ, and login metadata to use route-specific titles, descriptions, canonical URLs, and matching Open Graph/Twitter values through the shared SEO helper.

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowRight,
+  ChartLine,
   CalendarDays,
   CircleHelp,
   CircleUser,
@@ -34,6 +35,12 @@ type PublicNavigationLink = {
 const publicNavigationLinks: PublicNavigationLink[] = [
   { activePath: "/", href: "/", label: "Home", icon: House },
   { activePath: "/about", href: "/about", label: "About", icon: Info },
+  {
+    activePath: "/case-studies",
+    href: "/case-studies",
+    label: "Case Studies",
+    icon: ChartLine,
+  },
   { activePath: "/faq", href: "/faq", label: "FAQs", icon: CircleHelp },
   {
     activePath: "/property-management-proposal",

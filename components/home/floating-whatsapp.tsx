@@ -8,6 +8,7 @@ import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 const publicMarketingPaths = new Set([
   "/",
   "/about",
+  "/case-studies",
   "/faq",
   "/property-management-proposal",
 ]);

@@ -7,6 +7,7 @@ Route layouts and server actions enforce application roles. Supabase RLS must in
 | Route | Purpose | Access | Security or behavior note |
 | --- | --- | --- | --- |
 | `/` | Reference-style homepage and owner forecast funnel | Public | Skips proxy session refresh; forecast calculations still run server-side through APIs |
+| `/case-studies` | CurateMyStay-managed Goa property case studies | Public | Server-rendered Panjim and Varca performance, review, and Airbnb-link content |
 | `/login` | Email/password and Google login | Public | Redirects by profile status and role after authentication |
 | `/signup` | Public account registration | Public | Always creates a pending owner profile; never creates an admin |
 | `/auth/callback` | Supabase auth code exchange | Public callback | Creates a safe pending-owner fallback profile when required, then redirects by role/status |

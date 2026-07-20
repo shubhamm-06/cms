@@ -22,9 +22,7 @@ import {
   Eye,
   FileCheck2,
   FileText,
-  Globe,
   LoaderCircle,
-  Mail,
   MapPin,
   MessageCircle,
   Quote,
@@ -39,6 +37,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CalendlyPopupLoader, openCalendlyPopup } from "@/components/home/calendly-popup";
+import { PublicFooter } from "@/components/home/public-footer";
 import { PublicHeader } from "@/components/home/public-header";
 import { trackDataLayerEvent, trackWhatsAppClick } from "@/src/lib/analytics";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
@@ -189,48 +188,6 @@ function formatINR(value: number) {
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(Math.round(value));
-}
-
-function Logo({
-  light = false,
-  showWord = true,
-  size = "md",
-}: {
-  light?: boolean;
-  showWord?: boolean;
-  size?: "sm" | "md" | "lg";
-}) {
-  const sizes = {
-    lg: {
-      image: "h-12 w-12 sm:h-14 sm:w-14",
-      text: "text-lg sm:text-[22px]",
-    },
-    md: {
-      image: "h-10 w-10 sm:h-11 sm:w-11",
-      text: "text-[15px] sm:text-[17px]",
-    },
-    sm: {
-      image: "h-8 w-8 sm:h-9 sm:w-9",
-      text: "text-sm sm:text-[15px]",
-    },
-  }[size];
-
-  return (
-    <span className="inline-flex min-w-0 items-center gap-3 sm:gap-3.5">
-      <Image
-        alt="Curate My Stay"
-        className={`${sizes.image} shrink-0 object-contain`}
-        height={56}
-        src="/logo.png"
-        width={56}
-      />
-      {showWord ? (
-        <span className={`min-w-0 whitespace-nowrap font-extrabold leading-none tracking-[-0.02em] ${sizes.text} ${light ? "text-white" : "text-[#222222]"}`}>
-          Curate My Stay
-        </span>
-      ) : null}
-    </span>
-  );
 }
 
 function ButtonLink({
@@ -1141,6 +1098,7 @@ function StatsAndProof() {
           ]}
           subtitle="Modern 2 BHK Apartment in Panjim"
           title="Designed for Short-Term Rentals from Day One"
+          viewHref="/case-studies#panjim"
         />
         <CaseStudy
           body="When we took over this 3 BHK villa in Varca, the property was not operationally ready for the short-term rental market. We invested in setup, operational improvements, and guest-readiness during the first month. The investment was recovered the very next month, with revenue doubling shortly thereafter: transforming the villa into a high-performing holiday home just 700 metres from the beach."
@@ -1163,6 +1121,7 @@ function StatsAndProof() {
           ]}
           subtitle="Private 3 BHK Villa in Varca, South Goa"
           title="From Underperforming Asset to Proven Performer"
+          viewHref="/case-studies#varca"
         />
       </div>
       <Testimonials />
@@ -1212,6 +1171,7 @@ function CaseStudy({
   stats,
   subtitle,
   title,
+  viewHref,
 }: {
   body: string;
   chart: Array<{ m: string; v: number }>;
@@ -1221,6 +1181,7 @@ function CaseStudy({
   stats: Array<[string, string]>;
   subtitle: string;
   title: string;
+  viewHref: string;
 }) {
   const [index, setIndex] = useState(0);
 
@@ -1279,6 +1240,9 @@ function CaseStudy({
         <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#717171]">Monthly revenue progression (first month = 1.0x)</div>
         <RampChart data={chart} />
       </div>
+      <a className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#dddddd] bg-white px-4 py-2.5 text-sm font-semibold text-[#222222] transition hover:bg-[#f7f7f7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2" href={viewHref}>
+        View full case study <ArrowRight aria-hidden="true" className="h-4 w-4" />
+      </a>
     </div>
   );
 
@@ -1853,71 +1817,6 @@ function FinalCTA() {
   );
 }
 
-function Footer({
-  analyticsLocation,
-  homeAnchorPrefix = "",
-}: {
-  analyticsLocation?: string;
-  homeAnchorPrefix?: string;
-} = {}) {
-  const siteLinks = [
-    { href: `${homeAnchorPrefix}#top`, label: "For Owners" },
-    { href: `${homeAnchorPrefix}#top`, label: "For Guests / Book a Stay" },
-    { href: `${homeAnchorPrefix}#about`, label: "About" },
-    { href: `${homeAnchorPrefix}#proof`, label: "Case Studies" },
-    { href: `${homeAnchorPrefix}#top`, label: "Blog (soon)" },
-  ];
-  const resourceLinks = [
-    { href: `${homeAnchorPrefix}#extras`, label: "Sample P&L Statement" },
-    { href: `${homeAnchorPrefix}#extras`, label: "Standard L&L Agreement" },
-    { href: `${homeAnchorPrefix}#tiers`, label: "Tier System One-Pager" },
-    { href: `${homeAnchorPrefix}#calculator`, label: "ROI Calculator", onClick: () => trackForecastFormOpen(analyticsLocation || "footer") },
-  ];
-
-  return (
-    <footer className="bg-[#241e19] text-white/70">
-      <div className="mx-auto max-w-[1180px] px-4 py-12 sm:px-6 sm:py-14 md:px-8">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
-          <div>
-            <Logo light size="lg" />
-            <p className="mt-4 text-sm italic text-[#e9aa4b]">&quot;Wealth managers for property.&quot;</p>
-            <div className="mt-5 grid gap-3 text-sm">
-              <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-white/50" /> Goa, India</span>
-              <a className="inline-flex min-w-0 items-center gap-2 break-all" href="mailto:curatemystay@gmail.com"><Mail className="h-4 w-4 shrink-0 text-white/50" /> curatemystay@gmail.com</a>
-              <a className="inline-flex items-center gap-2" href={WHATSAPP_URL} onClick={() => trackWhatsappClick(analyticsLocation || "footer")} rel="noreferrer" target="_blank"><MessageCircle className="h-4 w-4 text-white/50" /> WhatsApp us</a>
-            </div>
-          </div>
-          <FooterLinks items={siteLinks} title="Site" />
-          <FooterLinks items={resourceLinks} title="Resources" />
-        </div>
-        <div className="mt-10 flex flex-col items-start gap-4 border-t border-white/10 pt-6 text-xs leading-5 text-white/45 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <span>Copyright Curate My Stay 2026 - Privacy - Terms - Cookies</span>
-          <div className="flex gap-4">
-            <Globe className="h-5 w-5" />
-            <MessageCircle className="h-5 w-5" />
-            <Star className="h-5 w-5" />
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-function FooterLinks({ items, title }: { items: Array<{ href: string; label: string; onClick?: () => void }>; title: string }) {
-  return (
-    <div>
-      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/40">{title}</div>
-      <div className="mt-4 grid gap-3 text-sm">
-        {items.map((item) => (
-          <a className="hover:text-white" href={item.href} key={item.label} onClick={item.onClick}>
-            {item.label}
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 type ProposalFaq = {
   answer: string;
   question: string;
@@ -2175,7 +2074,7 @@ export function PropertyManagementProposal({ faqs }: { faqs: ProposalFaq[] }) {
         </div>
       </Section>
 
-      <Footer analyticsLocation="property_management_proposal" homeAnchorPrefix="/" />
+      <PublicFooter analyticsLocation="property_management_proposal" homeAnchorPrefix="/" />
     </main>
   );
 }
@@ -2409,7 +2308,7 @@ export function AboutPublicPage() {
         </div>
       </Section>
 
-      <Footer analyticsLocation="about_page" homeAnchorPrefix="/" />
+      <PublicFooter analyticsLocation="about_page" homeAnchorPrefix="/" />
     </main>
   );
 }
@@ -2489,7 +2388,7 @@ export function FaqPublicPage({ faqs }: { faqs: ProposalFaq[] }) {
         </div>
       </Section>
 
-      <Footer analyticsLocation="faq_page" homeAnchorPrefix="/" />
+      <PublicFooter analyticsLocation="faq_page" homeAnchorPrefix="/" />
     </main>
   );
 }
@@ -2509,7 +2408,7 @@ export function ReferenceHome() {
       <Team />
       <CollapsibleExtras />
       <FinalCTA />
-      <Footer />
+      <PublicFooter />
     </main>
   );
 }
