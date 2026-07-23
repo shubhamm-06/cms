@@ -15,8 +15,6 @@ export const metadata: Metadata = {
     description:
       "Full-service Airbnb & short-term rental management in Goa. Dynamic pricing, guests, housekeeping, compliance \u2014 with an owner-approved monthly P&L. 4.98\u2605 Superhost.",
     canonicalPath: "/",
-    openGraphTitle:
-      "Your Goa Property, Professionally Managed \u2014 4.98\u2605 Across 200+ Stays",
   }),
 };
 

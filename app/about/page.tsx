@@ -15,9 +15,6 @@ export const metadata: Metadata = {
     description:
       "A family-run property management company in Goa managing short-term rentals like an investment portfolio. 20+ years facility management, 4.98\u2605 across 200+ stays.",
     canonicalPath: "/about",
-    openGraphTitle:
-      "About Curate My Stay | Property Management Company in Goa",
-    twitterTitle: "About Curate My Stay | Property Management Company in Goa",
   }),
 };
 

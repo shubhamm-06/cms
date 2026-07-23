@@ -16,7 +16,6 @@ export const metadata: Metadata = {
     description:
       "See real occupancy, guest-rating, expense and revenue results from CurateMyStay-managed Airbnb properties in Panjim and Varca, Goa.",
     canonicalPath: "/case-studies",
-    openGraphTitle: "Real Airbnb Management Results in Goa | CurateMyStay",
   }),
 };
 

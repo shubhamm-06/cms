@@ -9,44 +9,30 @@ export const siteOrigin = "https://www.curatemystay.net";
 export const metadataBase = new URL(siteOrigin);
 
 export const ogImage = {
-  url: "/opengraph-image",
-  width: 1200,
-  height: 630,
+  url: "/OG.png",
+  width: 1256,
+  height: 672,
   alt: "CurateMyStay Goa vacation rental property management preview",
 } as const;
 
 export const twitterImage = {
-  url: "/twitter-image",
-  width: 1200,
-  height: 630,
+  url: "/OG.png",
+  width: 1256,
+  height: 672,
   alt: "CurateMyStay Goa vacation rental property management preview",
 } as const;
 
 type MarketingMetadataOptions = {
   canonicalPath: string;
   description: string;
-  openGraphDescription?: string;
-  openGraphTitle?: string;
   title: string;
-  twitterDescription?: string;
-  twitterTitle?: string;
 };
 
 export function buildMarketingMetadata({
   canonicalPath,
   description,
-  openGraphDescription,
-  openGraphTitle,
   title,
-  twitterDescription,
-  twitterTitle,
 }: MarketingMetadataOptions): Metadata {
-  const resolvedOpenGraphTitle = openGraphTitle ?? title;
-  const resolvedOpenGraphDescription = openGraphDescription ?? description;
-  const resolvedTwitterTitle = twitterTitle ?? resolvedOpenGraphTitle;
-  const resolvedTwitterDescription =
-    twitterDescription ?? resolvedOpenGraphDescription;
-
   return {
     title: {
       absolute: title,
@@ -60,14 +46,14 @@ export function buildMarketingMetadata({
       locale: "en_IN",
       siteName,
       url: canonicalPath,
-      title: resolvedOpenGraphTitle,
-      description: resolvedOpenGraphDescription,
+      title,
+      description,
       images: [ogImage],
     },
     twitter: {
       card: "summary_large_image",
-      title: resolvedTwitterTitle,
-      description: resolvedTwitterDescription,
+      title,
+      description,
       images: [twitterImage],
     },
   };
