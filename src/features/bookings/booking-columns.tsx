@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { useFormStatus } from "react-dom";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { deleteBookingAction } from "@/src/features/shared/actions";
 import { getBookingStatus } from "@/src/features/bookings/booking-calculations";
 import { formatDate } from "@/src/lib/utils/dates";
@@ -52,10 +53,26 @@ function nightsLabel(nights: number | null) {
   return `${nights} ${nights === 1 ? "night" : "nights"}`;
 }
 
+function DeleteBookingDialogActions() {
+  const { pending } = useFormStatus();
+
+  return (
+    <AlertDialogFooter>
+      <AlertDialogCancel disabled={pending} type="button">
+        Cancel
+      </AlertDialogCancel>
+      <Button className="border-red-200 bg-red-600 text-white hover:bg-red-700" disabled={pending} type="submit">
+        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        {pending ? "Deleting..." : "Delete booking"}
+      </Button>
+    </AlertDialogFooter>
+  );
+}
+
 function DeleteBookingDialog({ booking }: { booking: BookingTableRow }) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger className="cms-btn border-red-200 bg-red-50 text-red-700 hover:bg-red-100">
+      <AlertDialogTrigger className="cms-btn border-red-200 bg-red-50 text-red-700 hover:bg-red-100" type="button">
         <Trash2 className="h-4 w-4" />
         Delete
       </AlertDialogTrigger>
@@ -67,15 +84,10 @@ function DeleteBookingDialog({ booking }: { booking: BookingTableRow }) {
             {" "}at <span className="font-semibold text-[var(--foreground)]">{booking.property_name}</span>. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <form action={deleteBookingAction}>
-            <input name="id" type="hidden" value={booking.id} />
-            <AlertDialogAction className="border-red-200 bg-red-600 text-white hover:bg-red-700" type="submit">
-              Delete booking
-            </AlertDialogAction>
-          </form>
-        </AlertDialogFooter>
+        <form action={deleteBookingAction}>
+          <input name="id" type="hidden" value={booking.id} />
+          <DeleteBookingDialogActions />
+        </form>
       </AlertDialogContent>
     </AlertDialog>
   );

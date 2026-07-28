@@ -302,10 +302,23 @@ export async function saveBookingAction(formData: FormData) {
 
 export async function deleteBookingAction(formData: FormData) {
   await requireRole("admin");
+  const id = String(formData.get("id") || "");
+  if (!isUuid(id)) redirect("/dashboard/bookings?notice=booking_delete_failed");
+
   const supabase = await createClient();
-  await supabase.from("bookings").delete().eq("id", String(formData.get("id") || ""));
+  const booking = await supabase.from("bookings").select("id").eq("id", id).maybeSingle();
+  if (booking.error) redirect("/dashboard/bookings?notice=booking_delete_failed");
+  if (!booking.data) redirect("/dashboard/bookings?notice=booking_delete_not_found");
+
+  const deleted = await supabase.from("bookings").delete().eq("id", id).select("id").maybeSingle();
+  if (deleted.error || !deleted.data) redirect("/dashboard/bookings?notice=booking_delete_failed");
+
+  const afterDelete = await supabase.from("bookings").select("id").eq("id", id).maybeSingle();
+  if (afterDelete.error || afterDelete.data) redirect("/dashboard/bookings?notice=booking_delete_failed");
+
   revalidatePath("/dashboard/bookings");
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/pnl");
   redirect("/dashboard/bookings?notice=booking_deleted");
 }
 

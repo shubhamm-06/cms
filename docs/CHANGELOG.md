@@ -1,5 +1,11 @@
 # Changelog
 
+## Admin Booking Delete Flow Fix
+
+- Fixed `/dashboard/bookings` deletion so the AlertDialog confirm control is a normal submit button inside the connected server-action form instead of a Radix dialog action that unmounted the form before submission.
+- Added booking-delete pending feedback, disabled cancel/delete controls while submitting, and made `deleteBookingAction` validate the booking id, verify the row exists, confirm deletion after Supabase returns, and show booking-specific failure notices when deletion cannot be confirmed.
+- Preserved booking edit flow, property filtering, pagination, automatic booking calculations/status logic, import flow, permissions, and unrelated dashboard behavior.
+
 ## Public Case Studies Page
 
 - Added `/case-studies`, a server-rendered public proof page for the Panjim apartment and Varca villa with current portfolio figures, property metrics, accessible revenue-progression charts, owner testimonials, guest reviews, local images, and direct Airbnb links.

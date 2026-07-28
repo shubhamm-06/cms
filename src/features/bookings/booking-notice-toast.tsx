@@ -7,6 +7,8 @@ const bookingNoticeMessages = {
   booking_created: "Booking created.",
   booking_updated: "Booking updated.",
   booking_deleted: "Booking deleted.",
+  booking_delete_failed: "Booking could not be deleted. Please try again.",
+  booking_delete_not_found: "Booking was already deleted or could not be found.",
 } as const;
 
 type BookingNotice = keyof typeof bookingNoticeMessages;

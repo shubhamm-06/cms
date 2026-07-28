@@ -207,8 +207,8 @@ Exact formulas: [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md). HTT
 - Current form submits no manual status override. Cancelled/blocked remain recognized in schema and revenue logic.
 - Booking source and concierge options come from settings.
 - Admin booking form UI groups guest/property, dates, amount helpers, calculated status, and full-width notes while preserving the same server-action field names and local calculation helpers.
-- Booking create/update/delete redirects use booking-only notice codes: `booking_created`, `booking_updated`, and `booking_deleted`; the page toast removes the notice from the URL after display.
-- Admin booking deletion is confirmed with an AlertDialog that names the guest and property before submitting the existing delete action.
+- Booking create/update/delete redirects use booking-only notice codes: `booking_created`, `booking_updated`, `booking_deleted`, `booking_delete_failed`, and `booking_delete_not_found`; the page toast removes the notice from the URL after display.
+- Admin booking deletion is confirmed with an AlertDialog that names the guest and property, keeps the connected server-action form mounted while pending, and verifies deletion before showing success.
 - `/dashboard/bookings/loading.tsx` provides a route-level skeleton for the booking form and list.
 - Cleaning UI is removed; schema column remains unused.
 
