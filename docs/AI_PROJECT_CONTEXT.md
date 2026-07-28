@@ -67,7 +67,7 @@ reference/          Visual prototype inputs, not production code.
 | Area | Active routes |
 | --- | --- |
 | Public | `/`, `/about`, `/property-management-proposal`, `/faq`, `/login`, `/signup`, `/auth/callback`, `/pending-approval`, `/account-disabled` |
-| Public API | `/api/contact`, `/api/owner-forecast`, `/api/owner-forecast/proposal` |
+| Public API | `/api/contact`, `/api/auth/send-email-hook`, `/api/owner-forecast`, `/api/owner-forecast/proposal` |
 | Admin | `/dashboard`, `/dashboard/users`, `/dashboard/properties`, `/dashboard/bookings`, `/dashboard/expenses`, `/dashboard/pnl`, `/dashboard/payouts`, `/dashboard/queries`, `/dashboard/settings`, `/dashboard/profile` |
 | Owner | `/owner`, `/owner/property`, `/owner/bookings`, `/owner/expenses`, `/owner/payout`, `/owner/queries`, `/owner/profile` |
 
@@ -111,6 +111,8 @@ See [Routes and Permissions](./ROUTES_AND_PERMISSIONS.md) for purpose and securi
 6. Admin and owner route layouts call `requireRole()`.
 7. Server mutation actions re-check the required role.
 
+`/api/auth/send-email-hook` is the signed Supabase Auth Send Email Hook endpoint. It verifies Standard Webhooks headers with server-only `SUPABASE_SEND_EMAIL_HOOK_SECRET`, validates the official Supabase payload, sends signup/recovery/invite/magiclink/email-change/reauthentication emails through the existing Resend setup, and only accepts redirect URLs that are same-origin with `NEXT_PUBLIC_SITE_URL`. Deploy the endpoint and set the secret before enabling the hook in Supabase.
+
 `proxy.ts` refreshes Supabase sessions for matched routes. The public `/` route alone skips session refresh to remain a static acquisition page. If Supabase reports `refresh_token_not_found`, the proxy clears stale `sb-*` auth cookies from the forwarded request and response so expired local browser sessions do not crash or spam the production server.
 
 ## Supabase Clients
@@ -149,6 +151,7 @@ See [Supabase Schema](./SUPABASE_SCHEMA.md) for the full responsibility matrix.
 | `RESEND_API_KEY` | Server-only | Email delivery |
 | `RESEND_FROM_EMAIL` | Server-only | Verified forecast sender |
 | `ADMIN_CONTACT_EMAIL` | Server config | Admin lead recipient |
+| `SUPABASE_SEND_EMAIL_HOOK_SECRET` | Server-only | Standard Webhooks secret for Supabase Auth Send Email Hook |
 | `NEXT_PUBLIC_CMS_WHATSAPP_NUMBER` | Browser-safe | Public WhatsApp link number |
 | `NEXT_PUBLIC_SITE_URL` | Browser-safe | Canonical site origin used for auth callbacks, SEO metadata, robots, and sitemap |
 | `NEXT_PUBLIC_GTM_ID` | Browser-safe | Google Tag Manager container ID for global analytics base loading |
@@ -316,6 +319,7 @@ See [UI Conventions](./UI_CONVENTIONS.md) for the short practical checklist.
 - Proposal generation can exceed 30 seconds; helper has no shorter abort timeout.
 - Forecast/contact lead storage depends on service role or appropriate insert policies.
 - General contact email uses a fixed Resend development sender in source; forecast email uses `RESEND_FROM_EMAIL`.
+- Supabase Auth Send Email Hook delivery depends on the deployed signed endpoint and `SUPABASE_SEND_EMAIL_HOOK_SECRET`; do not enable the hook before both are configured.
 - No owner statement PDFs, receipt uploads, channel sync, payments, or advanced dispute workflow.
 - Reference prototypes are excluded from production linting.
 - Renamed stale `.next` directories inside the repository can confuse Tailwind source discovery unless ignored.

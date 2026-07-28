@@ -43,7 +43,7 @@ npm run build
 | Area | Routes |
 | --- | --- |
 | Public | `/`, `/login`, `/signup`, `/pending-approval`, `/account-disabled` |
-| Public APIs | `/api/contact`, `/api/owner-forecast`, `/api/owner-forecast/proposal` |
+| Public APIs | `/api/contact`, `/api/auth/send-email-hook`, `/api/owner-forecast`, `/api/owner-forecast/proposal` |
 | Admin | `/dashboard` and `/dashboard/*` |
 | Owner | `/owner` and `/owner/*` |
 
@@ -57,4 +57,4 @@ Recommended sequence: README -> Documentation Index -> AI Project Context -> Pro
 
 ## Deployment
 
-Deploy to a Next.js-compatible host after configuring production environment variables, Supabase Auth redirects and RLS policies, a verified Resend sender, and the Apps Script dependency. Run the deployment smoke tests before enabling real users.
+Deploy to a Next.js-compatible host after configuring production environment variables, Supabase Auth redirects and RLS policies, a verified Resend sender, and the Apps Script dependency. Deploy the signed Supabase Auth Send Email Hook endpoint before enabling that hook in Supabase. Run the deployment smoke tests before enabling real users.

@@ -35,6 +35,39 @@ The route sets `source_page = landing_page` rather than accepting it from the cl
 - If `RESEND_API_KEY` exists, sends an admin notification. This route currently uses the fixed Resend development sender in source rather than `RESEND_FROM_EMAIL`.
 - Uses `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, and `ADMIN_CONTACT_EMAIL` only on the server.
 
+## `POST /api/auth/send-email-hook`
+
+**Purpose:** Receive signed Supabase Auth Send Email Hook requests and deliver branded authentication emails through Resend.
+
+**Authentication:** None from the browser. Supabase must sign every request with Standard Webhooks headers: `webhook-id`, `webhook-timestamp`, and `webhook-signature`.
+
+### Input
+
+The route reads the raw request body first, verifies the Standard Webhooks signature with server-only `SUPABASE_SEND_EMAIL_HOOK_SECRET`, then validates the current Supabase Send Email Hook payload shape:
+
+- `user`
+- `email_data`
+- supported `email_data.email_action_type`: `signup`, `recovery`, `invite`, `magiclink`, `email_change`, and `reauthentication`
+
+### Responses
+
+| Status | Shape |
+| --- | --- |
+| 200 | `{ "ok": true }` |
+| 400 | `{ "ok": false }` for invalid payload or unsupported action |
+| 401 | `{ "ok": false }` for invalid webhook signature |
+| 500 | `{ "ok": false }` for missing server configuration or delivery failure |
+
+### Side Effects and Secrets
+
+- Sends the auth email through Resend using `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+- Builds Supabase verification URLs from `NEXT_PUBLIC_SUPABASE_URL`, the provided token hash, action type, and a safe redirect.
+- Redirects are accepted only when they are same-origin with `NEXT_PUBLIC_SITE_URL`; unsafe or malformed values fall back to the site origin.
+- Email-change sends follow Supabase's official token-hash mapping: `token_hash_new` to the current email and `token_hash` to the new email.
+- Tokens, token hashes, verification URLs, webhook secrets, and complete payloads are never logged or returned.
+
+Deploy this endpoint before enabling the Supabase Auth Send Email Hook. Enabling the hook while the endpoint or `SUPABASE_SEND_EMAIL_HOOK_SECRET` is missing can interrupt auth email delivery.
+
 ## `POST /api/owner-forecast`
 
 **Purpose:** Validate property/contact details, calculate the forecast server-side, and store the lead.

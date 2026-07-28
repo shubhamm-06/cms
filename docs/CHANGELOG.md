@@ -1,5 +1,10 @@
 # Changelog
 
+## Supabase Auth Send Email Hook
+
+- Added `/api/auth/send-email-hook`, a signed Standard Webhooks endpoint that reads the raw Supabase Auth Send Email Hook body, verifies `webhook-id`, `webhook-timestamp`, and `webhook-signature`, validates the payload, and sends branded signup, recovery, invite, magic link, email-change, and reauthentication emails through the existing Resend setup.
+- Added same-origin redirect validation for auth verification links, server-only `SUPABASE_SEND_EMAIL_HOOK_SECRET` configuration, and deployment notes that the endpoint must be deployed before enabling the Supabase hook.
+
 ## Admin Booking Delete Flow Fix
 
 - Fixed `/dashboard/bookings` deletion so the AlertDialog confirm control is a normal submit button inside the connected server-action form instead of a Radix dialog action that unmounted the form before submission.

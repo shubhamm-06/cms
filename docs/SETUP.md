@@ -21,6 +21,7 @@ Fill `.env.local` with development values. Never commit it.
 ## 3. Optional Funnel Services
 
 - Configure Resend to send forecast and contact emails.
+- Optionally configure the Supabase Auth Send Email Hook only after the local or deployed `/api/auth/send-email-hook` endpoint is reachable and `SUPABASE_SEND_EMAIL_HOOK_SECRET` is set.
 - Configure the Apps Script webhook and shared secret to generate pitch-deck PDFs.
 - Configure the public WhatsApp number for follow-up links.
 
