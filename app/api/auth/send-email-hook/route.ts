@@ -33,7 +33,7 @@ const emailDataSchema = z
     token_hash_new: z.string().optional().default(""),
     token_new: z.string().optional().default(""),
   })
-  .strict();
+  .passthrough();
 
 const userSchema = z
   .object({
@@ -48,7 +48,41 @@ const hookPayloadSchema = z
     email_data: emailDataSchema,
     user: userSchema,
   })
-  .strict();
+  .passthrough()
+  .superRefine((payload, ctx) => {
+    const actionType = payload.email_data.email_action_type;
+
+    if (actionType !== "email_change") {
+      if (!payload.user.email) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Missing recipient email.",
+          path: ["user", "email"],
+        });
+      }
+
+      if (!payload.email_data.token_hash) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Missing token hash.",
+          path: ["email_data", "token_hash"],
+        });
+      }
+
+      return;
+    }
+
+    const hasCurrentEmailConfirmation = Boolean(payload.user.email && payload.email_data.token_hash_new);
+    const hasNewEmailConfirmation = Boolean(payload.user.new_email && payload.email_data.token_hash);
+
+    if (!hasCurrentEmailConfirmation && !hasNewEmailConfirmation) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Missing email change recipient or token hash.",
+        path: ["email_data"],
+      });
+    }
+  });
 
 type HookPayload = z.infer<typeof hookPayloadSchema>;
 
@@ -108,6 +142,28 @@ function escapeHtml(value: string) {
 
 function cleanText(value: string) {
   return value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function getSafeActionType(payload: unknown) {
+  if (!payload || typeof payload !== "object") return undefined;
+
+  const emailData = (payload as { email_data?: unknown }).email_data;
+  if (!emailData || typeof emailData !== "object") return undefined;
+
+  const actionType = (emailData as { email_action_type?: unknown }).email_action_type;
+  const parsed = emailActionSchema.safeParse(actionType);
+
+  return parsed.success ? parsed.data : undefined;
+}
+
+function logValidationFailure(error: z.ZodError, payload: unknown) {
+  console.error("Supabase auth email hook payload validation failed.", {
+    actionType: getSafeActionType(payload),
+    issues: error.issues.map((issue) => ({
+      code: issue.code,
+      path: issue.path,
+    })),
+  });
 }
 
 function getRequiredUrl(name: "NEXT_PUBLIC_SITE_URL" | "NEXT_PUBLIC_SUPABASE_URL") {
@@ -330,6 +386,10 @@ export async function POST(request: Request) {
     if (error instanceof AuthHookConfigurationError) {
       console.error("Supabase auth email hook configuration is missing.");
       return json(500, { ok: false });
+    }
+
+    if (error instanceof z.ZodError) {
+      logValidationFailure(error, verifiedPayload);
     }
 
     return json(400, { ok: false });
