@@ -47,7 +47,7 @@ export async function signupAction(_state: AuthState, formData: FormData): Promi
       name,
       phone: phone || null,
       role: "owner",
-      status: "pending",
+      status: "active",
       is_protected: false,
     });
   }
