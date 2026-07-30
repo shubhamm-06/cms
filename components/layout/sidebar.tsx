@@ -9,11 +9,11 @@ export function Sidebar({
   mode,
 }: {
   profile: AppProfile;
-  mode: "admin" | "owner";
+  mode: "admin" | "owner" | "demo";
 }) {
   return (
     <aside className="sticky top-0 hidden h-screen w-[232px] shrink-0 border-r border-[var(--border)] bg-[var(--surface)] p-3 md:flex md:flex-col">
-      <Link href={mode === "admin" ? "/dashboard" : "/owner"} className="flex items-center gap-3 px-2 pb-5 pt-1">
+      <Link href={mode === "admin" ? "/dashboard" : mode === "demo" ? "/demo" : "/owner"} className="flex items-center gap-3 px-2 pb-5 pt-1">
         <Image src="/logo.png" alt="CurateMyStay" width={36} height={36} className="rounded-lg bg-[var(--surface-2)]" />
         <div>
           <div className="text-sm font-bold">CurateMyStay</div>
@@ -28,7 +28,7 @@ export function Sidebar({
         </div>
         <div className="min-w-0">
           <div className="truncate text-xs font-bold">{profile.name || profile.email}</div>
-          <div className="text-[0.7rem] text-[var(--muted)]">{mode === "admin" ? "Admin" : "Owner"}</div>
+          <div className="text-[0.7rem] text-[var(--muted)]">{mode === "admin" ? "Admin" : mode === "demo" ? "Owner demo" : "Owner"}</div>
         </div>
       </div>
     </aside>

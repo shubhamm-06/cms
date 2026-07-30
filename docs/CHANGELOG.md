@@ -1,5 +1,16 @@
 # Changelog
 
+## Property Management Goa Card Images
+
+- Added the mapped existing property photographs to the four `/property-management-goa` “Properties we manage” cards using page-local responsive `next/image` elements, without changing other routes or shared card styling.
+
+## Property Management Goa Service Page
+
+- Added the public `/property-management-goa` service and Google Ads landing page with locked owner-facing copy, responsive sections, accessible native FAQ disclosure controls, FAQPage JSON-LD, and BreadcrumbList JSON-LD.
+- Added its self-referencing public metadata and sitemap entry, and added `Property Management` to the shared desktop header, mobile menu, and footer navigation.
+- Reused the public Calendly popup, owner forecast route, WhatsApp destination/tracking helper, shared header/footer, and existing visual design system without changing forecast, payment, authentication, or dashboard behavior.
+- No `/privacy` or `/terms` public routes currently exist; the existing footer’s Privacy and Terms text remains non-linked and is an advertising-launch blocker.
+
 ## Supabase Auth Send Email Hook
 
 - Added `/api/auth/send-email-hook`, a signed Standard Webhooks endpoint that reads the raw Supabase Auth Send Email Hook body, verifies `webhook-id`, `webhook-timestamp`, and `webhook-signature`, validates the payload, and sends branded signup, recovery, invite, magic link, email-change, and reauthentication emails through the existing Resend setup.
@@ -619,3 +630,8 @@
 ## Public Floating WhatsApp CTA
 
 - Added one fixed, icon-only WhatsApp control for public marketing routes, using the configured public WhatsApp number and existing non-PII `whatsapp_click` tracking.
+
+## Public Owner Dashboard Demo
+
+- Added `/demo`, a public noindex preview of the owner dashboard using deterministic fictional Goa property data only.
+- Kept real owner routes, authentication, Supabase reads, and payout logic unchanged; demo navigation remains read-only and isolated from protected owner pages.

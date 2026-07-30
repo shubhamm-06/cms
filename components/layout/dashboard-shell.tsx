@@ -10,14 +10,14 @@ export async function DashboardShell({
   profile,
 }: {
   children: ReactNode;
-  mode: "admin" | "owner";
+  mode: "admin" | "owner" | "demo";
   profile: AppProfile;
 }) {
   return (
     <div className="min-h-screen md:flex">
       <Sidebar mode={mode} profile={profile} />
       <main className="min-w-0 flex-1">
-        <Topbar profile={profile} />
+        <Topbar demo={mode === "demo"} profile={profile} />
         <div className="border-b border-[var(--border)] bg-[var(--surface)] md:hidden">
           <NavigationLinks mode={mode} variant="mobile" />
         </div>

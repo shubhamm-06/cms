@@ -47,6 +47,7 @@ export function PublicFooter({
     { href: `${homeAnchorPrefix}#top`, label: "For Owners" },
     { href: `${homeAnchorPrefix}#top`, label: "For Guests / Book a Stay" },
     { href: "/about", label: "About" },
+    { href: "/property-management-goa", label: "Property Management" },
     { href: "/case-studies", label: "Case Studies" },
     { href: `${homeAnchorPrefix}#top`, label: "Blog (soon)" },
   ];

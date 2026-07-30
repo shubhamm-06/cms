@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/src/lib/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname === "/") {
+  if (request.nextUrl.pathname === "/" || request.nextUrl.pathname === "/demo") {
     return NextResponse.next();
   }
 

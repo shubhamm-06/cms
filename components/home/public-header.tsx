@@ -5,8 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowRight,
+  Building2,
   ChartLine,
   CalendarDays,
+  ChevronDown,
   CircleHelp,
   CircleUser,
   FileText,
@@ -16,7 +18,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { openCalendlyPopup } from "@/components/home/calendly-popup";
 import { trackDataLayerEvent } from "@/src/lib/analytics";
 
@@ -26,6 +28,7 @@ type PublicHeaderProps = {
 
 type PublicNavigationLink = {
   activePath?: string;
+  desktopGroup: "more" | "primary";
   emphasized?: boolean;
   href: string;
   icon: LucideIcon;
@@ -33,17 +36,26 @@ type PublicNavigationLink = {
 };
 
 const publicNavigationLinks: PublicNavigationLink[] = [
-  { activePath: "/", href: "/", label: "Home", icon: House },
-  { activePath: "/about", href: "/about", label: "About", icon: Info },
+  { activePath: "/", desktopGroup: "primary", href: "/", label: "Home", icon: House },
+  {
+    activePath: "/property-management-goa",
+    desktopGroup: "primary",
+    href: "/property-management-goa",
+    label: "Property Management",
+    icon: Building2,
+  },
+  { activePath: "/about", desktopGroup: "more", href: "/about", label: "About", icon: Info },
   {
     activePath: "/case-studies",
+    desktopGroup: "more",
     href: "/case-studies",
     label: "Case Studies",
     icon: ChartLine,
   },
-  { activePath: "/faq", href: "/faq", label: "FAQs", icon: CircleHelp },
+  { activePath: "/faq", desktopGroup: "more", href: "/faq", label: "FAQs", icon: CircleHelp },
   {
     activePath: "/property-management-proposal",
+    desktopGroup: "more",
     href: "/property-management-proposal#forecast",
     label: "Get Pitch Deck",
     emphasized: true,
@@ -79,8 +91,20 @@ function trackCalendarClick(ctaLocation: string) {
 export function PublicHeader({ analyticsLocation }: PublicHeaderProps = {}) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const moreTriggerRef = useRef<HTMLButtonElement>(null);
   const currentPath = pathname === "/" ? "/" : pathname.replace(/\/$/, "");
   const bookingCtaLocation = analyticsLocation || "header";
+  const primaryNavigationLinks = publicNavigationLinks.filter(
+    (link) => link.desktopGroup === "primary",
+  );
+  const moreNavigationLinks = publicNavigationLinks.filter(
+    (link) => link.desktopGroup === "more",
+  );
+  const moreIsActive = moreNavigationLinks.some((link) =>
+    isActivePath(link.activePath),
+  );
 
   function isActivePath(activePath?: string) {
     return Boolean(activePath && currentPath === activePath);
@@ -101,6 +125,29 @@ export function PublicHeader({ analyticsLocation }: PublicHeaderProps = {}) {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!moreMenuRef.current?.contains(event.target as Node)) {
+        setMoreOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+
+      setMoreOpen(false);
+      moreTriggerRef.current?.focus();
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [moreOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -135,7 +182,7 @@ export function PublicHeader({ analyticsLocation }: PublicHeaderProps = {}) {
           <HeaderLogo />
         </Link>
         <nav aria-label="Primary public navigation" className="hidden items-center justify-center gap-1 xl:flex">
-          {publicNavigationLinks.map((link) => {
+          {primaryNavigationLinks.map((link) => {
             const isActive = isActivePath(link.activePath);
             const LinkIcon = link.icon;
 
@@ -157,6 +204,58 @@ export function PublicHeader({ analyticsLocation }: PublicHeaderProps = {}) {
               </Link>
             );
           })}
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              aria-expanded={moreOpen}
+              aria-haspopup="menu"
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[14px] leading-5 tracking-[-0.01em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 ${
+                moreIsActive || moreOpen
+                  ? "bg-[#fbf1ec] text-[#2f2a27]"
+                  : "font-medium text-[#403d39] hover:bg-[#f7f3f0] hover:text-[#222222]"
+              }`}
+              onClick={() => setMoreOpen((current) => !current)}
+              ref={moreTriggerRef}
+              type="button"
+            >
+              More
+              <ChevronDown
+                aria-hidden="true"
+                className={`h-[17px] w-[17px] shrink-0 stroke-[2] transition-transform ${moreOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {moreOpen ? (
+              <div
+                aria-label="More public navigation"
+                className="absolute right-0 top-[calc(100%+0.5rem)] z-[60] w-56 overflow-hidden rounded-2xl border border-[#eadfd8] bg-white p-2 shadow-[0_16px_32px_rgba(0,0,0,0.14)]"
+                role="menu"
+              >
+                {moreNavigationLinks.map((link) => {
+                  const isActive = isActivePath(link.activePath);
+                  const LinkIcon = link.icon;
+
+                  return (
+                    <Link
+                      aria-current={isActive ? "page" : undefined}
+                      className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] leading-5 outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-inset ${
+                        isActive
+                          ? "bg-[#fbf1ec] font-semibold text-[#2f2a27]"
+                          : link.emphasized
+                            ? "font-semibold text-[#9e4347] hover:bg-[#fff4f0] hover:text-[#8c3c40]"
+                            : "font-medium text-[#403d39] hover:bg-[#f7f3f0] hover:text-[#222222]"
+                      }`}
+                      href={link.href}
+                      key={link.href}
+                      onClick={() => setMoreOpen(false)}
+                      role="menuitem"
+                    >
+                      <LinkIcon aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" />
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
         </nav>
         <div className="hidden items-center justify-end gap-2 xl:flex">
           <Link

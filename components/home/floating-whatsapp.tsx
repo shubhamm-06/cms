@@ -11,6 +11,7 @@ const publicMarketingPaths = new Set([
   "/case-studies",
   "/faq",
   "/property-management-proposal",
+  "/property-management-goa",
 ]);
 
 export function FloatingWhatsApp() {
