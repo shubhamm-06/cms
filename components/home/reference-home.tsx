@@ -39,6 +39,7 @@ import { useEffect, useRef, useState } from "react";
 import { CalendlyPopupLoader, openCalendlyPopup } from "@/components/home/calendly-popup";
 import { PublicFooter } from "@/components/home/public-footer";
 import { PublicHeader } from "@/components/home/public-header";
+import { FaqAccordion } from "@/components/home/faq-accordion";
 import { trackDataLayerEvent, trackWhatsAppClick } from "@/src/lib/analytics";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
@@ -1840,7 +1841,6 @@ function ProposalScrollLink({ children }: { children: React.ReactNode }) {
 }
 
 export function PropertyManagementProposal({ faqs }: { faqs: ProposalFaq[] }) {
-  const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const steps: Array<{ description: string; icon: LucideIcon; title: string }> = [
     {
       description: "Tell us about the property type, configuration, location, size, amenities and current setup.",
@@ -2017,32 +2017,8 @@ export function PropertyManagementProposal({ faqs }: { faqs: ProposalFaq[] }) {
 
       <Section>
         <Heading title="Frequently Asked Questions" />
-        <div className="mx-auto mt-10 grid max-w-[860px] gap-4 md:mt-12">
-          {faqs.map((faq, index) => {
-            const isOpen = openFaqIndex === index;
-            const answerId = `proposal-faq-answer-${index}`;
-            return (
-              <article className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-colors ${isOpen ? "border-[#ff9295]" : "border-[#ebebeb]"}`} key={faq.question}>
-                <button
-                  aria-controls={answerId}
-                  aria-expanded={isOpen}
-                  className="flex min-h-14 w-full min-w-0 items-center gap-3 px-4 py-4 text-left sm:gap-4 sm:px-5 sm:py-5"
-                  onClick={() => setOpenFaqIndex((current) => (current === index ? -1 : index))}
-                  type="button"
-                >
-                  <span className="min-w-0 flex-1 break-words text-[15px] font-extrabold leading-6 text-[#222222] sm:text-base">{faq.question}</span>
-                  <span aria-hidden="true" className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${isOpen ? "rotate-180 bg-[#ff5a5f] text-white" : "bg-[#f7f7f7] text-[#484848]"}`}>
-                    <ChevronDown className="h-4 w-4" />
-                  </span>
-                </button>
-                <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`} id={answerId}>
-                  <div className="overflow-hidden">
-                    <p className="px-4 pb-4 text-sm leading-6 text-[#484848] sm:px-5 sm:pb-5">{faq.answer}</p>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+        <div className="mt-10 md:mt-12">
+          <FaqAccordion faqs={faqs} idPrefix="proposal-faq" />
         </div>
       </Section>
 
@@ -2314,8 +2290,6 @@ export function AboutPublicPage() {
 }
 
 export function FaqPublicPage({ faqs }: { faqs: ProposalFaq[] }) {
-  const [openFaqIndex, setOpenFaqIndex] = useState(0);
-
   return (
     <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
@@ -2333,34 +2307,7 @@ export function FaqPublicPage({ faqs }: { faqs: ProposalFaq[] }) {
       </Section>
 
       <Section>
-        <div className="mx-auto grid max-w-[860px] gap-4">
-          {faqs.map((faq, index) => {
-            const isOpen = openFaqIndex === index;
-            const answerId = `faq-answer-${index}`;
-
-            return (
-              <article className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-colors ${isOpen ? "border-[#ff9295]" : "border-[#ebebeb]"}`} key={faq.question}>
-                <button
-                  aria-controls={answerId}
-                  aria-expanded={isOpen}
-                  className="flex min-h-14 w-full min-w-0 items-center gap-3 px-4 py-4 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 sm:gap-4 sm:px-5 sm:py-5"
-                  onClick={() => setOpenFaqIndex((current) => (current === index ? -1 : index))}
-                  type="button"
-                >
-                  <span className="min-w-0 flex-1 break-words text-[15px] font-extrabold leading-6 text-[#222222] sm:text-base">{faq.question}</span>
-                  <span aria-hidden="true" className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${isOpen ? "rotate-180 bg-[#ff5a5f] text-white" : "bg-[#f7f7f7] text-[#484848]"}`}>
-                    <ChevronDown className="h-4 w-4" />
-                  </span>
-                </button>
-                <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`} id={answerId}>
-                  <div className="overflow-hidden">
-                    <p className="px-4 pb-4 text-sm leading-6 text-[#484848] sm:px-5 sm:pb-5">{faq.answer}</p>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        <FaqAccordion faqs={faqs} />
       </Section>
 
       <Section className="[&>div]:py-12 sm:[&>div]:py-16 md:[&>div]:py-20" tone="dark">

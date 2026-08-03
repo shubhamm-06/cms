@@ -15,6 +15,7 @@ import { CalendlyPopupLoader } from "@/components/home/calendly-popup";
 import { PricingCards } from "@/components/home/pricing-cards";
 import { PublicFooter } from "@/components/home/public-footer";
 import { PublicHeader } from "@/components/home/public-header";
+import { FaqAccordion } from "@/components/home/faq-accordion";
 import {
   ClosingCtas,
   HeroCtas,
@@ -178,16 +179,18 @@ const faqs = [
 ] as const;
 
 function Section({
+  className = "",
   children,
   cream = false,
   id,
 }: {
+  className?: string;
   children: React.ReactNode;
   cream?: boolean;
   id?: string;
 }) {
   return (
-    <section className={cream ? "bg-[#fbf7f1]" : "bg-white"} id={id}>
+    <section className={`${cream ? "bg-[#fbf7f1]" : "bg-white"} ${className}`} id={id}>
       <div className="mx-auto max-w-[1180px] px-4 py-14 sm:px-6 sm:py-20 md:px-8">
         {children}
       </div>
@@ -259,7 +262,7 @@ export function PropertyManagementPage() {
           </div>
         </div>
       </section>
-      <Section>
+      {/* <Section>
         <p className="max-w-4xl text-[17px] leading-8 text-[#484848]">
           Curate My Stay is a Goa-based property management company specialising
           in short-term rentals and holiday homes. We manage Airbnb and vacation
@@ -269,8 +272,8 @@ export function PropertyManagementPage() {
           Goa, an apartment in Panjim, or a holiday home up North, we run it as
           a managed asset with a clear, owner-approved P&amp;L every month.
         </p>
-      </Section>
-      <Section cream>
+      </Section> */}
+      <Section className="border-t border-[#eadfd8] bg-[#fffdf9]">
         <SectionHeading lead="One team, the whole operation. You stay informed; we handle execution.">
           What full-service property management includes
         </SectionHeading>
@@ -402,7 +405,7 @@ export function PropertyManagementPage() {
                 </p>
               </div>
             </div>
-            <p className="order-4 text-[16px] leading-7 text-[#484848]">
+            <p className="order-4 text-[16px] leading-7 text-[#484848] font-bold">
               Don’t see your area? If it’s a short-term rental market in Goa, we
               most likely cover it: ask us.
             </p>
@@ -486,20 +489,12 @@ export function PropertyManagementPage() {
       </Section>
       <Section cream>
         <SectionHeading>Property management in Goa : FAQs</SectionHeading>
-        <div className="mt-8 grid gap-3">
-          {faqs.map(([question, answer]) => (
-            <details
-              className="group rounded-2xl border border-[#ebebeb] bg-white p-5 open:border-[#ff9295]"
-              key={question}
-            >
-              <summary className="cursor-pointer list-none pr-8 text-[16px] font-extrabold leading-6 text-[#222222] marker:hidden">
-                {question}
-              </summary>
-              <p className="mt-4 text-[15px] leading-7 text-[#484848]">
-                {answer}
-              </p>
-            </details>
-          ))}
+        <div className="mt-8">
+          <FaqAccordion
+            className="!mx-0 !max-w-none"
+            faqs={faqs.map(([question, answer]) => ({ answer, question }))}
+            idPrefix="property-management-goa-faq"
+          />
         </div>
       </Section>
       <section className="bg-[#1b1714] text-white">

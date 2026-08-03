@@ -14,6 +14,7 @@ import {
   FileText,
   House,
   Info,
+  LayoutDashboard,
   Menu,
   X,
   type LucideIcon,
@@ -60,6 +61,13 @@ const publicNavigationLinks: PublicNavigationLink[] = [
     label: "Get Pitch Deck",
     emphasized: true,
     icon: FileText,
+  },
+  {
+    activePath: "/demo",
+    desktopGroup: "more",
+    href: "/demo",
+    label: "Demo Dashboard",
+    icon: LayoutDashboard,
   },
 ];
 
