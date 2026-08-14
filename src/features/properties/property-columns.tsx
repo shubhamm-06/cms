@@ -96,10 +96,19 @@ export const propertyColumns: ColumnDef<PropertyTableRow>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: "Operational",
     cell: ({ row }) => (
       <Badge className="whitespace-nowrap capitalize" tone={row.original.status === "active" ? "green" : "neutral"}>
         {row.original.status}
+      </Badge>
+    ),
+  },
+  {
+    accessorKey: "show_on_website",
+    header: "Website",
+    cell: ({ row }) => (
+      <Badge className="whitespace-nowrap" tone={row.original.show_on_website ? "brand" : "neutral"}>
+        {row.original.show_on_website ? "Published" : "Hidden"}
       </Badge>
     ),
   },

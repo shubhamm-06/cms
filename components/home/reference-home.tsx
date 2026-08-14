@@ -26,7 +26,6 @@ import {
   MapPin,
   MessageCircle,
   Quote,
-  Rocket,
   ShieldCheck,
   Sparkles,
   Star,
@@ -42,6 +41,7 @@ import { PublicHeader } from "@/components/home/public-header";
 import { FaqAccordion } from "@/components/home/faq-accordion";
 import { trackDataLayerEvent, trackWhatsAppClick } from "@/src/lib/analytics";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
+import { FamilySection } from "@/components/home/family-section";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
 const photo = (name: string) => `/homepage/${name}`;
@@ -1444,39 +1444,7 @@ function Tiers() {
 }
 
 function Team() {
-  return (
-    <Section id="about">
-      <div className="grid items-start gap-10 sm:gap-14 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="mx-auto w-full max-w-[420px] overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:mx-0">
-          <Image alt="The Curate My Stay family" className="block h-auto w-full" height={1067} sizes="(min-width: 1024px) 420px, calc(100vw - 2rem)" src={photo("founder.jpg")} width={800} />
-        </div>
-        <div>
-          <Eyebrow>Who we are</Eyebrow>
-          <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight md:text-[40px]">A Family-Run Approach to Property Management</h2>
-          <p className="mt-5 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">Curate My Stay is a Goa-based property management firm run by a family with two complementary backgrounds: facility management and investment-side thinking. We currently manage 5 properties and we are scaling deliberately.</p>
-          <p className="mt-4 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">We approach property management the way a wealth manager approaches a portfolio: every property is an asset with an ROI, an operational P&amp;L, and a strategy attached to it. That framing is what consistently delivers strong returns for our owners without compromising the property itself.</p>
-          <p className="mt-4 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">Communication stays direct, operations stay hands-on, and every property is managed with long-term value in mind.</p>
-          <p className="mt-4 text-base font-semibold leading-7 text-[#222222] sm:text-[16.5px] sm:leading-8">It is how we built a 4.98 rating. It is how we plan to scale.</p>
-          <div className="mt-7 grid gap-4 sm:grid-cols-3">
-            {[
-              [Rocket, "Founded 2025", "In active growth mode"],
-              [MapPin, "Based in Goa", "Operational team on the ground"],
-              [Target, "Cross-domain expertise", "20+ yrs facility management (Dubai) · Investment advisory & Fortune 500 background"],
-            ].map(([Icon, title, body]) => {
-              const IconComponent = Icon as LucideIcon;
-              return (
-                <div className="rounded-2xl border border-[#ebebeb] bg-[#fbf7f1] p-5" key={title as string}>
-                  <IconComponent className="h-6 w-6 text-[#ff5a5f]" />
-                  <div className="mt-3 text-sm font-extrabold">{title as string}</div>
-                  <div className="mt-1 text-xs leading-5 text-[#717171]">{body as string}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </Section>
-  );
+  return <FamilySection id="about" />;
 }
 
 function CollapsibleExtras() {

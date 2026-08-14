@@ -7,6 +7,7 @@ import {
 } from "@/src/features/payouts/payout-calculations";
 import { ensureOwnerPayoutForPreviousMonth } from "@/src/features/payouts/payout-actions";
 import { OwnerLivePerformancePanel } from "@/src/features/payouts/owner-live-performance";
+import { OwnerPayoutNoticeToast } from "@/src/features/payouts/owner-payout-notice-toast";
 import { OwnerPayoutsTable } from "@/src/features/payouts/payouts-table";
 import { getOwnerData } from "@/src/features/shared/data";
 import {
@@ -39,7 +40,14 @@ function AllTimeMetric({
   );
 }
 
-export default async function OwnerPayoutPage() {
+export default async function OwnerPayoutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ notice?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const noticeParam = params.notice;
+  const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
   await ensureOwnerPayoutForPreviousMonth();
   const { bookings, expenses, payouts, profile, properties } = await getOwnerData();
   const reviewWindowIsOpen = isPayoutReviewWindow();
@@ -76,6 +84,7 @@ export default async function OwnerPayoutPage() {
 
   return (
     <div className="space-y-6">
+      <OwnerPayoutNoticeToast notice={notice} />
       <section className="rounded-3xl border border-[var(--border)] bg-white p-5 shadow-[0_18px_55px_rgba(22,24,29,0.06)] sm:p-6">
         <Badge className="mb-4 whitespace-nowrap" tone="brand">
           Owner payout

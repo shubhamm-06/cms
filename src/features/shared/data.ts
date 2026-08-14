@@ -27,6 +27,19 @@ export async function getAdminData() {
   };
 }
 
+export async function getPropertyImagesForAdmin(propertyId: string) {
+  await requireRole("admin");
+  const supabase = await createClient();
+  const images = await supabase
+    .from("property_images")
+    .select("*")
+    .eq("property_id", propertyId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  return images.data ?? [];
+}
+
 export async function getOwnerData() {
   const profile = await requireRole("owner");
   const supabase = await createClient();

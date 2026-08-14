@@ -6,20 +6,21 @@ import { toast } from "sonner";
 const expenseNoticeMessages = {
   expense_created: "Expense created.",
   expense_updated: "Expense updated.",
+  expense_save_failed: "Expense could not be saved. Please review the record and try again.",
   expense_deleted: "Expense deleted.",
   expense_delete_failed: "Expense could not be deleted.",
   expense_delete_not_found: "Expense was not found.",
 } as const;
 
 type ExpenseNotice = keyof typeof expenseNoticeMessages;
-type ExpenseFailureNotice = Extract<ExpenseNotice, "expense_delete_failed" | "expense_delete_not_found">;
+type ExpenseFailureNotice = Extract<ExpenseNotice, "expense_save_failed" | "expense_delete_failed" | "expense_delete_not_found">;
 
 function isExpenseNotice(value: string | undefined): value is ExpenseNotice {
   return Boolean(value && value in expenseNoticeMessages);
 }
 
 function isExpenseFailureNotice(value: ExpenseNotice): value is ExpenseFailureNotice {
-  return value === "expense_delete_failed" || value === "expense_delete_not_found";
+  return value === "expense_save_failed" || value === "expense_delete_failed" || value === "expense_delete_not_found";
 }
 
 export function ExpenseNoticeToast({ notice }: { notice?: string }) {

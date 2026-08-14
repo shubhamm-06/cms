@@ -2,12 +2,21 @@
 
 Route layouts and server actions enforce application roles. Supabase RLS must independently enforce the same data boundaries. See [Supabase Schema](./SUPABASE_SCHEMA.md) and [API Contracts](./API_CONTRACTS.md).
 
+`/booking` and `/property/[slug]` are implemented. The remaining booking-enquiry routes are documented in [Public Property Catalogue and Booking Enquiries](./PUBLIC_PROPERTY_CATALOGUE_AND_BOOKING_ENQUIRIES.md). They are not active application routes until implemented.
+
 ## Public and Auth Routes
 
 | Route | Purpose | Access | Security or behavior note |
 | --- | --- | --- | --- |
 | `/` | Reference-style homepage and owner forecast funnel | Public | Skips proxy session refresh; forecast calculations still run server-side through APIs |
+| `/about` | Company and family-run approach | Public | Public marketing page; no authentication required |
 | `/case-studies` | CurateMyStay-managed Goa property case studies | Public | Server-rendered Panjim and Varca performance, review, and Airbnb-link content |
+| `/booking` | Public property catalogue | Public | Server-rendered catalogue of published, operationally active properties. Reads only a public-safe source with the anon key, never service role, and never selects private operational columns. Does not check availability or create booking requests |
+| `/property/[slug]` | Public property detail page | Public | Server-rendered detail for one published, operationally active property. Reads only `public_property_details` and `public_property_gallery` with the anon key, never service role, and never selects private operational columns. Missing, unpublished and inactive slugs all return the same not-found result, so the route never reveals that a private property exists. Does not check availability or create booking requests |
+| `/property-management-goa` | Goa property-management landing page | Public | Public SEO/acquisition page; no authentication required |
+| `/property-management-proposal` | Property-management proposal landing page | Public | Public SEO/acquisition page; no authentication required |
+| `/faq` | Public owner FAQ | Public | Public FAQPage content; no authentication required |
+| `/demo` | Fictional owner-dashboard preview | Public | Read-only, noindex demo using local data; skips proxy session refresh and never queries Supabase |
 | `/login` | Email/password and Google login | Public | Redirects by profile status and role after authentication |
 | `/signup` | Public account registration | Public | Always creates a pending owner profile; never creates an admin |
 | `/auth/callback` | Supabase auth code exchange | Public callback | Creates a safe pending-owner fallback profile when required, then redirects by role/status |
@@ -21,6 +30,7 @@ Route layouts and server actions enforce application roles. Supabase RLS must in
 | `/api/contact` | POST | Store a general enquiry and optionally notify admin | Public | Zod validation; server-side Supabase/Resend usage |
 | `/api/owner-forecast` | POST | Validate, calculate, and store an owner forecast lead | Public | Returns the forecast without waiting for PDF generation; calculator is server-authoritative |
 | `/api/owner-forecast/proposal` | POST | Recalculate forecast and generate the pitch deck | Public | Calls Apps Script separately; credentials remain server-only; returns safe PDF URLs |
+| `/api/booking-requests` | POST | Planned public booking enquiry submission | Public, not implemented | Must create only enquiry records, never confirmed bookings |
 
 The proposal endpoint sends the admin email after the generation attempt. It sends the owner a link-only email only after successful generation with a download URL.
 
@@ -33,6 +43,7 @@ All `/dashboard/*` routes require an authenticated profile with `role = admin` a
 | `/dashboard` | Operational overview | KPIs, property performance, occupancy, and upcoming check-ins |
 | `/dashboard/users` | User management | Activate/deactivate users and change roles; protected admin cannot be demoted, disabled, or deleted; hard deletion is limited to users without linked operational records |
 | `/dashboard/properties` | Property management | Create/edit/delete properties, assign one owner, and maintain owner/CMS shares totaling 100 |
+| `/dashboard/booking-requests` | Planned booking enquiry management | Admin only, not implemented | Admin review and manual conversion only; must prefill existing booking workflow rather than bypass it |
 | `/dashboard/bookings` | Booking management | Create/edit/delete; date status is server-calculated; property dropdown filtering |
 | `/dashboard/expenses` | Expense management | Create/edit/delete property and CMS expenses; CMS is default and has no property |
 | `/dashboard/pnl` | P&L reporting | Operational revenue, expenses, profit, and share view |
@@ -73,6 +84,7 @@ All `/owner/*` routes require an authenticated profile with `role = owner` and `
 | Submit forecast/contact request | Yes | Yes | Yes |
 | Read operational data | No | Own assigned data | All operational data subject to RLS |
 | Manage users/properties/bookings/expenses/settings | No | No | Yes |
+| Manage public booking enquiries | Submit only when implemented | No | Review/convert when implemented |
 | Read CMS expenses | No | No | Yes |
 | Approve/query eligible owner payout | No | Own only | No |
 | Resolve query / mark payout paid | No | No | Yes |

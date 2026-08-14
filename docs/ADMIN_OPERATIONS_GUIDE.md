@@ -25,6 +25,8 @@ This guide describes the current admin workflows. Access details are in [Routes 
 - Assign at most one owner and set active/inactive status.
 - Owner share plus CMS share must equal 100.
 - The Image URL control was removed. Editing a property does not submit `image_url`, so an existing stored value is preserved.
+- Admin -> Properties manages public catalogue fields in a separate Website listing section. `show_on_website` controls catalogue visibility independently of operational `status`; disabling it preserves existing catalogue details. Public identity, location, copy, capacity, lists, price display, stay/enquiry settings, catalogue controls, and SEO remain property-specific and editable here.
+- Save a new property before managing its gallery. In edit mode, active admins can upload JPEG, PNG, or WebP images up to 10 MB directly to the `property-images` bucket. Browser-native processing resizes only images whose longest side exceeds 2400px and uses WebP at approximately 0.85 quality only when the result is smaller; otherwise the valid original is uploaded. The database stores generated Storage paths only; admins can set the cover, save alt text, move images up/down, and delete images with confirmation. The first uploaded image becomes the cover. The single property save button appears after image management. Legacy `image_url` is not modified.
 - Admins can import properties from CSV in `/dashboard/properties`.
   Supported headers are `property_name`, `owner_email`, `address`, `city`, `bedrooms`, `owner_share_percentage`, and `status`.
   The importer accepts `.csv` files up to 5 MB and 1,000 non-empty rows, previews every row before writing, and re-validates server-side before insert.
@@ -35,6 +37,16 @@ This guide describes the current admin workflows. Access details are in [Routes 
   Any file-level validation error or invalid preview row blocks the entire confirmation action. The dialog highlights invalid rows, reports the invalid-row count, and requires a corrected CSV upload before import; duplicate rows remain non-blocking because they are explicitly skipped.
   The import dialog resets selected files, preview rows, validation errors, result messages, and summary counts whenever it closes.
 - The schema declares cascade deletion for related bookings, property expenses, payout statements, owner queries linked directly to the property, and owner queries linked to payout statements that are deleted with the property.
+- Before property deletion, the action reads image paths from that property's own `property_images` rows. After the database deletion is verified, it removes only trusted paths below that property ID from the `property-images` bucket. Missing objects do not block deletion; a Storage-policy/provider failure leaves the property deleted and shows a cleanup warning.
+
+## Public Catalogue and Booking Enquiries
+
+The planned catalogue/enquiry work is documented in [Public Property Catalogue and Booking Enquiries](./PUBLIC_PROPERTY_CATALOGUE_AND_BOOKING_ENQUIRIES.md).
+
+- The live Supabase project already has manual catalogue fields, `property_images`, the `property-images` bucket, and active-admin policies. Checked-in schema/types now represent the property fields and image table; Storage bucket configuration and policies remain documented only.
+- Public booking enquiries must remain separate from confirmed operational bookings.
+- A public enquiry must not create a booking, block availability, affect revenue, occupancy, expenses, P&L, payouts, or owner booking views.
+- The future admin conversion flow should review the enquiry, prefill the existing booking form, let the admin verify availability/pricing/details, submit the normal booking workflow, and mark the enquiry converted only after successful booking creation.
 
 ## Bookings
 
@@ -94,6 +106,8 @@ This guide describes the current admin workflows. Access details are in [Routes 
 - Resolve linked queries before payment when required.
 - Mark paid is available only for approved or resolved payouts; it sets status and `paid_at`.
 - Current processing depends on payout page loads, not a scheduled job.
+- Production requires one unique owner/month payout row. Run the duplicate-detection query and then manually apply the unique index in [Payout Logic](./PAYOUT_LOGIC.md); the application safely reloads a row that wins a concurrent insert.
+- Owner approve/query and admin resolve/mark-paid writes use status-qualified updates. Query/payout multi-step failures attempt compensation and show failure feedback rather than false success.
 
 ## Settings
 

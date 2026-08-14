@@ -16,8 +16,16 @@ import { isProtectedAdmin } from "@/src/lib/utils/permissions";
 import { isPayoutReviewWindow } from "@/src/lib/utils/dates";
 import type { Database } from "@/types/database.types";
 
+type PropertyInsert = Database["public"]["Tables"]["properties"]["Insert"];
+type PropertyUpdate = Database["public"]["Tables"]["properties"]["Update"];
+
 function emptyToNull<T extends Record<string, unknown>>(data: T) {
   return Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value === "" ? null : value])) as T;
+}
+
+function propertySaveFailureNotice(error: { code?: string; constraint?: string | null } | null) {
+  if (error?.code === "23505" && error.constraint?.includes("slug")) return "property_slug_taken";
+  return "property_save_failed";
 }
 
 function hasLinkedUserData(counts: Array<number | null>) {
@@ -93,6 +101,10 @@ function propertyDeleteFailureNotice(error: unknown) {
   return "property_delete_failed";
 }
 
+function isTrustedPropertyImagePath(propertyId: string, storagePath: string) {
+  return storagePath.startsWith(`${propertyId}/`) && !storagePath.includes("..") && storagePath.length <= 255;
+}
+
 export async function saveProfileAction(formData: FormData) {
   const profile = await requireProfile();
   const parsed = profileSchema.safeParse(Object.fromEntries(formData));
@@ -112,8 +124,10 @@ export async function updateUserAction(formData: FormData) {
   const supabase = await createClient();
   const { id, ...values } = parsed.data;
   const current = await supabase.from("profiles").select("email,is_protected").eq("id", id).maybeSingle();
+  if (current.error || !current.data) redirect("/dashboard/users?notice=user_update_failed");
   const data = current.data && isProtectedAdmin(current.data) ? { ...values, role: "admin" as const, status: "active" as const } : values;
-  await supabase.from("profiles").update(emptyToNull(data)).eq("id", id);
+  const updated = await supabase.from("profiles").update(emptyToNull(data)).eq("id", id).select("id").maybeSingle();
+  if (updated.error || !updated.data) redirect("/dashboard/users?notice=user_update_failed");
   revalidatePath("/dashboard/users");
   redirect("/dashboard/users?notice=user_updated");
 }
@@ -230,20 +244,33 @@ export async function deleteUserAction(formData: FormData) {
 export async function savePropertyAction(formData: FormData) {
   await requireRole("admin");
   const parsed = propertySchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return;
+  if (!parsed.success) redirect("/dashboard/properties?notice=property_validation_failed");
   const mode = String(formData.get("mode") || "add");
-  const { id, ...values } = emptyToNull(parsed.data);
+  const { id, ...parsedValues } = parsed.data;
+  const values = emptyToNull(parsedValues);
   delete values.image_url;
+  const operationalValues = {
+    address: values.address,
+    bedrooms: values.bedrooms,
+    city: values.city,
+    cms_share: values.cms_share,
+    name: values.name,
+    owner_id: values.owner_id,
+    owner_share: values.owner_share,
+    show_on_website: values.show_on_website,
+    status: values.status,
+  };
+  const valuesToSave = (values.show_on_website ? values : operationalValues) as PropertyUpdate;
   const supabase = await createClient();
   if (mode === "edit") {
     if (!id) redirect("/dashboard/properties?error=missing-property-id");
     const existing = await supabase.from("properties").select("id").eq("id", id).maybeSingle();
     if (!existing.data) redirect("/dashboard/properties?error=property-not-found");
-    const { error } = await supabase.from("properties").update(values).eq("id", id);
-    if (error) redirect("/dashboard/properties?error=save-failed");
+    const { error } = await supabase.from("properties").update(valuesToSave).eq("id", id);
+    if (error) redirect(`/dashboard/properties?notice=${propertySaveFailureNotice(error)}`);
   } else {
-    const { error } = await supabase.from("properties").insert(values);
-    if (error) redirect("/dashboard/properties?error=save-failed");
+    const { error } = await supabase.from("properties").insert(valuesToSave as PropertyInsert);
+    if (error) redirect(`/dashboard/properties?notice=${propertySaveFailureNotice(error)}`);
   }
   revalidatePath("/dashboard/properties");
   revalidatePath("/dashboard");
@@ -259,6 +286,18 @@ export async function deletePropertyAction(formData: FormData) {
   const property = await supabase.from("properties").select("id").eq("id", id).maybeSingle();
   if (property.error) redirect("/dashboard/properties?notice=property_delete_failed");
   if (!property.data) redirect("/dashboard/properties?notice=property_delete_not_found");
+
+  const propertyImages = await supabase
+    .from("property_images")
+    .select("storage_path")
+    .eq("property_id", id);
+  if (propertyImages.error) {
+    logSafePropertyDeleteFailure(propertyImages.error, id);
+    redirect("/dashboard/properties?notice=property_delete_failed");
+  }
+  const allStoragePaths = (propertyImages.data ?? []).map((image) => image.storage_path);
+  const storagePaths = allStoragePaths
+    .filter((storagePath) => isTrustedPropertyImagePath(id, storagePath));
 
   const deleted = await supabase.from("properties").delete().eq("id", id).select("id").maybeSingle();
   if (deleted.error) {
@@ -277,9 +316,27 @@ export async function deletePropertyAction(formData: FormData) {
   }
   if (afterDelete.data) redirect("/dashboard/properties?notice=property_delete_failed");
 
+  let storageCleanupFailed = storagePaths.length !== allStoragePaths.length;
+  if (storageCleanupFailed) {
+    console.error("Property Storage cleanup skipped untrusted image paths", {
+      propertyId: id,
+      skippedCount: allStoragePaths.length - storagePaths.length,
+    });
+  }
+  if (storagePaths.length) {
+    const storageDelete = await supabase.storage.from("property-images").remove(storagePaths);
+    if (storageDelete.error) {
+      storageCleanupFailed = true;
+      console.error("Property Storage cleanup failed after database deletion", {
+        code: postgresErrorCode(storageDelete.error),
+        propertyId: id,
+      });
+    }
+  }
+
   revalidatePath("/dashboard/properties");
   revalidatePath("/dashboard");
-  redirect("/dashboard/properties?notice=property_deleted");
+  redirect(`/dashboard/properties?notice=${storageCleanupFailed ? "property_deleted_with_image_warning" : "property_deleted"}`);
 }
 
 export async function saveBookingAction(formData: FormData) {
@@ -293,8 +350,13 @@ export async function saveBookingAction(formData: FormData) {
     concierge: typeof concierge === "string" && concierge ? concierge.split(",").map((item) => item.trim()).filter(Boolean) : [],
   };
   const supabase = await createClient();
-  if (id) await supabase.from("bookings").update(payload).eq("id", id);
-  else await supabase.from("bookings").insert(payload);
+  if (id) {
+    const updated = await supabase.from("bookings").update(payload).eq("id", id).select("id").maybeSingle();
+    if (updated.error || !updated.data) redirect("/dashboard/bookings?notice=booking_save_failed");
+  } else {
+    const created = await supabase.from("bookings").insert(payload).select("id").maybeSingle();
+    if (created.error || !created.data) redirect("/dashboard/bookings?notice=booking_save_failed");
+  }
   revalidatePath("/dashboard/bookings");
   revalidatePath("/dashboard");
   redirect(`/dashboard/bookings?notice=${id ? "booking_updated" : "booking_created"}`);
@@ -330,13 +392,18 @@ export async function saveExpenseAction(formData: FormData) {
   const supabase = await createClient();
   if (data.expense_for === "property") {
     const property = await supabase.from("properties").select("id").eq("id", String(data.property_id || "")).maybeSingle();
-    if (!property.data) return;
+    if (property.error || !property.data) redirect("/dashboard/expenses?notice=expense_save_failed");
   }
   // CMS expenses intentionally have no property_id; owners only read property expenses.
   const payload: Database["public"]["Tables"]["expenses"]["Insert"] =
     data.expense_for === "cms" ? { ...data, property_id: null } : data;
-  if (id) await supabase.from("expenses").update(payload).eq("id", id);
-  else await supabase.from("expenses").insert(payload);
+  if (id) {
+    const updated = await supabase.from("expenses").update(payload).eq("id", id).select("id").maybeSingle();
+    if (updated.error || !updated.data) redirect("/dashboard/expenses?notice=expense_save_failed");
+  } else {
+    const created = await supabase.from("expenses").insert(payload).select("id").maybeSingle();
+    if (created.error || !created.data) redirect("/dashboard/expenses?notice=expense_save_failed");
+  }
   revalidatePath("/dashboard/expenses");
   revalidatePath("/dashboard/pnl");
   redirect(`/dashboard/expenses?notice=${id ? "expense_updated" : "expense_created"}`);
@@ -369,18 +436,38 @@ export async function resolveQueryAction(formData: FormData) {
   const query = await supabase.from("owner_queries").select("id,payout_id,resolved").eq("id", id).maybeSingle();
   if (!query.data || query.data.resolved) redirect("/dashboard/queries?error=resolve-failed");
 
+  const resolvedAt = new Date().toISOString();
   const resolvedQuery = await supabase
     .from("owner_queries")
-    .update({ resolved: true, status: "resolved", resolved_at: new Date().toISOString() })
-    .eq("id", id);
-  if (resolvedQuery.error) redirect("/dashboard/queries?error=resolve-failed");
+    .update({ resolved: true, status: "resolved", resolved_at: resolvedAt })
+    .eq("id", id)
+    .eq("resolved", false)
+    .select("id")
+    .maybeSingle();
+  if (resolvedQuery.error || !resolvedQuery.data) redirect("/dashboard/queries?error=resolve-failed");
 
   if (query.data?.payout_id) {
-    await supabase
+    const payoutUpdate = await supabase
       .from("owner_payouts")
       .update({ status: "resolved" })
       .eq("id", query.data.payout_id)
-      .eq("status", "query_raised");
+      .eq("status", "query_raised")
+      .select("id")
+      .maybeSingle();
+    if (payoutUpdate.error || !payoutUpdate.data) {
+      const rollback = await supabase
+        .from("owner_queries")
+        .update({ resolved: false, status: "open", resolved_at: null })
+        .eq("id", id)
+        .eq("resolved_at", resolvedAt);
+      if (rollback.error) {
+        console.error("Failed to restore owner query after payout resolution failure", {
+          code: postgresErrorCode(rollback.error),
+          queryId: id,
+        });
+      }
+      redirect("/dashboard/queries?error=resolve-failed");
+    }
   }
 
   revalidatePath("/dashboard/queries");
@@ -424,10 +511,17 @@ export async function deleteOwnerQueryAction(formData: FormData) {
   const deleted = await supabase.from("owner_queries").delete().eq("id", id);
   if (deleted.error) {
     if (restoredPayout) {
-      await supabase
+      const rollback = await supabase
         .from("owner_payouts")
         .update({ status: "query_raised", approved_at: restoredPayout.approved_at })
         .eq("id", restoredPayout.id);
+      if (rollback.error) {
+        console.error("Failed to restore payout after owner query deletion failure", {
+          code: postgresErrorCode(rollback.error),
+          payoutId: restoredPayout.id,
+          queryId: id,
+        });
+      }
     }
     redirect("/dashboard/queries?error=delete-failed");
   }

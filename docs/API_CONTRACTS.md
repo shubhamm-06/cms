@@ -2,6 +2,8 @@
 
 These are the active public HTTP endpoints. All accept JSON and validate server-side. Raw Supabase, Apps Script, and Resend errors are not returned to clients.
 
+Planned public property catalogue and booking-enquiry contracts are tracked in [Public Property Catalogue and Booking Enquiries](./PUBLIC_PROPERTY_CATALOGUE_AND_BOOKING_ENQUIRIES.md). `/api/booking-requests` is not implemented yet. When it is added, it must create only booking-enquiry records and must never insert into confirmed operational `bookings`.
+
 ## `POST /api/contact`
 
 **Purpose:** Store a general contact enquiry and optionally notify the configured admin address.
@@ -31,8 +33,8 @@ The route sets `source_page = landing_page` rather than accepting it from the cl
 
 ### Side Effects and Secrets
 
-- Inserts into `contact_submissions` using the service-role client when configured, otherwise the normal server client subject to RLS.
-- If `RESEND_API_KEY` exists, sends an admin notification. This route currently uses the fixed Resend development sender in source rather than `RESEND_FROM_EMAIL`.
+- Inserts into `contact_submissions` using the service-role client only when `SUPABASE_SERVICE_ROLE_KEY` is a valid `sb_secret_` key or legacy JWT with `role = service_role`; otherwise uses the normal server client subject to RLS.
+- If `RESEND_API_KEY` exists, sends an admin notification using `RESEND_FROM_EMAIL`, with the Resend development sender retained only as a fallback.
 - Uses `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, and `ADMIN_CONTACT_EMAIL` only on the server.
 
 ## `POST /api/auth/send-email-hook`
@@ -121,7 +123,7 @@ The numeric zeros and empty objects above illustrate shape only.
 - Stores a `contact_submissions` lead with `source_page = owner_revenue_calculator`.
 - Does not call Apps Script and does not send email.
 - Client displays the forecast immediately after this response, then requests the proposal in the background.
-- A publishable Supabase key is not treated as a service-role credential.
+- A publishable Supabase key or legacy anon JWT is not treated as a service-role credential.
 
 ## `POST /api/owner-forecast/proposal`
 

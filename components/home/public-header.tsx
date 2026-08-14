@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowRight,
+  BedDouble,
   Building2,
   ChartLine,
   CalendarDays,
@@ -16,12 +17,14 @@ import {
   Info,
   LayoutDashboard,
   Menu,
+  Phone,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { openCalendlyPopup } from "@/components/home/calendly-popup";
 import { trackDataLayerEvent } from "@/src/lib/analytics";
+import { getPublicPhoneDisplay, getPublicPhoneUrl } from "@/src/lib/public-whatsapp";
 
 type PublicHeaderProps = {
   analyticsLocation?: string;
@@ -53,6 +56,7 @@ const publicNavigationLinks: PublicNavigationLink[] = [
     label: "Case Studies",
     icon: ChartLine,
   },
+  { activePath: "/booking", desktopGroup: "more", href: "/booking", label: "Book a Stay", icon: BedDouble },
   { activePath: "/faq", desktopGroup: "more", href: "/faq", label: "FAQs", icon: CircleHelp },
   {
     activePath: "/property-management-proposal",
@@ -94,6 +98,35 @@ function trackCalendarClick(ctaLocation: string) {
     destination_type: "calendly",
   });
   openCalendlyPopup();
+}
+
+/** Same configured number as the WhatsApp and property-enquiry call links. */
+const phoneHref = getPublicPhoneUrl();
+const displayPhoneNumber = getPublicPhoneDisplay();
+
+/**
+ * Direct-call link shown in the header bar. `display` is passed in rather than
+ * baked in, because the desktop copy and the tablet copy sit in different parts
+ * of the bar and only one of them is ever visible.
+ *
+ * The unlayered `a { color: inherit }` in `app/globals.css` outranks Tailwind's
+ * layered `text-*` utilities, so the colour and its hover change live on the
+ * inner span. The icon follows through `currentColor`.
+ */
+function PhoneNavLink({ display }: { display: string }) {
+  if (!phoneHref || !displayPhoneNumber) return null;
+
+  return (
+    <a
+      className={`group min-h-11 shrink-0 items-center justify-center rounded-xl px-2.5 py-2.5 whitespace-nowrap outline-none transition-all duration-150 hover:bg-[#f7f7f7] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 xl:px-3 ${display}`}
+      href={phoneHref}
+    >
+      <span className="inline-flex items-center gap-2 text-sm font-medium leading-[1.2] tracking-[-0.01em] text-[#222222] transition-colors group-hover:text-[#d63e43]">
+        <Phone aria-hidden="true" className="h-[18px] w-[18px] shrink-0 stroke-[2]" />
+        {displayPhoneNumber}
+      </span>
+    </a>
+  );
 }
 
 export function PublicHeader({ analyticsLocation }: PublicHeaderProps = {}) {
@@ -265,31 +298,36 @@ export function PublicHeader({ analyticsLocation }: PublicHeaderProps = {}) {
             ) : null}
           </div>
         </nav>
-        <div className="hidden items-center justify-end gap-2 xl:flex">
+        <div className="hidden items-center justify-end gap-1 xl:flex 2xl:gap-2">
+          <PhoneNavLink display="inline-flex" />
           <Link
-            className="inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-transparent px-3.5 py-2.5 text-center text-sm font-medium leading-[1.2] tracking-[-0.01em] whitespace-normal text-[#222222] transition-all duration-150 hover:bg-[#f7f7f7] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 sm:px-4"
+            className="inline-flex min-h-11 max-w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-transparent bg-transparent px-2.5 py-2.5 text-center text-sm font-medium leading-[1.2] tracking-[-0.01em] whitespace-nowrap text-[#222222] transition-all duration-150 hover:bg-[#f7f7f7] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 xl:px-3 2xl:px-4"
             href="/login"
           >
             <CircleUser aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" /> Owner Portal
           </Link>
           <button
-            className="inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-[#ff5a5f] px-3.5 py-2.5 text-center text-sm font-semibold leading-[1.2] tracking-[-0.01em] whitespace-normal text-white shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-all duration-150 hover:bg-[#e54b50] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 active:scale-[0.98] sm:px-4"
+            className="inline-flex min-h-11 max-w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#ff5a5f] px-3.5 py-2.5 text-center text-sm font-semibold leading-[1.2] tracking-[-0.01em] whitespace-nowrap text-white shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-all duration-150 hover:bg-[#e54b50] hover:shadow-[0_6px_16px_rgba(0,0,0,0.12)] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 active:scale-[0.98] sm:px-4"
             onClick={() => trackCalendarClick(bookingCtaLocation)}
             type="button"
           >
             <CalendarDays aria-hidden="true" className="h-[17px] w-[17px] shrink-0 stroke-[2]" /> Book a Call
           </button>
         </div>
-        <button
-          aria-controls="mobile-navigation"
-          aria-expanded={menuOpen}
-          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-          className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 xl:hidden ${menuOpen ? "border-[#ff9295] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#222222] hover:border-[#ffb1b3] hover:bg-[#fff8f8]"}`}
-          onClick={() => setMenuOpen((current) => !current)}
-          type="button"
-        >
-          {menuOpen ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}
-        </button>
+        {/* Tablet widths collapse the desktop row, so the number stays reachable here. */}
+        <div className="flex items-center justify-end gap-1 xl:hidden">
+          <PhoneNavLink display="hidden md:inline-flex" />
+          <button
+            aria-controls="mobile-navigation"
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+            className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border outline-none transition focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 ${menuOpen ? "border-[#ff9295] bg-[#fff1f1] text-[#d63e43]" : "border-[#dddddd] bg-white text-[#222222] hover:border-[#ffb1b3] hover:bg-[#fff8f8]"}`}
+            onClick={() => setMenuOpen((current) => !current)}
+            type="button"
+          >
+            {menuOpen ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
       {menuOpen ? (
         <nav aria-label="Mobile public navigation" className="max-h-[calc(100vh-68px)] overflow-y-auto border-t border-[#ebebeb] bg-white/95 px-3 pb-4 pt-3 shadow-[0_16px_32px_rgba(0,0,0,0.12)] sm:px-6 xl:hidden" id="mobile-navigation">
@@ -324,6 +362,19 @@ export function PublicHeader({ analyticsLocation }: PublicHeaderProps = {}) {
               </div>
               <div className="my-2 h-px bg-[#eadfd8]" />
               <div className="grid gap-2 sm:grid-cols-2">
+                {/* Below `md` the header bar has no room for the number, so it lives here. */}
+                {phoneHref && displayPhoneNumber ? (
+                  <a
+                    className="group flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 whitespace-nowrap outline-none transition hover:border-[#ffb1b3] hover:bg-[#fff8f8] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 sm:col-span-2 md:hidden"
+                    href={phoneHref}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <span className="inline-flex items-center gap-2 text-[15px] font-semibold leading-6 tracking-[-0.01em] text-[#332c28] transition-colors group-hover:text-[#d63e43]">
+                      <Phone aria-hidden="true" className="h-[18px] w-[18px] shrink-0 stroke-[2]" />
+                      {displayPhoneNumber}
+                    </span>
+                  </a>
+                ) : null}
                 <Link
                   className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3 text-[15px] font-medium leading-6 tracking-[-0.01em] text-[#332c28] outline-none transition hover:border-[#ffb1b3] hover:bg-[#fff8f8] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2"
                   href="/login"

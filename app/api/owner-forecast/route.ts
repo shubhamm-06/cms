@@ -2,7 +2,7 @@ import {
   calculateOwnerForecast,
   type ForecastResult,
 } from "@/src/features/owner-forecast/forecast-calculator";
-import { createAdminClient } from "@/src/lib/supabase/admin";
+import { createAdminClient, hasValidServiceRoleKey } from "@/src/lib/supabase/admin";
 import { createClient } from "@/src/lib/supabase/server";
 import {
   ownerForecastSchema,
@@ -59,9 +59,7 @@ export async function POST(request: Request) {
       source_page: "owner_revenue_calculator",
       message: buildLeadMessage(input, forecast),
     };
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const hasServiceRoleKey = Boolean(serviceRoleKey && !serviceRoleKey.startsWith("sb_publishable_"));
-    const result = hasServiceRoleKey
+    const result = hasValidServiceRoleKey()
       ? await createAdminClient().from("contact_submissions").insert(lead)
       : await (await createClient()).from("contact_submissions").insert(lead);
     if (result.error) throw result.error;

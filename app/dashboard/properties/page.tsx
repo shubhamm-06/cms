@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { PropertyForm } from "@/components/forms/admin-forms";
+import { PropertyForm, PropertyFormSaveButton } from "@/components/forms/admin-forms";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PropertyImportDialog } from "@/src/features/properties/property-import-dialog";
+import { PropertyImageManager } from "@/src/features/properties/property-image-manager";
 import { PropertyNoticeToast } from "@/src/features/properties/property-notice-toast";
 import { PropertiesTable } from "@/src/features/properties/properties-table";
-import { getAdminData } from "@/src/features/shared/data";
+import { getAdminData, getPropertyImagesForAdmin } from "@/src/features/shared/data";
 
 export default async function PropertiesPage({
   searchParams,
@@ -20,6 +21,8 @@ export default async function PropertiesPage({
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
   const { profiles, properties } = await getAdminData();
   const propertyToEdit = editId ? properties.find((property) => property.id === editId) : undefined;
+  const propertyImages = propertyToEdit ? await getPropertyImagesForAdmin(propertyToEdit.id) : [];
+  const propertyFormId = `property-form-${propertyToEdit?.id || "new"}`;
   const owners = profiles.filter((profile) => profile.role === "owner");
   const ownerNames = new Map(profiles.map((profile) => [profile.id, profile.name || profile.email]));
   const importProfiles = profiles.map((profile) => ({
@@ -68,7 +71,14 @@ export default async function PropertiesPage({
           </div>
         </CardHeader>
         <CardBody>
-          <PropertyForm key={propertyToEdit?.id || "new-property"} owners={owners} property={propertyToEdit} />
+          <PropertyForm formId={propertyFormId} key={propertyToEdit?.id || "new-property"} owners={owners} property={propertyToEdit} />
+          <PropertyImageManager key={propertyToEdit?.id || "new-property-images"} images={propertyImages} propertyId={propertyToEdit?.id} />
+          <div className="mt-6 flex flex-col gap-2 sm:items-end">
+            <PropertyFormSaveButton formId={propertyFormId} isEditing={Boolean(propertyToEdit)} />
+            <p className="text-xs text-[var(--muted)]">
+              {propertyToEdit ? "Updates the selected property row." : "Creates one new property row."}
+            </p>
+          </div>
         </CardBody>
       </Card>
       <Card className="overflow-hidden shadow-[0_10px_24px_rgba(15,23,42,0.04)]">

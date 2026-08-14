@@ -4,7 +4,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle2, HelpCircle } from "lucide-react";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -23,6 +22,7 @@ import {
 import { humanize } from "@/src/lib/utils/format";
 import { formatMoney } from "@/src/lib/utils/money";
 import type { Database } from "@/types/database.types";
+import { useFormStatus } from "react-dom";
 
 export type PayoutTableRow = Database["public"]["Tables"]["owner_payouts"]["Row"] & {
   owner_name: string;
@@ -52,6 +52,19 @@ function MoneyCell({ value, strong = false }: { strong?: boolean; value: number 
     <span className={`block whitespace-nowrap text-right tabular-nums ${strong ? "font-bold text-[var(--foreground)]" : ""}`}>
       {formatMoney(value)}
     </span>
+  );
+}
+
+function ApprovePayoutDialogActions() {
+  const { pending } = useFormStatus();
+
+  return (
+    <>
+      <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+      <Button pending={pending} type="submit" variant="primary">
+        {pending ? "Approving..." : "Approve statement"}
+      </Button>
+    </>
   );
 }
 
@@ -153,13 +166,9 @@ export const ownerPayoutColumns: ColumnDef<PayoutTableRow>[] = [
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <form action={approveOwnerPayoutAction}>
                   <input name="id" type="hidden" value={row.original.id} />
-                  <AlertDialogAction type="submit">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Approve statement
-                  </AlertDialogAction>
+                  <ApprovePayoutDialogActions />
                 </form>
               </AlertDialogFooter>
             </AlertDialogContent>

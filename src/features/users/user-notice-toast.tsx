@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 const userNoticeMessages = {
   user_updated: { message: "User updated.", tone: "success" },
+  user_update_failed: { message: "User could not be updated. Check the account and try again.", tone: "error" },
   user_deleted: { message: "User deleted.", tone: "success" },
   user_delete_blocked: { message: "Protected admin cannot be deleted.", tone: "error" },
   user_delete_auth_unavailable: {

@@ -1,5 +1,108 @@
 # Changelog
 
+## Public Navbar Phone Number
+
+- Added a direct-call link to the shared `PublicHeader`, placed in the right-hand group as `phone, Owner Portal, Book a Call`. It is a standalone navigation item and is deliberately not in the `More` dropdown; both existing actions are unchanged.
+- Sourced the number from the existing `getPublicContactNumber()` in `src/lib/public-whatsapp.ts` through two new one-line helpers, `getPublicPhoneUrl()` and `getPublicPhoneDisplay()`, so the navbar, the WhatsApp links and the property-page `Call us` action all resolve to the one configured `NEXT_PUBLIC_CMS_WHATSAPP_NUMBER`. No environment variable, settings row or database field was added.
+- Displayed it as `+91 62826 27601` over `tel:+916282627601`. The grouping is a three-line regex rather than a phone-number library; `libphonenumber-js` stays where it is, parsing user input in forms.
+- Styled it as a quiet utility link: Lucide `Phone` at 18px, `text-sm` medium dark text matching `Owner Portal`, no background, border or pill at rest, a subtle `#f7f7f7` hover with the label and icon shifting to `#d63e43`, and the standard coral focus-visible ring. The coral `Book a Call` remains the only primary CTA.
+- Pointed the property-page `Call us` link at `getPublicPhoneUrl()` instead of building `tel:` inline, so the two call links cannot drift apart.
+- Kept the number reachable at every width with exactly one visible copy: the desktop row from `xl`, beside the hamburger from `md` to `xl` where the existing architecture collapses the desktop row, and a row in the open mobile menu below `md`. The existing hamburger architecture was not redesigned.
+- Tightened only what was needed to fit it: the right-hand group gap from `2` to `1` below `2xl`, `Owner Portal` horizontal padding stepped `2.5/3/4` across `xl` and `2xl`, and `whitespace-nowrap` plus `shrink-0` on the group so nothing wraps to a second line.
+- Verified at 320/360/390/430/768/900/1024/1200/1280/1440/1920: the number never wraps, the header bar never overflows, tap targets stay 44px, and `Owner Portal` and `Book a Call` stay visible wherever they were before. The homepage's own horizontal overflow at 768px is pre-existing and unrelated; it reproduces with this change reverted.
+
+## Property Page Enquiry Card
+
+- Rebuilt the `/property/[slug]` stay card on the `BookingWidget` of the `Curate My Stay — Property Detail Page` screen in `reference/booking.html`, measured against it rather than approximated: 20px radius, 24px padding, `#dddddd` border, `0 6px 16px rgba(0,0,0,0.12)` shadow, 26px/800 price, one 12px-radius bordered control with 56px-high fields at `10px 14px` padding, and 52px full-width CTAs at 17px/600 with a 12px radius, 10px apart, 14px below the control.
+- Adapted the reference's reserve-and-pay actions to the real enquiry-only workflow. The card holds check-in, check-out and guest count in local state, calls no API, invokes no server action, and never touches `booking_requests` or `/api/booking-requests`. Verified in a browser that the only network calls during the whole interaction are the pre-existing GTM/GA beacons for the existing `whatsapp_click` event.
+- Dropped `From` from the price, so the card now reads `<price> per night` from the same `starting_price` behind `show_price` that it already used. No pricing field, calculation or schema changed.
+- Removed the Minimum stay row from this card. `minimum_nights` is untouched in the database and still appears in the page's own `Stay details` block.
+- Removed the reference's strikethrough Airbnb price, `direct price` badge, rating, price breakdown, totals, taxes, `Reserve` / `Check availability` actions, `Secure payment`, `Free cancellation` and `You won't be charged yet`, because none of them is backed by real data or a real flow here.
+- Added `Ask about this stay` as the primary WhatsApp CTA and a secondary `Call us` `tel:` link below it, followed by `Nothing is booked or charged here. Our team will confirm availability with you.` The configured check-in/check-out times stay in a hairline-separated block at the foot of the card.
+- Built the WhatsApp message from the public name, both dates, the guest count and the absolute `siteOrigin` property URL. Dates are humanised to `18 August 2026` for the message; the fields themselves show the reference's short `18 Aug` form because the long form truncates in a half-width field at 320px.
+- Made the whole date cell open the calendar. The transparent native input already covered the cell and was the top hit-target everywhere, so this was never a z-index, `pointer-events`, sizing or label-association problem: Chromium opens a date input's calendar only from the small picker indicator in its shadow DOM, and clicking anywhere else just focuses a segment to type into. With the input at `opacity: 0` that left an invisible ~16px hot spot at the right edge of a 165x56 cell. The indicator is now hidden and a click anywhere on the cell calls `showPicker()`, guarded for browsers without it, which keep their own tap-to-open behaviour. No date-picker package was added and the cell is unchanged visually.
+- Blocked past check-in dates, constrained check-out to the day after check-in, cleared a check-out that a later check-in invalidates, and capped the guest range with `max_guests` when it is configured. Clicking the CTA before both dates are chosen is cancelled client-side and shows an inline `role="alert"` message wired to the CTA through `aria-describedby`.
+- Added `getPublicContactNumber()` to `src/lib/public-whatsapp.ts` and rebuilt `getPublicWhatsAppUrl()` on it, so the WhatsApp link and the `tel:` link read the one configured `NEXT_PUBLIC_CMS_WHATSAPP_NUMBER` and no second number can drift in. Existing callers are unaffected.
+- Gave both CTAs their colour on an inner span: `app/globals.css` declares an unlayered `a { color: inherit }` that outranks Tailwind's layered `text-*` utilities, so the previous card's `text-white` never applied and its WhatsApp label was rendering in the dark body colour.
+- Verified at 320/360/390/430/768/1024/1440 that `scrollWidth` equals `clientWidth`, labels do not clip, dates do not truncate, and both CTAs stay 52px. Desktop keeps the existing sticky sidebar; below `lg` the card keeps its existing static position above the long-form copy.
+- Changed nothing else on the page: gallery, title, quick stats, highlights, description, amenities, stay details, house rules, location block, header, footer and the booking-request infrastructure elsewhere in the project are all untouched. No Supabase schema, RLS, policy or migration work was involved.
+
+## Public Booking Page Visual Refinement
+
+- Refined `/booking` against the `Curate My Stay` booking screen in `reference/booking.html`. No data source, query, view, schema, RLS, storage policy, admin workflow, slug rule, visibility rule or API behaviour changed, and no Supabase migration was created.
+- Fixed the pixelated hero at its cause. Every `public/homepage/IMG_*.jpg` file is a 600x450 web thumbnail, including the `IMG_0600.jpg` the reference hero names, so the optimizer answered a 1920px request with a 600px image that the browser then upscaled roughly 3x. The fallback is now `/homepage/varca-2.jpg`, a 5712x4284 original of the same subject, which serves 1920x1440 and 3840x2880 for the same request. No blur, sharpening or upscaling was used, and a high-resolution original of `IMG_0600.jpg` is still absent from the repository.
+- Extracted `components/home/booking-hero.tsx`. The copy sits at `top-[30%]`/`lg:top-[32%]` of the hero's own height rather than above bottom padding, which puts the heading at about 32% of the hero instead of about 58% and keeps it there as the hero height changes. Hero heights became 480/560/680/720px by breakpoint, so the photograph stayed immersive while the copy moved up.
+- Replaced the heavier two-layer scrim with the reference's single `120deg` gradient, and moved hero type to the reference scale: 64px/800/1.04 heading and a 22px/1.5 description capped at 700px.
+- Kept every existing filter field, option source and client-side filter behaviour. Only the panel's presentation changed: `#dddddd` hairline, lighter shadow, roomier field padding, and an overlap of about half the panel height onto the hero's bottom edge.
+- Renamed the panel's primary action to `Search` and gave its label and icon an explicit white. `app/globals.css` declares an unlayered `a { color: inherit }`, which outranks Tailwind's layered `text-*` utilities, so the CTA had been rendering its label and search icon in the dark body colour; the colour now lives on a child span the rule does not target. The `#stays` jump behaviour is unchanged.
+- Made the whole catalogue card navigate to `/property/[slug]` through one `absolute inset-0` overlay `Link` carrying the accessible name. Each card is one tab stop, there are no nested anchors, the focus ring is drawn on the card through `has-[a:focus-visible]`, and cards without a cover photo behave identically. `View stay` became presentational text driven by the card's hover state, which also restored its coral colour for the same cascade reason.
+- Added `components/home/booking-why-direct.tsx` between the catalogue and the guest reviews: the reference's `WHY BOOK DIRECT` eyebrow, heading, intro, four centred benefits on pale-coral Lucide icon tiles, and the `Compare side-by-side` disclosure with the reference's six Airbnb-versus-direct rows. Four columns at `lg`, two at `sm`, one below. The copy and comparison rows are reference marketing claims kept in one typed module, not admin-editable; making them admin-configurable is a separate decision.
+- Allowlisted image quality `85` in `next.config.ts` because Next.js 16 permits `75` alone by default, and moved the hero from the deprecated `priority` prop to `preload`. Other images keep the default quality and their existing props.
+- Trimmed the catalogue grid's trailing padding so it no longer stacks with the new section's own spacing, and matched `app/booking/loading.tsx` to the new hero height, panel geometry and card footer.
+- Verified at 320/360/390/430/768/1024/1440/1920: `scrollWidth` equals `clientWidth` at every width, so there is no horizontal overflow. The header, `Book a Call` and the shared floating WhatsApp button are unchanged.
+
+## Public Property Detail Page
+
+- Added `/property/[slug]`, the public property detail page: one server route loads a property by slug, renders it from Admin -> Properties content only, and reuses the existing public header, footer and floating WhatsApp button.
+- Recorded that `public.public_property_details` and `public.public_property_gallery` were created manually in live Supabase and verified for the `anon` role before the application was pointed at them; no Supabase operation was performed from the repository.
+- Added `loadPublicPropertyDetail()` in `src/features/catalogue/public-property-detail-data.ts`: it reads both public-safe views with the ordinary anon server client and explicit column lists, orders gallery rows by `is_cover` descending, `sort_order` ascending, then `created_at` ascending, and is wrapped in React `cache` so `generateMetadata` and the render share one pair of queries.
+- Kept missing, unpublished and operationally inactive slugs indistinguishable: all three are simply absent from the views, so all three call `notFound()`. Real query failures return a separate public error state that logs only the Supabase error code and message.
+- Built the layout from the `Curate My Stay — Property Detail Page` screen in `reference/booking.html`: hero-plus-2x2 gallery at the reference proportions, quick-stat tiles, hairline-separated detail blocks, and a sticky 384px stay card that stacks on mobile and tablet.
+- Kept the stay card display-only: starting price behind `show_price`, price note, minimum stay, check-in/check-out and the admin enquiry note, plus a WhatsApp CTA reading `Ask about this stay`. Added no date inputs, guest selector, totals, taxes, availability check or enquiry submission, and replaced the CTA with a paused message when `accept_booking_requests` is false.
+- Synchronized `types/database.types.ts` with both view Row types and added both view bodies to checked-in `supabase/schema.sql`; view ownership and grants stay documented rather than represented, matching that file's existing scope.
+- Extended `components/home/floating-whatsapp.tsx` with a `/property/` path prefix so the single shared button appears on property pages without a second mount.
+- Left `/booking`, catalogue cards, catalogue filters, the catalogue view query, the admin property form, property image management, confirmed bookings, expenses, P&L, payouts and the homepage untouched.
+- `notFound()` on this route serves a documented soft 404: `loading.tsx` streams a fallback, so the response has already committed to 200 and Next.js injects `<meta name="robots" content="noindex">` instead of changing the status.
+- Did not add `booking_requests`, `/api/booking-requests`, `/dashboard/booking-requests`, enquiry submission, enquiry-to-booking conversion, availability checking, a lightbox, a carousel or a map dependency. The separate booking-request system remains the next phase.
+
+## Public Catalogue Live Data Source
+
+- Replaced the temporary typed catalogue stub with one server-side read of the manually created `public.public_property_catalogue` view, so `/booking` now lists real published, operationally active properties.
+- Recorded that the view was created manually in live Supabase and that anonymous SELECT access was verified before the application was pointed at it; no Supabase operation was performed from the repository.
+- Queried the view with the ordinary anon server client and an explicit column list rather than `*`, ordered by `is_featured` descending, `display_order` ascending, then `public_name` ascending, and removed the now-redundant in-memory sort.
+- Kept a failed query on the safe catalogue error state with only the Supabase error code and message logged server-side, distinct from a successful query returning zero rows.
+- Synchronized `types/database.types.ts` with a `public_property_catalogue` view Row type, derived `CatalogueProperty` from it, and added the view body to checked-in `supabase/schema.sql`; view ownership and grants stay documented rather than represented, matching that file's existing scope.
+- Left the approved hero, floating filter bar, property cards, client-side filters, empty state, loading state, header, footer and image URL helper unchanged, and did not query `properties` or `property_images` directly or use the service-role client.
+- `/booking` is now a dynamic route because the read uses the cookie-aware server client. Property detail pages and booking enquiries remain pending; catalogue cards still imply no real-time availability.
+
+## Public Property Catalogue Page
+
+- Added `/booking`, the public property catalogue: a server component loads a public-safe catalogue array and one client component filters it in the browser by region, area, property type, guests, bedrooms and pool, with a live result count, clear-all-filters control and route-level loading skeleton.
+- Kept filtering client-side because inventory is intentionally small; added no filter API, URL-state library, search service, map, carousel or new dependency.
+- Ordered results featured first, then `display_order`, then `public_name`, and rendered cards from admin-editable public property content only, preferring the `property_images` cover with a branded placeholder fallback and `View stay` links to the future `/property/[slug]`.
+- Kept starting price display-only behind `show_price`, avoided all availability-confirming wording, and left confirmed bookings, expenses, P&L, payouts, owner dashboards and the homepage untouched.
+- Left `loadPublicCatalogue()` returning an empty catalogue because no public-safe read source exists yet: no service-role public read, no direct `properties` query with browser-side column hiding, and no mock property data. The required manual Supabase view and swap-in instructions are documented rather than applied.
+- Scoped `next.config.ts` `images.remotePatterns` to the configured Supabase host under `/storage/v1/object/public/property-images/**` only, with no wildcard host or path.
+- Did not add `/property/[slug]`, `booking_requests`, `/api/booking-requests`, `/dashboard/booking-requests`, or any public navigation or sitemap entry while the read source is pending.
+
+## Property Image Upload Refinement
+
+- Moved the single connected property save control below image management without nesting forms or changing the property save action.
+- Added browser-native image processing: preserve aspect ratio, resize only above 2400px on the longest side, encode WebP at approximately 0.85 quality, and use it only when smaller than the valid original.
+
+## Admin Property Image Management
+
+- Added edit-mode gallery management to Admin -> Properties: direct authenticated uploads to `property-images`, generated Storage-path metadata rows, automatic first cover, cover changes, alt-text saves, move-up/move-down ordering, and confirmed deletion with Storage cleanup warnings.
+- Kept image management unavailable until a property has been created, preserved legacy `properties.image_url`, and did not add public catalogue routes or booking enquiries.
+
+## Admin Public Property Catalogue Fields
+
+- Extended Admin -> Properties to manage non-image public catalogue fields in a separate Website listing section, without changing operational property status, financial shares, owner assignment, or legacy `image_url` preservation.
+- Added conditional publication fields, editable slug assistance, publish-readiness validation, duplicate-slug feedback, line-based public lists, and a Published/Hidden table indicator separate from Active/Inactive.
+- Did not add property image upload, public catalogue routes, or booking enquiries.
+
+## Public Property Catalogue Schema and Type Sync
+
+- Synchronized checked-in `supabase/schema.sql` and `types/database.types.ts` with the manually completed live Supabase catalogue changes for new `properties` fields, constraints, indexes, and the `property_images` table.
+- Kept Storage bucket configuration, helper functions, and deployed RLS/storage policies documented rather than represented in SQL because `schema.sql` does not currently track those definitions.
+- Made no Admin UI, validators, server actions, public routes, booking-enquiry table, or behaviour changes.
+
+## Public Property Catalogue Documentation Plan
+
+- Added `docs/PUBLIC_PROPERTY_CATALOGUE_AND_BOOKING_ENQUIRIES.md` as the primary handoff for the planned public property catalogue, property detail pages, separate booking enquiries, admin review route, and manual conversion workflow.
+- Documented the manually completed live Supabase changes for catalogue fields on `properties`, the `property_images` table, `property-images` Storage bucket, active-admin helper/policies, and the temporary gap before checked-in schema/types are synchronized.
+- Clarified that public booking requests must remain separate from confirmed operational bookings and must not affect availability, revenue, occupancy, expenses, P&L, owner payouts, or owner booking views until an admin manually creates a confirmed booking through the existing workflow.
+
 ## Property Management Goa Card Images
 
 - Added the mapped existing property photographs to the four `/property-management-goa` “Properties we manage” cards using page-local responsive `next/image` elements, without changing other routes or shared card styling.
@@ -635,3 +738,18 @@
 
 - Added `/demo`, a public noindex preview of the owner dashboard using deterministic fictional Goa property data only.
 - Kept real owner routes, authentication, Supabase reads, and payout logic unchanged; demo navigation remains read-only and isolated from protected owner pages.
+
+## Project Health Audit Fixes
+
+- Restored the documented pending-owner status on public signup.
+- Repaired the owner payout approval dialog so its connected server-action form remains mounted during submission and shows pending feedback.
+- Added truthful failure handling for admin user, booking, and expense saves instead of redirecting success after ignored database errors.
+- Made booking contact notifications use the configured `RESEND_FROM_EMAIL` when available and removed a duplicate environment-template entry.
+
+## Project Health Audit Follow-up
+
+- Made previous-month payout generation stop on incomplete source reads, protect actioned rows with status-qualified updates, and safely reload concurrent owner/month insert conflicts.
+- Added truthful owner/admin payout action feedback and compensating rollback for query/payout multi-step failures without changing payout calculations or review rules.
+- Added best-effort property Storage cleanup using only trusted image paths after confirmed database deletion, with a warning when cleanup needs manual attention.
+- Centralized server-only service-role key validation so `sb_publishable_` keys and legacy anon JWTs cannot be mistaken for service-role credentials.
+- Documented the still-manual owner/month payout uniqueness index, duplicate-detection query, `contact_submissions` RLS verification, and Storage policy check without claiming they are deployed.

@@ -8,19 +8,26 @@ import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 const publicMarketingPaths = new Set([
   "/",
   "/about",
+  "/booking",
   "/case-studies",
   "/faq",
   "/property-management-proposal",
   "/property-management-goa",
 ]);
 
+/** Dynamic public routes that cannot be listed as exact paths. */
+const publicMarketingPrefixes = ["/property/"];
+
 export function FloatingWhatsApp() {
   const pathname = usePathname();
   const normalizedPath =
     pathname === "/" ? "/" : pathname.replace(/\/$/, "");
   const whatsappUrl = getPublicWhatsAppUrl();
+  const isPublicMarketingPath =
+    publicMarketingPaths.has(normalizedPath) ||
+    publicMarketingPrefixes.some((prefix) => normalizedPath.startsWith(prefix));
 
-  if (!publicMarketingPaths.has(normalizedPath) || !whatsappUrl) {
+  if (!isPublicMarketingPath || !whatsappUrl) {
     return null;
   }
 

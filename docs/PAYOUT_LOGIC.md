@@ -95,6 +95,36 @@ Money calculations round to two decimals. TDS is fixed at 10% and is not editabl
 - Existing `draft` and `ready_for_review` rows may be recalculated.
 - Existing `approved`, `query_raised`, `resolved`, and `paid` rows are preserved.
 - There is no scheduler or background job; processing depends on page loads.
+- Database read failures stop processing instead of recalculating from incomplete inputs.
+- Recalculation updates are status-qualified, so a stale page load cannot overwrite an owner-approved, queried, resolved, or paid row.
+- Concurrent insert conflicts are reloaded and treated as the same owner-month payout once the required database uniqueness index below is applied.
+
+### Manual production action required: owner-month uniqueness
+
+The stored row is one combined payout per owner and month. Its identity is therefore `(owner_id, month)`; `property_id` is only the representative first active property and is not part of the uniqueness key.
+
+Before creating the index, run this read-only duplicate check:
+
+```sql
+select
+  owner_id,
+  month,
+  count(*) as row_count,
+  array_agg(id order by created_at, id) as payout_ids
+from public.owner_payouts
+group by owner_id, month
+having count(*) > 1
+order by month desc, owner_id;
+```
+
+If this returns any rows, stop and review those statements manually. Do not delete or merge them automatically. If it returns no rows, apply:
+
+```sql
+create unique index if not exists owner_payouts_owner_month_unique
+  on public.owner_payouts (owner_id, month);
+```
+
+This index is not represented as deployed until it is manually applied and confirmed in the live Supabase project. Application conflict handling is compatible with the index but cannot prevent a simultaneous double insert without it.
 
 ## Status Lifecycle
 
@@ -119,7 +149,7 @@ After day 5, page-load processing auto-approves untouched previous-month draft/r
 
 ### Query Workflow
 
-Raising a query creates an open `owner_queries` row linked to the payout and changes payout status to `query_raised`. Admin resolution marks the query resolved and moves the payout to `resolved`. Admin deletion of a linked query restores the payout to `ready_for_review` during days 1-5 or `approved` after the review window; failed query deletion attempts restore the prior queried state.
+Raising a query first claims the payout by conditionally changing `ready_for_review` to `query_raised`, then creates the linked open `owner_queries` row. If query insertion fails, the payout is restored to its prior note and ready state. Admin resolution marks the query resolved and moves a currently queried payout to `resolved`; a failed payout transition attempts to restore the query to open. Admin deletion of a linked query restores the payout to `ready_for_review` during days 1-5 or `approved` after the review window; failed query deletion attempts restore the prior queried state. These guarded writes prevent false success and ordinary partial completion, but absolute atomicity across each two-table operation would require a reviewed Postgres transaction function.
 
 ### Mark Paid
 
@@ -136,5 +166,6 @@ Only admin can mark a payout paid, and only from `approved` or `resolved`. The a
 ## Current Limitations
 
 - Processing is page-load driven rather than scheduled.
-- The schema has no unique `(owner_id, month)` constraint; application code performs the duplicate check.
+- The required unique `(owner_id, month)` index remains a manual production action until confirmed.
+- Query/payout two-table writes use status guards and compensating rollback; a failure of the rollback itself is logged and still requires manual investigation because no transaction RPC is deployed.
 - Owner statement PDF export is not implemented.

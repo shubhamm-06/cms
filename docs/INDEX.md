@@ -16,6 +16,7 @@ This is the starting point for developers and AI agents working on CurateMyStay.
    - [API Contracts](./API_CONTRACTS.md)
    - [Analytics Tracking](./ANALYTICS.md)
    - [Admin Operations Guide](./ADMIN_OPERATIONS_GUIDE.md)
+   - [Public Property Catalogue and Booking Enquiries](./PUBLIC_PROPERTY_CATALOGUE_AND_BOOKING_ENQUIRIES.md)
    - [UI Conventions](./UI_CONVENTIONS.md)
    - [Deployment Runbook](./DEPLOYMENT_RUNBOOK.md)
 8. [Changelog](./CHANGELOG.md) only for implementation history
@@ -43,6 +44,7 @@ The changelog intentionally preserves older states. Never use an old changelog e
 | Modify shared UI primitives | [UI Conventions](./UI_CONVENTIONS.md) |
 | Modify routes, roles, or permissions | [Routes and Permissions](./ROUTES_AND_PERMISSIONS.md) and [Supabase Schema](./SUPABASE_SCHEMA.md) |
 | Modify admin workflows | [Admin Operations Guide](./ADMIN_OPERATIONS_GUIDE.md) |
+| Plan or implement public property catalogue or booking enquiries | [Public Property Catalogue and Booking Enquiries](./PUBLIC_PROPERTY_CATALOGUE_AND_BOOKING_ENQUIRIES.md), then schema/routes/API docs |
 | Configure locally | [Setup](./SETUP.md) |
 | Deploy or rotate secrets | [Deployment Runbook](./DEPLOYMENT_RUNBOOK.md) |
 | Review why something changed | [Changelog](./CHANGELOG.md) |
@@ -60,6 +62,7 @@ The changelog intentionally preserves older states. Never use an old changelog e
 | `API_CONTRACTS.md` | Active public HTTP endpoints and response contracts |
 | `ANALYTICS.md` | GTM dataLayer event names, triggers, and privacy rules |
 | `ADMIN_OPERATIONS_GUIDE.md` | Practical admin workflows |
+| `PUBLIC_PROPERTY_CATALOGUE_AND_BOOKING_ENQUIRIES.md` | Planned catalogue/enquiry product scope, manual live Supabase changes, and phased implementation handoff |
 | `UI_CONVENTIONS.md` | Tailwind, shadcn/ui primitive, form, toast, dialog, and table usage rules |
 | `DEPLOYMENT_RUNBOOK.md` | Production configuration, smoke tests, and troubleshooting |
 | `SETUP.md` | Concise local setup checklist |

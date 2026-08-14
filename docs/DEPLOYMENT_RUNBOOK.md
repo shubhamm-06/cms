@@ -28,6 +28,33 @@ Use this with [Local Setup](./SETUP.md) and [API Contracts](./API_CONTRACTS.md).
 6. For Google OAuth, enable the Supabase Google provider. In Google Cloud, authorize the Supabase provider callback (`https://<project-ref>.supabase.co/auth/v1/callback`); in Supabase, permit the application callback URL.
 7. Do not enable the Auth Send Email Hook until `/api/auth/send-email-hook` is deployed with `SUPABASE_SEND_EMAIL_HOOK_SECRET`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `NEXT_PUBLIC_SITE_URL`, and `NEXT_PUBLIC_SUPABASE_URL` configured.
 
+### Manual production database checks
+
+1. Run the read-only owner payout duplicate query in [Payout Logic](./PAYOUT_LOGIC.md). Only when it returns no rows, create `owner_payouts_owner_month_unique` on `(owner_id, month)` using the documented SQL.
+2. Configure `SUPABASE_SERVICE_ROLE_KEY` with a real server-only `sb_secret_...` key or legacy JWT whose role is `service_role`. Never use an anon/publishable key in this variable.
+3. Verify the current `contact_submissions` RLS state and policies:
+
+```sql
+select n.nspname as schema_name, c.relname as table_name, c.relrowsecurity
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public' and c.relname = 'contact_submissions';
+
+select policyname, cmd, roles, qual, with_check
+from pg_policies
+where schemaname = 'public' and tablename = 'contact_submissions'
+order by policyname;
+```
+
+4. After the valid service-role configuration is deployed, manually enable RLS if the first query reports `false`:
+
+```sql
+alter table public.contact_submissions enable row level security;
+```
+
+5. Re-run the verification queries. Keep public SELECT, UPDATE, and DELETE unavailable. No anonymous INSERT policy is required when both lead routes use the configured service-role key.
+6. Verify the `storage.objects` policies allow active admins to delete objects in the `property-images` bucket; property deletion reports a warning rather than failing if Storage cleanup is denied.
+
 ## Protected Admin
 
 1. Create the admin user in Supabase Auth.
@@ -46,7 +73,7 @@ Use this with [Local Setup](./SETUP.md) and [API Contracts](./API_CONTRACTS.md).
 6. Test owner query notification delivery by creating a normal owner query and confirming the admin email reaches `ADMIN_CONTACT_EMAIL`.
 7. After deploying `/api/auth/send-email-hook`, enable the Supabase Auth Send Email Hook with its generated secret stored in `SUPABASE_SEND_EMAIL_HOOK_SECRET`, then test signup, recovery, invite, magic link, email change, and reauthentication emails.
 
-Note: `/api/contact` currently uses the fixed Resend development sender in source, while forecast emails use `RESEND_FROM_EMAIL`. Verify that general contact delivery is acceptable for the production Resend account.
+The `/api/contact` route uses `RESEND_FROM_EMAIL` when configured and falls back to the Resend development sender only when it is absent. Set and verify a production sender for general contact delivery.
 
 ## Google Apps Script Proposal Service
 
@@ -107,7 +134,7 @@ If any credential was committed, rotate it first, remove it from Git history, an
 | --- | --- |
 | User redirected unexpectedly | Profile role/status, Auth session cookies, `NEXT_PUBLIC_SITE_URL`, callback allowlist |
 | Owner sees no data | Property `owner_id`, profile/Auth ID match, RLS policies |
-| Public lead insert fails | Valid service-role key; `sb_publishable_` is not accepted as service role; contact insertion policy |
+| Public lead insert fails | Valid server-only `sb_secret_` or legacy `service_role` key; `sb_publishable_` and legacy anon JWTs are rejected; `contact_submissions` RLS state |
 | Forecast works but deck fails | Apps Script URL/secret, deployment access, template/output-folder config, response fields |
 | Deck exists but UI says unavailable | Response must have `ok: true` and a valid `pdfDownloadUrl` |
 | Email fails | Resend key, verified sender/domain, recipient, provider logs |

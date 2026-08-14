@@ -1,7 +1,7 @@
 "use client";
 
 import { Building2, ReceiptText, Save, WalletCards } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useState, type MouseEvent, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   updateUserAction,
 } from "@/src/features/shared/actions";
 import { accountStatuses } from "@/src/lib/constants/statuses";
+import { normalizePropertySlug } from "@/src/lib/utils/property-slug";
 import type { Database } from "@/types/database.types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -27,26 +28,93 @@ function PropertyField({
   className = "",
   helper,
   label,
+  required = false,
 }: {
   children: ReactNode;
   className?: string;
   helper?: string;
   label: string;
+  required?: boolean;
 }) {
   return (
     <label className={className}>
-      <span className="cms-label">{label}</span>
+      <span className="cms-label">
+        {label}
+        {required ? <span className="text-[var(--brand)]"> *</span> : null}
+      </span>
       {children}
       {helper ? <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">{helper}</span> : null}
     </label>
   );
 }
 
-function PropertySubmitButton({ isEditing }: { isEditing: boolean }) {
-  const { pending } = useFormStatus();
+function PropertySection({ children, description, title }: { children: ReactNode; description: string; title: string }) {
+  return (
+    <section className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/45 p-4 sm:p-5">
+      <div className="mb-4">
+        <h3 className="text-sm font-bold text-[var(--foreground)]">{title}</h3>
+        <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{description}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function PropertyCheckbox({
+  checked,
+  description,
+  name,
+  onChange,
+  title,
+}: {
+  checked?: boolean;
+  description: string;
+  name: string;
+  onChange?: (checked: boolean) => void;
+  title: string;
+}) {
+  const controlProps = onChange ? { checked } : { defaultChecked: checked };
 
   return (
-    <Button pending={pending} type="submit" variant="primary">
+    <div>
+      <input name={name} type="hidden" value="false" />
+      <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-[var(--border)] bg-white px-3 py-2.5">
+        <input
+          className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--brand)]"
+          name={name}
+          onChange={(event) => onChange?.(event.target.checked)}
+          type="checkbox"
+          value="true"
+          {...controlProps}
+        />
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold text-[var(--foreground)]">{title}</span>
+          <span className="mt-0.5 block text-xs leading-5 text-[var(--muted)]">{description}</span>
+        </span>
+      </label>
+    </div>
+  );
+}
+
+function linesFromList(items: string[] | null | undefined) {
+  return items?.join("\n") || "";
+}
+
+export function PropertyFormSaveButton({ formId, isEditing }: { formId: string; isEditing: boolean }) {
+  const [pending, setPending] = useState(false);
+
+  function handleSubmitClick(event: MouseEvent<HTMLButtonElement>) {
+    const form = document.getElementById(formId) as HTMLFormElement | null;
+    if (!form || !form.checkValidity()) {
+      event.preventDefault();
+      form?.reportValidity();
+      return;
+    }
+    setPending(true);
+  }
+
+  return (
+    <Button form={formId} onClick={handleSubmitClick} pending={pending} type="submit" variant="primary">
       {pending ? null : <Save className="h-4 w-4" />}
       {pending ? "Saving..." : isEditing ? "Save changes" : "Save property"}
     </Button>
@@ -112,61 +180,233 @@ export function UserEditForm({ profile }: { profile: Profile }) {
   );
 }
 
-export function PropertyForm({ owners, property }: { owners: Profile[]; property?: Property }) {
-  const isEditing = Boolean(property);
+export function PropertyForm({ formId, owners, property }: { formId: string; owners: Profile[]; property?: Property }) {
+  const [showOnWebsite, setShowOnWebsite] = useState(property?.show_on_website ?? false);
+  const [publicName, setPublicName] = useState(property?.public_name || "");
+  const [slug, setSlug] = useState(property?.slug || "");
+  const [slugEdited, setSlugEdited] = useState(Boolean(property?.slug));
 
   return (
-    <form action={savePropertyAction} className="grid gap-4 md:grid-cols-12" key={property?.id || "new-property-form"}>
+    <form action={savePropertyAction} className="grid gap-5" id={formId} key={property?.id || "new-property-form"}>
       <input name="mode" type="hidden" value={property ? "edit" : "add"} />
       <input name="id" type="hidden" value={property?.id || ""} />
-      <PropertyField className="md:col-span-7" helper="Use the public-facing property name used in owner reports." label="Property name">
-        <Input className="text-base font-semibold" defaultValue={property?.name || ""} name="name" required />
-      </PropertyField>
-      <PropertyField className="md:col-span-3" label="Owner">
-        <select className="cms-input min-h-11" defaultValue={property?.owner_id || ""} name="owner_id">
-          <option value="">Unassigned</option>
-          {owners.map((owner) => (
-            <option key={owner.id} value={owner.id}>
-              {owner.name || owner.email}
-            </option>
-          ))}
-        </select>
-      </PropertyField>
-      <PropertyField className="md:col-span-2" label="Status">
-        <select className="cms-input min-h-11" defaultValue={property?.status || "active"} name="status">
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </PropertyField>
-      <PropertyField className="md:col-span-7" helper="Keep this useful for operations; full legal formatting is not required here." label="Address">
-        <Textarea defaultValue={property?.address || ""} name="address" rows={3} />
-      </PropertyField>
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/60 p-4 md:col-span-5">
-        <div className="mb-3">
-          <div className="text-sm font-bold text-[var(--foreground)]">Profit share</div>
-          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">Owner share and CMS share must total 100.</p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <PropertyField label="Owner share">
-            <Input defaultValue={property?.owner_share ?? 70} max="100" min="0" name="owner_share" type="number" />
+      <PropertySection description="Internal operations, owner assignment, and financial splits. This information is not used as public website copy." title="Operational property">
+        <div className="grid gap-4 md:grid-cols-12">
+          <PropertyField className="md:col-span-7" helper="Used in owner reports, bookings, expenses, and payouts." label="Property name" required>
+            <Input className="text-base font-semibold" defaultValue={property?.name || ""} name="name" required />
           </PropertyField>
-          <PropertyField label="CMS share">
-            <Input defaultValue={property?.cms_share ?? 30} max="100" min="0" name="cms_share" type="number" />
+          <PropertyField className="md:col-span-3" label="Owner">
+            <select className="cms-input min-h-11" defaultValue={property?.owner_id || ""} name="owner_id">
+              <option value="">Unassigned</option>
+              {owners.map((owner) => (
+                <option key={owner.id} value={owner.id}>
+                  {owner.name || owner.email}
+                </option>
+              ))}
+            </select>
+          </PropertyField>
+          <PropertyField className="md:col-span-2" helper="Controls operational use only." label="Status">
+            <select className="cms-input min-h-11" defaultValue={property?.status || "active"} name="status">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </PropertyField>
+          <PropertyField className="md:col-span-7" helper="Private operational address. It is never used as public website copy." label="Address">
+            <Textarea defaultValue={property?.address || ""} name="address" rows={3} />
+          </PropertyField>
+          <div className="rounded-xl border border-[var(--border)] bg-white/70 p-4 md:col-span-5">
+            <div className="mb-3">
+              <div className="text-sm font-bold text-[var(--foreground)]">Profit share</div>
+              <p className="mt-1 text-xs leading-5 text-[var(--muted)]">Owner share and CMS share must total 100.</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <PropertyField label="Owner share">
+                <Input defaultValue={property?.owner_share ?? 70} max="100" min="0" name="owner_share" type="number" />
+              </PropertyField>
+              <PropertyField label="CMS share">
+                <Input defaultValue={property?.cms_share ?? 30} max="100" min="0" name="cms_share" type="number" />
+              </PropertyField>
+            </div>
+          </div>
+          <PropertyField className="md:col-span-3" label="City">
+            <Input defaultValue={property?.city || ""} name="city" />
+          </PropertyField>
+          <PropertyField className="md:col-span-2" label="Bedrooms">
+            <Input defaultValue={property?.bedrooms ?? 1} min="0" name="bedrooms" type="number" />
           </PropertyField>
         </div>
-      </div>
-      <PropertyField className="md:col-span-3" label="City">
-        <Input defaultValue={property?.city || ""} name="city" />
-      </PropertyField>
-      <PropertyField className="md:col-span-2" label="Bedrooms">
-        <Input defaultValue={property?.bedrooms || 1} min="0" name="bedrooms" type="number" />
-      </PropertyField>
-      <div className="flex flex-col gap-2 self-end md:col-span-7 md:items-end">
-        <PropertySubmitButton isEditing={isEditing} />
-        <p className="text-xs text-[var(--muted)]">
-          {isEditing ? "Updates the selected property row." : "Creates one new property row."}
-        </p>
-      </div>
+      </PropertySection>
+
+      <PropertySection description="Public catalogue information. Website visibility is separate from the operational property status above." title="Website listing">
+        <PropertyCheckbox
+          checked={showOnWebsite}
+          description="Publish this property to future public catalogue pages. Turning this off preserves the saved listing details."
+          name="show_on_website"
+          onChange={setShowOnWebsite}
+          title="Show on website"
+        />
+
+        <div className="mt-5 grid gap-6" hidden={!showOnWebsite}>
+          <div>
+            <h4 className="text-sm font-bold text-[var(--foreground)]">Listing identity</h4>
+            <div className="mt-3 grid gap-4 md:grid-cols-12">
+              <PropertyField className="md:col-span-6" label="Public property name" required={showOnWebsite}>
+                <Input
+                  name="public_name"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setPublicName(value);
+                    if (!slugEdited) setSlug(normalizePropertySlug(value));
+                  }}
+                  required={showOnWebsite}
+                  value={publicName}
+                />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" helper={slug ? `/property/${slug}` : "A URL preview will appear here."} label="Slug" required={showOnWebsite}>
+                <Input
+                  name="slug"
+                  onChange={(event) => {
+                    setSlugEdited(true);
+                    setSlug(normalizePropertySlug(event.target.value));
+                  }}
+                  required={showOnWebsite}
+                  value={slug}
+                />
+              </PropertyField>
+              <PropertyField className="md:col-span-4" label="Public property type" required={showOnWebsite}>
+                <Input defaultValue={property?.public_property_type || ""} name="public_property_type" required={showOnWebsite} />
+              </PropertyField>
+              <PropertyField className="md:col-span-4" label="Promotional badge">
+                <Input defaultValue={property?.promotional_badge || ""} name="promotional_badge" />
+              </PropertyField>
+              <PropertyField className="md:col-span-4" label="Display order">
+                <Input defaultValue={property?.display_order ?? 0} min="0" name="display_order" type="number" />
+              </PropertyField>
+              <div className="grid gap-3 sm:grid-cols-2 md:col-span-12">
+                <PropertyCheckbox checked={property?.is_featured ?? false} description="Give this listing featured treatment when public catalogue pages are built." name="is_featured" title="Featured property" />
+                <PropertyCheckbox checked={property?.show_in_similar_properties ?? true} description="Allow this listing in future similar-property suggestions." name="show_in_similar_properties" title="Show in similar properties" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-bold text-[var(--foreground)]">Public location</h4>
+            <p className="mt-1 text-xs leading-5 text-[var(--muted)]">These public location details are separate from the private operational address.</p>
+            <div className="mt-3 grid gap-4 md:grid-cols-12">
+              <PropertyField className="md:col-span-3" label="Region" required={showOnWebsite}>
+                <Input defaultValue={property?.region || ""} name="region" required={showOnWebsite} />
+              </PropertyField>
+              <PropertyField className="md:col-span-3" label="Area" required={showOnWebsite}>
+                <Input defaultValue={property?.area || ""} name="area" required={showOnWebsite} />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" label="Short location line" required={showOnWebsite}>
+                <Input defaultValue={property?.short_location_line || ""} name="short_location_line" required={showOnWebsite} />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" label="Public location description">
+                <Textarea defaultValue={property?.public_location_text || ""} name="public_location_text" rows={3} />
+              </PropertyField>
+              <PropertyField className="md:col-span-3" label="Google Maps URL">
+                <Input defaultValue={property?.google_maps_url || ""} name="google_maps_url" type="url" />
+              </PropertyField>
+              <PropertyField className="md:col-span-3" label="Distance from beach">
+                <Input defaultValue={property?.distance_from_beach || ""} name="distance_from_beach" />
+              </PropertyField>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-bold text-[var(--foreground)]">Description</h4>
+            <div className="mt-3 grid gap-4 md:grid-cols-12">
+              <PropertyField className="md:col-span-12" label="Tagline">
+                <Input defaultValue={property?.tagline || ""} name="tagline" />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" label="Short description" required={showOnWebsite}>
+                <Textarea defaultValue={property?.short_description || ""} name="short_description" required={showOnWebsite} rows={4} />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" label="Full description" required={showOnWebsite}>
+                <Textarea defaultValue={property?.full_description || ""} name="full_description" required={showOnWebsite} rows={4} />
+              </PropertyField>
+              <PropertyField className="md:col-span-12" helper="One highlight per line." label="Property highlights">
+                <Textarea defaultValue={linesFromList(property?.property_highlights)} name="property_highlights" rows={4} />
+              </PropertyField>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-bold text-[var(--foreground)]">Capacity and amenities</h4>
+            <div className="mt-3 grid gap-4 md:grid-cols-12">
+              <PropertyField className="md:col-span-2" label="Beds">
+                <Input defaultValue={property?.beds ?? ""} min="0" name="beds" type="number" />
+              </PropertyField>
+              <PropertyField className="md:col-span-2" label="Bathrooms" required={showOnWebsite}>
+                <Input defaultValue={property?.bathrooms ?? ""} min="0" name="bathrooms" required={showOnWebsite} step="0.5" type="number" />
+              </PropertyField>
+              <PropertyField className="md:col-span-3" label="Maximum guests" required={showOnWebsite}>
+                <Input defaultValue={property?.max_guests ?? ""} min="1" name="max_guests" required={showOnWebsite} type="number" />
+              </PropertyField>
+              <PropertyField className="md:col-span-5" label="Pool type">
+                <Input defaultValue={property?.pool_type || ""} name="pool_type" />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" helper="One amenity per line." label="Amenities">
+                <Textarea defaultValue={linesFromList(property?.amenities)} name="amenities" rows={4} />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" helper="One house rule per line." label="House rules">
+                <Textarea defaultValue={linesFromList(property?.house_rules)} name="house_rules" rows={4} />
+              </PropertyField>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-bold text-[var(--foreground)]">Price display</h4>
+            <p className="mt-1 text-xs leading-5 text-[var(--muted)]">Website display information only. It never changes confirmed booking rates, revenue, P&amp;L, or payouts.</p>
+            <div className="mt-3 grid gap-4 md:grid-cols-12">
+              <div className="md:col-span-4">
+                <PropertyCheckbox checked={property?.show_price ?? true} description="Show price guidance on future public listing pages." name="show_price" title="Show price" />
+              </div>
+              <PropertyField className="md:col-span-4" label="Starting price">
+                <Input defaultValue={property?.starting_price ?? ""} min="0" name="starting_price" step="0.01" type="number" />
+              </PropertyField>
+              <PropertyField className="md:col-span-4" label="Price note">
+                <Input defaultValue={property?.price_note || ""} name="price_note" />
+              </PropertyField>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-bold text-[var(--foreground)]">Stay and enquiry settings</h4>
+            <div className="mt-3 grid gap-4 md:grid-cols-12">
+              <div className="md:col-span-5">
+                <PropertyCheckbox checked={property?.accept_booking_requests ?? true} description="Allow future visitors to send a booking request. Requests will remain separate from confirmed bookings." name="accept_booking_requests" title="Accept booking requests" />
+              </div>
+              <PropertyField className="md:col-span-2" label="Minimum nights">
+                <Input defaultValue={property?.minimum_nights ?? ""} min="1" name="minimum_nights" type="number" />
+              </PropertyField>
+              <PropertyField className="md:col-span-2" label="Check-in time">
+                <Input defaultValue={property?.check_in_time?.slice(0, 5) || ""} name="check_in_time" type="time" />
+              </PropertyField>
+              <PropertyField className="md:col-span-3" label="Check-out time">
+                <Input defaultValue={property?.check_out_time?.slice(0, 5) || ""} name="check_out_time" type="time" />
+              </PropertyField>
+              <PropertyField className="md:col-span-12" label="Booking enquiry note">
+                <Textarea defaultValue={property?.booking_enquiry_note || ""} name="booking_enquiry_note" rows={3} />
+              </PropertyField>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-bold text-[var(--foreground)]">SEO</h4>
+            <div className="mt-3 grid gap-4 md:grid-cols-12">
+              <PropertyField className="md:col-span-6" label="SEO title">
+                <Input defaultValue={property?.seo_title || ""} name="seo_title" />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" label="SEO description">
+                <Textarea defaultValue={property?.seo_description || ""} name="seo_description" rows={3} />
+              </PropertyField>
+            </div>
+          </div>
+        </div>
+      </PropertySection>
+
     </form>
   );
 }

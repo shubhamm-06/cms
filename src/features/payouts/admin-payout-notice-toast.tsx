@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 const adminPayoutNoticeMessages = {
-  admin_payout_marked_paid: "Payout marked paid.",
+  admin_payout_marked_paid: { message: "Payout marked paid.", tone: "success" },
+  admin_payout_update_failed: { message: "Payout could not be updated. Please try again.", tone: "error" },
 } as const;
 
 type AdminPayoutNotice = keyof typeof adminPayoutNoticeMessages;
@@ -19,7 +20,8 @@ export function AdminPayoutNoticeToast({ notice }: { notice?: string }) {
       return;
     }
 
-    toast.success(adminPayoutNoticeMessages[notice]);
+    const config = adminPayoutNoticeMessages[notice];
+    toast[config.tone](config.message);
 
     const url = new URL(window.location.href);
     url.searchParams.delete("notice");

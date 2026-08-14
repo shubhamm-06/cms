@@ -41,6 +41,40 @@ export type Database = {
           cms_share: number;
           image_url: string | null;
           status: "active" | "inactive";
+          show_on_website: boolean;
+          accept_booking_requests: boolean;
+          slug: string | null;
+          public_name: string | null;
+          public_property_type: string | null;
+          region: string | null;
+          area: string | null;
+          short_location_line: string | null;
+          public_location_text: string | null;
+          google_maps_url: string | null;
+          tagline: string | null;
+          short_description: string | null;
+          full_description: string | null;
+          promotional_badge: string | null;
+          beds: number | null;
+          bathrooms: number | null;
+          max_guests: number | null;
+          pool_type: string | null;
+          distance_from_beach: string | null;
+          amenities: string[];
+          property_highlights: string[];
+          house_rules: string[];
+          starting_price: number | null;
+          show_price: boolean;
+          price_note: string | null;
+          minimum_nights: number | null;
+          check_in_time: string | null;
+          check_out_time: string | null;
+          booking_enquiry_note: string | null;
+          is_featured: boolean;
+          display_order: number;
+          show_in_similar_properties: boolean;
+          seo_title: string | null;
+          seo_description: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -49,6 +83,32 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["properties"]["Row"]>;
         Relationships: [];
+      };
+      property_images: {
+        Row: {
+          id: string;
+          property_id: string;
+          storage_path: string;
+          alt_text: string | null;
+          sort_order: number;
+          is_cover: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["property_images"]["Row"]> & {
+          property_id: string;
+          storage_path: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["property_images"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "property_images_property_id_fkey";
+            columns: ["property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       bookings: {
         Row: {
@@ -182,7 +242,91 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      // Public-safe catalogue source for /booking. Read-only, anon-selectable,
+      // and already filtered to published, operationally active properties.
+      public_property_catalogue: {
+        Row: {
+          id: string;
+          slug: string;
+          public_name: string | null;
+          public_property_type: string | null;
+          region: string | null;
+          area: string | null;
+          short_location_line: string | null;
+          tagline: string | null;
+          short_description: string | null;
+          promotional_badge: string | null;
+          bedrooms: number | null;
+          beds: number | null;
+          bathrooms: number | null;
+          max_guests: number | null;
+          pool_type: string | null;
+          distance_from_beach: string | null;
+          starting_price: number | null;
+          show_price: boolean;
+          price_note: string | null;
+          is_featured: boolean;
+          display_order: number;
+          cover_storage_path: string | null;
+          cover_alt_text: string | null;
+        };
+        Relationships: [];
+      };
+      // Public-safe detail source for /property/[slug]. Same publish filters as
+      // the catalogue view; carries the long-form public copy and stay settings
+      // the detail page needs and no operational or financial column.
+      public_property_details: {
+        Row: {
+          id: string;
+          slug: string;
+          public_name: string | null;
+          public_property_type: string | null;
+          region: string | null;
+          area: string | null;
+          short_location_line: string | null;
+          public_location_text: string | null;
+          google_maps_url: string | null;
+          tagline: string | null;
+          short_description: string | null;
+          full_description: string | null;
+          promotional_badge: string | null;
+          bedrooms: number | null;
+          beds: number | null;
+          bathrooms: number | null;
+          max_guests: number | null;
+          pool_type: string | null;
+          distance_from_beach: string | null;
+          amenities: string[];
+          property_highlights: string[];
+          house_rules: string[];
+          starting_price: number | null;
+          show_price: boolean;
+          price_note: string | null;
+          minimum_nights: number | null;
+          check_in_time: string | null;
+          check_out_time: string | null;
+          booking_enquiry_note: string | null;
+          accept_booking_requests: boolean;
+          seo_title: string | null;
+          seo_description: string | null;
+        };
+        Relationships: [];
+      };
+      // Public-safe gallery source for /property/[slug]. Only rows belonging to
+      // a published, operationally active property are reachable.
+      public_property_gallery: {
+        Row: {
+          property_id: string;
+          storage_path: string;
+          alt_text: string | null;
+          sort_order: number;
+          is_cover: boolean;
+          created_at: string;
+        };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

@@ -42,7 +42,7 @@ npm run build
 
 | Area | Routes |
 | --- | --- |
-| Public | `/`, `/login`, `/signup`, `/pending-approval`, `/account-disabled` |
+| Public | `/`, `/about`, `/booking`, `/property/[slug]`, `/case-studies`, `/property-management-goa`, `/property-management-proposal`, `/faq`, `/demo`, `/login`, `/signup`, `/auth/callback`, `/pending-approval`, `/account-disabled` |
 | Public APIs | `/api/contact`, `/api/auth/send-email-hook`, `/api/owner-forecast`, `/api/owner-forecast/proposal` |
 | Admin | `/dashboard` and `/dashboard/*` |
 | Owner | `/owner` and `/owner/*` |

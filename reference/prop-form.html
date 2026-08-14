@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Property · CurateMyStay</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --primary: #ff5a5f;
+      --primary-hover: #e54b50;
+      --primary-soft: #fff1f1;
+      --lagoon: #3c8399;
+      --lagoon-soft: #eaf3f5;
+      --ink: #222222;
+      --ink-2: #484848;
+      --muted: #717171;
+      --border: #dddddd;
+      --border-soft: #ebebeb;
+      --surface: #ffffff;
+      --background: #f7f7f7;
+      --success: #1b8a5a;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 4px 16px rgba(34, 34, 34, 0.07);
+      --shadow-md: 0 12px 34px rgba(34, 34, 34, 0.11);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--background);
+      font-family: "Figtree", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+    }
+
+    .header-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(145deg, #e98363, #e9aa4b 58%, #3c8399);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-title {
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      min-height: 42px;
+      padding: 10px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 700;
+      transition: 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: var(--primary);
+      box-shadow: 0 8px 18px rgba(255, 90, 95, 0.22);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-ghost {
+      color: var(--ink-2);
+      background: transparent;
+    }
+
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 34px 24px 80px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .intro {
+      margin-bottom: 24px;
+    }
+
+    .intro h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 44px);
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+    }
+
+    .intro p {
+      max-width: 720px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .required-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #9f3539;
+      background: var(--primary-soft);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .form-stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .section-card {
+      padding: 26px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-soft);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 21px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-heading p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .section-number {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      background: var(--primary-soft);
+      font-weight: 800;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label,
+    .field-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--ink-2);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .required {
+      color: var(--primary);
+    }
+
+    .input,
+    .textarea,
+    .select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+      transition: 0.16s ease;
+    }
+
+    .input,
+    .select {
+      min-height: 46px;
+      padding: 0 13px;
+    }
+
+    .textarea {
+      min-height: 120px;
+      resize: vertical;
+      padding: 13px;
+      line-height: 1.55;
+    }
+
+    .input:focus,
+    .textarea:focus,
+    .select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    .helper {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .prefix-field {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .prefix-field:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    .prefix {
+      padding: 0 0 0 13px;
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .prefix-field input {
+      min-width: 0;
+      flex: 1;
+      min-height: 44px;
+      padding: 0 13px 0 4px;
+      border: 0;
+      outline: none;
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .amenity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .check-card {
+      position: relative;
+    }
+
+    .check-card input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .check-card label {
+      min-height: 46px;
+      padding: 11px 12px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      color: var(--ink-2);
+      background: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.16s ease;
+    }
+
+    .check-card label::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      border: 1.5px solid var(--border);
+      border-radius: 5px;
+      background: #fff;
+    }
+
+    .check-card input:checked + label {
+      border-color: #ffc8ca;
+      color: #9f3539;
+      background: var(--primary-soft);
+    }
+
+    .check-card input:checked + label::before {
+      border-color: var(--primary);
+      background:
+        linear-gradient(135deg, transparent 45%, #fff 45% 55%, transparent 55%),
+        var(--primary);
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+    }
+
+    .upload-card {
+      position: relative;
+      min-height: 245px;
+      overflow: hidden;
+      border: 1.5px dashed #c7c7c7;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at top left, rgba(233, 131, 99, 0.16), transparent 38%),
+        linear-gradient(145deg, #fafafa, #f3f3f3);
+      transition: 0.18s ease;
+    }
+
+    .upload-card:hover {
+      border-color: var(--primary);
+      background:
+        radial-gradient(circle at top left, rgba(233, 131, 99, 0.22), transparent 38%),
+        #fff8f8;
+    }
+
+    .upload-card input {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-placeholder {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .upload-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 14px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      color: var(--primary);
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .upload-placeholder strong {
+      display: block;
+      margin-bottom: 7px;
+    }
+
+    .upload-placeholder span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .upload-preview {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: none;
+    }
+
+    .upload-preview.active {
+      display: block;
+    }
+
+    .upload-preview img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .upload-preview .image-label {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(34, 34, 34, 0.76);
+      font-size: 12px;
+      font-weight: 800;
+      backdrop-filter: blur(8px);
+    }
+
+    .gallery-upload {
+      min-height: 245px;
+      padding: 18px;
+      border: 1.5px dashed #c7c7c7;
+      border-radius: 18px;
+      background: #fafafa;
+    }
+
+    .gallery-drop {
+      min-height: 98px;
+      padding: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: var(--lagoon-soft);
+      text-align: center;
+      position: relative;
+    }
+
+    .gallery-drop input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .gallery-drop strong {
+      color: #2c6478;
+    }
+
+    .gallery-drop span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .gallery-preview {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .gallery-item {
+      position: relative;
+      aspect-ratio: 1.2 / 1;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #ececec;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .gallery-item button {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 27px;
+      height: 27px;
+      border: 0;
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(34, 34, 34, 0.76);
+      font-weight: 800;
+    }
+
+    .bedroom-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .bedroom-row {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 90px minmax(0, 1fr) minmax(0, 0.85fr) 95px 42px;
+      gap: 12px;
+      align-items: end;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      background: #fcfcfc;
+    }
+
+    .bedroom-photo {
+      position: relative;
+      width: 90px;
+      height: 76px;
+      overflow: hidden;
+      border-radius: 12px;
+      background:
+        linear-gradient(145deg, #f0d6cb, #e8b89c 60%, #a8cbd3);
+    }
+
+    .bedroom-photo input {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .bedroom-photo img {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: none;
+      object-fit: cover;
+    }
+
+    .bedroom-photo img.active {
+      display: block;
+    }
+
+    .bedroom-photo span {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: #a43b3e;
+      background: #fff;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .add-row {
+      margin-top: 14px;
+    }
+
+    .switch-row {
+      padding: 14px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .switch-row:last-child {
+      border-bottom: 0;
+    }
+
+    .switch-copy strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .switch-copy span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .switch span {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: #d6d6d6;
+      transition: 0.18s ease;
+    }
+
+    .switch span::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.18);
+      transition: 0.18s ease;
+    }
+
+    .switch input:checked + span {
+      background: var(--primary);
+    }
+
+    .switch input:checked + span::after {
+      transform: translateX(20px);
+    }
+
+    .side-panel {
+      position: sticky;
+      top: 94px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .preview-card,
+    .status-card {
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .preview-image {
+      height: 180px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background:
+        linear-gradient(0deg, rgba(20, 12, 8, 0.38), rgba(20, 12, 8, 0.08)),
+        linear-gradient(145deg, #db9d7f, #e9aa4b 52%, #3c8399);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .preview-image img {
+      width: 100%;
+      height: 100%;
+      display: none;
+      object-fit: cover;
+    }
+
+    .preview-image img.active {
+      display: block;
+    }
+
+    .preview-body {
+      padding: 18px;
+    }
+
+    .preview-kicker {
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .preview-title {
+      margin-top: 7px;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .preview-meta {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .preview-stats {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .preview-stats span {
+      padding: 7px 9px;
+      border-radius: 999px;
+      color: var(--ink-2);
+      background: var(--background);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status-card {
+      padding: 18px;
+    }
+
+    .status-card h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .completion {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #eeeeee;
+    }
+
+    .completion > div {
+      width: 64%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), #e9aa4b);
+    }
+
+    .status-list {
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .status-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-list strong {
+      color: var(--ink);
+    }
+
+    .mobile-actions {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        position: static;
+        grid-row: 1;
+      }
+
+      .preview-card {
+        display: grid;
+        grid-template-columns: 230px 1fr;
+      }
+
+      .preview-image {
+        height: 100%;
+        min-height: 180px;
+      }
+
+      .status-card {
+        display: none;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .header-inner {
+        padding: 12px 16px;
+      }
+
+      .header-actions .btn-secondary,
+      .header-actions .btn-primary {
+        display: none;
+      }
+
+      .mobile-actions {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 30;
+        padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        border-top: 1px solid var(--border-soft);
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(12px);
+      }
+
+      .layout {
+        padding: 24px 16px 110px;
+      }
+
+      .section-card {
+        padding: 20px 16px;
+        border-radius: 18px;
+      }
+
+      .field-grid,
+      .upload-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .amenity-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .bedroom-row {
+        grid-template-columns: 78px 1fr;
+      }
+
+      .bedroom-row .field:nth-of-type(3),
+      .bedroom-row .field:nth-of-type(4) {
+        grid-column: span 1;
+      }
+
+      .bedroom-row .icon-button {
+        grid-column: 2;
+        justify-self: end;
+      }
+
+      .preview-card {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-image {
+        height: 210px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .brand-subtitle {
+        display: none;
+      }
+
+      .intro h1 {
+        font-size: 32px;
+      }
+
+      .amenity-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .gallery-preview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="page-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark">CMS</div>
+        <div>
+          <div class="brand-title">CurateMyStay</div>
+          <div class="brand-subtitle">Property administration</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-ghost" type="button">← Properties</button>
+        <button class="btn btn-secondary" type="button">Save draft</button>
+        <button class="btn btn-primary" type="submit" form="propertyForm">Publish property</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div>
+      <section class="intro">
+        <h1>Add a property</h1>
+        <p>
+          Add the information used by the CurateMyStay operations dashboard and
+          the public Goa property listing. You can save an incomplete property as a draft.
+        </p>
+        <div class="required-note">* Required before publishing</div>
+      </section>
+
+      <form id="propertyForm" class="form-stack">
+        <section class="section-card" id="basic">
+          <div class="section-heading">
+            <div>
+              <h2>Basic information</h2>
+              <p>Property identity, URL and public description.</p>
+            </div>
+            <div class="section-number">1</div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="propertyName">Property name <span class="required">*</span></label>
+              <input class="input" id="propertyName" name="propertyName" required placeholder="Saudades Villa" />
+            </div>
+
+            <div class="field">
+              <label for="slug">URL slug <span class="required">*</span></label>
+              <div class="prefix-field">
+                <span class="prefix">/property/</span>
+                <input id="slug" name="slug" required placeholder="saudades-majorda-villa" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="type">Property type <span class="required">*</span></label>
+              <select class="select" id="type" name="type" required>
+                <option value="">Select type</option>
+                <option>Villa</option>
+                <option>Apartment</option>
+                <option>Holiday home</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="region">Goa region <span class="required">*</span></label>
+              <select class="select" id="region" name="region" required>
+                <option value="">Select region</option>
+                <option>North Goa</option>
+                <option>Central Goa</option>
+                <option>South Goa</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="area">Area <span class="required">*</span></label>
+              <input class="input" id="area" name="area" required placeholder="Majorda" />
+            </div>
+
+            <div class="field">
+              <label for="locationLine">Short location line</label>
+              <input class="input" id="locationLine" name="locationLine" placeholder="1.2 km from Majorda Beach" />
+            </div>
+
+            <div class="field full">
+              <label for="tagline">Tagline</label>
+              <input class="input" id="tagline" name="tagline" placeholder="Frangipani, a private pool, and a quiet lane near the beach." />
+            </div>
+
+            <div class="field full">
+              <label for="shortDescription">Short description <span class="required">*</span></label>
+              <textarea class="textarea" id="shortDescription" name="shortDescription" required placeholder="A short introduction used on the public property card and at the top of the property page."></textarea>
+            </div>
+
+            <div class="field full">
+              <label for="fullDescription">Full description</label>
+              <textarea class="textarea" id="fullDescription" name="fullDescription" placeholder="Describe the stay, layout, atmosphere, ideal guest type and nearby surroundings."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card" id="capacity">
+          <div class="section-heading">
+            <div>
+              <h2>Capacity and layout</h2>
+              <p>Core property specifications visible to guests.</p>
+            </div>
+            <div class="section-number">2</div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="bedrooms">Bedrooms <span class="required">*</span></label>
+              <input class="input" id="bedrooms" name="bedrooms" type="number" min="0" required placeholder="4" />
+            </div>
+
+            <div class="field">
+              <label for="beds">Beds</label>
+              <input class="input" id="beds" name="beds" type="number" min="0" placeholder="5" />
+            </div>
+
+            <div class="field">
+              <label for="bathrooms">Bathrooms <span class="required">*</span></label>
+              <input class="input" id="bathrooms" name="bathrooms" type="number" min="0" step="0.5" required placeholder="4" />
+            </div>
+
+            <div class="field">
+              <label for="maxGuests">Maximum guests <span class="required">*</span></label>
+              <input class="input" id="maxGuests" name="maxGuests" type="number" min="1" required placeholder="8" />
+            </div>
+
+            <div class="field">
+              <label for="poolType">Pool type</label>
+              <select class="select" id="poolType" name="poolType">
+                <option>No pool</option>
+                <option>Private pool</option>
+                <option>Shared pool</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="beachDistance">Distance from beach</label>
+              <input class="input" id="beachDistance" name="beachDistance" placeholder="1.2 km" />
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card" id="amenities">
+          <div class="section-heading">
+            <div>
+              <h2>Amenities</h2>
+              <p>Select the most useful features. More can be added later.</p>
+            </div>
+            <div class="section-number">3</div>
+          </div>
+
+          <div class="amenity-grid">
+            <div class="check-card"><input id="wifi" type="checkbox" /><label for="wifi">Fast Wi-Fi</label></div>
+            <div class="check-card"><input id="ac" type="checkbox" /><label for="ac">Air conditioning</label></div>
+            <div class="check-card"><input id="kitchen" type="checkbox" /><label for="kitchen">Equipped kitchen</label></div>
+            <div class="check-card"><input id="parking" type="checkbox" /><label for="parking">Parking</label></div>
+            <div class="check-card"><input id="washer" type="checkbox" /><label for="washer">Washing machine</label></div>
+            <div class="check-card"><input id="workspace" type="checkbox" /><label for="workspace">Workspace</label></div>
+            <div class="check-card"><input id="balcony" type="checkbox" /><label for="balcony">Balcony / terrace</label></div>
+            <div class="check-card"><input id="garden" type="checkbox" /><label for="garden">Garden</label></div>
+            <div class="check-card"><input id="backup" type="checkbox" /><label for="backup">Power backup</label></div>
+            <div class="check-card"><input id="security" type="checkbox" /><label for="security">24/7 security</label></div>
+            <div class="check-card"><input id="gym" type="checkbox" /><label for="gym">Gym access</label></div>
+            <div class="check-card"><input id="playArea" type="checkbox" /><label for="playArea">Children’s play area</label></div>
+          </div>
+
+          <div class="field" style="margin-top:18px">
+            <label for="otherAmenities">Other amenities</label>
+            <input class="input" id="otherAmenities" name="otherAmenities" placeholder="Coffee machine, BBQ grill, crib on request..." />
+          </div>
+        </section>
+
+        <section class="section-card" id="images">
+          <div class="section-heading">
+            <div>
+              <h2>Property images</h2>
+              <p>Upload one cover image and multiple gallery images.</p>
+            </div>
+            <div class="section-number">4</div>
+          </div>
+
+          <div class="upload-grid">
+            <div>
+              <div class="field-label">Cover image <span class="required">*</span></div>
+              <div class="upload-card">
+                <input id="coverInput" type="file" accept="image/*" required />
+                <div class="upload-placeholder" id="coverPlaceholder">
+                  <div>
+                    <div class="upload-icon">＋</div>
+                    <strong>Upload cover image</strong>
+                    <span>Recommended: landscape image, at least 1600 × 1000 px.</span>
+                  </div>
+                </div>
+                <div class="upload-preview" id="coverPreview">
+                  <img id="coverPreviewImage" alt="Cover preview" />
+                  <div class="image-label">Cover image · click to replace</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="field-label">Gallery images</div>
+              <div class="gallery-upload">
+                <div class="gallery-drop">
+                  <input id="galleryInput" type="file" accept="image/*" multiple />
+                  <div>
+                    <strong>Add multiple photos</strong>
+                    <span>Living room, bedrooms, pool, exterior and neighbourhood.</span>
+                  </div>
+                </div>
+                <div class="gallery-preview" id="galleryPreview">
+                  <div class="gallery-item" aria-hidden="true">
+                    <svg viewBox="0 0 240 180" width="100%" height="100%">
+                      <defs><linearGradient id="p1" x1="0" x2="1"><stop stop-color="#efd0c2"/><stop offset="1" stop-color="#e9aa4b"/></linearGradient></defs>
+                      <rect width="240" height="180" fill="url(#p1)"/>
+                      <circle cx="178" cy="50" r="22" fill="#fff" opacity=".55"/>
+                      <path d="M0 142 L68 78 L122 128 L160 92 L240 164 V180 H0Z" fill="#3c8399" opacity=".55"/>
+                    </svg>
+                  </div>
+                  <div class="gallery-item" aria-hidden="true">
+                    <svg viewBox="0 0 240 180" width="100%" height="100%">
+                      <rect width="240" height="180" fill="#dce8de"/>
+                      <rect x="36" y="44" width="168" height="92" rx="8" fill="#fff"/>
+                      <rect x="52" y="59" width="58" height="50" fill="#f1d8c6"/>
+                      <rect x="122" y="59" width="66" height="50" fill="#b7d6dd"/>
+                    </svg>
+                  </div>
+                  <div class="gallery-item" aria-hidden="true">
+                    <svg viewBox="0 0 240 180" width="100%" height="100%">
+                      <rect width="240" height="180" fill="#b7dce3"/>
+                      <path d="M0 110 Q70 76 126 114 T240 100 V180 H0Z" fill="#3c8399" opacity=".65"/>
+                      <path d="M0 78 Q66 42 126 82 T240 68 V124 Q166 150 95 126 T0 138Z" fill="#e8d1a8"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card" id="bedrooms-section">
+          <div class="section-heading">
+            <div>
+              <h2>Bedroom details</h2>
+              <p>Add individual room information and an optional bedroom image.</p>
+            </div>
+            <div class="section-number">5</div>
+          </div>
+
+          <div class="bedroom-list" id="bedroomList">
+            <div class="bedroom-row">
+              <div class="bedroom-photo">
+                <input type="file" accept="image/*" onchange="previewBedroomImage(this)" />
+                <img alt="Bedroom preview" />
+                <span>Add image</span>
+              </div>
+
+              <div class="field">
+                <label>Bedroom name</label>
+                <input class="input" placeholder="Master bedroom" />
+              </div>
+
+              <div class="field">
+                <label>Bed type</label>
+                <select class="select">
+                  <option>King</option>
+                  <option>Queen</option>
+                  <option>Double</option>
+                  <option>Single</option>
+                  <option>Sofa bed</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Sleeps</label>
+                <input class="input" type="number" min="1" value="2" />
+              </div>
+
+              <button class="icon-button" type="button" title="Remove bedroom" onclick="removeBedroom(this)">×</button>
+            </div>
+          </div>
+
+          <div class="add-row">
+            <button class="btn btn-secondary" type="button" id="addBedroom">＋ Add another bedroom</button>
+          </div>
+        </section>
+
+        <section class="section-card" id="location">
+          <div class="section-heading">
+            <div>
+              <h2>Location</h2>
+              <p>Keep the exact address private; show only the public area and approximate location.</p>
+            </div>
+            <div class="section-number">6</div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field full">
+              <label for="address">Full internal address</label>
+              <textarea class="textarea" id="address" placeholder="Complete property address for internal operations."></textarea>
+            </div>
+
+            <div class="field">
+              <label for="mapsLink">Google Maps link</label>
+              <input class="input" id="mapsLink" type="url" placeholder="https://maps.google.com/..." />
+            </div>
+
+            <div class="field">
+              <label for="nearbyBeach">Nearest beach</label>
+              <input class="input" id="nearbyBeach" placeholder="Majorda Beach" />
+            </div>
+
+            <div class="field">
+              <label for="mopaDistance">Distance from Mopa airport</label>
+              <input class="input" id="mopaDistance" placeholder="54 km · 75 min" />
+            </div>
+
+            <div class="field">
+              <label for="goiDistance">Distance from Goa airport</label>
+              <input class="input" id="goiDistance" placeholder="22 km · 35 min" />
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card" id="rules">
+          <div class="section-heading">
+            <div>
+              <h2>Stay rules and enquiry settings</h2>
+              <p>Information shown near the availability request form.</p>
+            </div>
+            <div class="section-number">7</div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="checkin">Check-in time</label>
+              <input class="input" id="checkin" type="time" value="14:00" />
+            </div>
+
+            <div class="field">
+              <label for="checkout">Check-out time</label>
+              <input class="input" id="checkout" type="time" value="11:00" />
+            </div>
+
+            <div class="field">
+              <label for="petPolicy">Pet policy</label>
+              <select class="select" id="petPolicy">
+                <option>On request</option>
+                <option>Allowed</option>
+                <option>Not allowed</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="minNights">Minimum nights</label>
+              <input class="input" id="minNights" type="number" min="1" value="2" />
+            </div>
+
+            <div class="field full">
+              <label for="houseRules">House rules</label>
+              <textarea class="textarea" id="houseRules" placeholder="No smoking indoors. Quiet hours from 10 PM to 8 AM. Events require prior approval."></textarea>
+            </div>
+
+            <div class="field full">
+              <label for="enquiryNote">Booking enquiry note</label>
+              <textarea class="textarea" id="enquiryNote">This is a booking request, not a confirmed reservation. Our team will verify availability and contact you with the final price.</textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card" id="pricing">
+          <div class="section-heading">
+            <div>
+              <h2>Price display</h2>
+              <p>Optional starting price only. No automatic checkout or final-price calculation.</p>
+            </div>
+            <div class="section-number">8</div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="price">Starting nightly price</label>
+              <div class="prefix-field">
+                <span class="prefix">₹</span>
+                <input id="price" type="number" min="0" placeholder="14000" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="priceNote">Price note</label>
+              <input class="input" id="priceNote" placeholder="Final rate depends on dates and guest count." />
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card" id="publishing">
+          <div class="section-heading">
+            <div>
+              <h2>Publishing controls</h2>
+              <p>Choose how the property appears on the public booking pages.</p>
+            </div>
+            <div class="section-number">9</div>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-copy">
+              <strong>Publish property</strong>
+              <span>Show this listing on /booking and make the property URL public.</span>
+            </div>
+            <label class="switch">
+              <input id="publishToggle" type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-copy">
+              <strong>Accept booking requests</strong>
+              <span>Display the availability enquiry form on the property page.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked />
+              <span></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-copy">
+              <strong>Featured property</strong>
+              <span>Give this property priority placement on public property lists.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-copy">
+              <strong>Show starting price</strong>
+              <span>Hide the price when rates are not reliably maintained.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" />
+              <span></span>
+            </label>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-heading">
+            <div>
+              <h2>SEO</h2>
+              <p>Optional search and social-sharing information.</p>
+            </div>
+            <div class="section-number">10</div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field full">
+              <label for="seoTitle">SEO title</label>
+              <input class="input" id="seoTitle" placeholder="4 BHK Private Pool Villa in Majorda, Goa | CurateMyStay" />
+            </div>
+
+            <div class="field full">
+              <label for="seoDescription">Meta description</label>
+              <textarea class="textarea" id="seoDescription" placeholder="Discover a managed Goa villa with four bedrooms, a private pool and easy access to Majorda Beach."></textarea>
+            </div>
+          </div>
+        </section>
+      </form>
+    </div>
+
+    <aside class="side-panel">
+      <section class="preview-card">
+        <div class="preview-image" id="sidePreview">
+          <span id="sidePreviewPlaceholder">Cover image preview</span>
+          <img id="sidePreviewImage" alt="Property cover preview" />
+        </div>
+
+        <div class="preview-body">
+          <div class="preview-kicker">Property preview</div>
+          <div class="preview-title" id="previewTitle">Untitled property</div>
+          <div class="preview-meta" id="previewMeta">Area, Goa · Property type</div>
+          <div class="preview-stats">
+            <span id="previewGuests">0 guests</span>
+            <span id="previewBedrooms">0 bedrooms</span>
+            <span id="previewPool">No pool</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="status-card">
+        <h3>Listing readiness</h3>
+        <div class="completion"><div></div></div>
+
+        <ul class="status-list">
+          <li><span>Basic details</span><strong>Required</strong></li>
+          <li><span>Cover image</span><strong>Required</strong></li>
+          <li><span>Gallery</span><strong>Recommended</strong></li>
+          <li><span>Bedroom details</span><strong>Recommended</strong></li>
+          <li><span>SEO information</span><strong>Optional</strong></li>
+        </ul>
+      </section>
+    </aside>
+  </main>
+
+  <div class="mobile-actions">
+    <button class="btn btn-secondary" type="button">Save draft</button>
+    <button class="btn btn-primary" type="submit" form="propertyForm">Publish</button>
+  </div>
+
+  <template id="bedroomTemplate">
+    <div class="bedroom-row">
+      <div class="bedroom-photo">
+        <input type="file" accept="image/*" onchange="previewBedroomImage(this)" />
+        <img alt="Bedroom preview" />
+        <span>Add image</span>
+      </div>
+
+      <div class="field">
+        <label>Bedroom name</label>
+        <input class="input" placeholder="Bedroom 2" />
+      </div>
+
+      <div class="field">
+        <label>Bed type</label>
+        <select class="select">
+          <option>King</option>
+          <option>Queen</option>
+          <option>Double</option>
+          <option>Single</option>
+          <option>Sofa bed</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Sleeps</label>
+        <input class="input" type="number" min="1" value="2" />
+      </div>
+
+      <button class="icon-button" type="button" title="Remove bedroom" onclick="removeBedroom(this)">×</button>
+    </div>
+  </template>
+
+  <script>
+    const propertyName = document.getElementById("propertyName");
+    const slug = document.getElementById("slug");
+    const area = document.getElementById("area");
+    const region = document.getElementById("region");
+    const type = document.getElementById("type");
+    const maxGuests = document.getElementById("maxGuests");
+    const bedrooms = document.getElementById("bedrooms");
+    const poolType = document.getElementById("poolType");
+
+    const previewTitle = document.getElementById("previewTitle");
+    const previewMeta = document.getElementById("previewMeta");
+    const previewGuests = document.getElementById("previewGuests");
+    const previewBedrooms = document.getElementById("previewBedrooms");
+    const previewPool = document.getElementById("previewPool");
+
+    function makeSlug(value) {
+      return value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    propertyName.addEventListener("input", () => {
+      previewTitle.textContent = propertyName.value || "Untitled property";
+      if (!slug.dataset.edited) slug.value = makeSlug(propertyName.value);
+    });
+
+    slug.addEventListener("input", () => {
+      slug.dataset.edited = "true";
+      slug.value = makeSlug(slug.value);
+    });
+
+    function updatePreviewMeta() {
+      const location = [area.value, region.value].filter(Boolean).join(", ") || "Area, Goa";
+      previewMeta.textContent = `${location} · ${type.value || "Property type"}`;
+    }
+
+    [area, region, type].forEach((field) => field.addEventListener("input", updatePreviewMeta));
+
+    maxGuests.addEventListener("input", () => {
+      const count = Number(maxGuests.value || 0);
+      previewGuests.textContent = `${count} guest${count === 1 ? "" : "s"}`;
+    });
+
+    bedrooms.addEventListener("input", () => {
+      const count = Number(bedrooms.value || 0);
+      previewBedrooms.textContent = `${count} bedroom${count === 1 ? "" : "s"}`;
+    });
+
+    poolType.addEventListener("change", () => {
+      previewPool.textContent = poolType.value;
+    });
+
+    const coverInput = document.getElementById("coverInput");
+    const coverPreview = document.getElementById("coverPreview");
+    const coverPreviewImage = document.getElementById("coverPreviewImage");
+    const coverPlaceholder = document.getElementById("coverPlaceholder");
+    const sidePreviewImage = document.getElementById("sidePreviewImage");
+    const sidePreviewPlaceholder = document.getElementById("sidePreviewPlaceholder");
+
+    coverInput.addEventListener("change", () => {
+      const file = coverInput.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      coverPreviewImage.src = url;
+      coverPreview.classList.add("active");
+      coverPlaceholder.style.display = "none";
+
+      sidePreviewImage.src = url;
+      sidePreviewImage.classList.add("active");
+      sidePreviewPlaceholder.style.display = "none";
+    });
+
+    const galleryInput = document.getElementById("galleryInput");
+    const galleryPreview = document.getElementById("galleryPreview");
+
+    galleryInput.addEventListener("change", () => {
+      galleryPreview.innerHTML = "";
+
+      [...galleryInput.files].forEach((file) => {
+        const item = document.createElement("div");
+        item.className = "gallery-item";
+
+        const image = document.createElement("img");
+        image.src = URL.createObjectURL(file);
+        image.alt = file.name;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "×";
+        remove.title = "Remove image";
+        remove.addEventListener("click", () => item.remove());
+
+        item.append(image, remove);
+        galleryPreview.appendChild(item);
+      });
+    });
+
+    document.getElementById("addBedroom").addEventListener("click", () => {
+      const template = document.getElementById("bedroomTemplate");
+      const clone = template.content.cloneNode(true);
+      document.getElementById("bedroomList").appendChild(clone);
+    });
+
+    function removeBedroom(button) {
+      const rows = document.querySelectorAll(".bedroom-row");
+      if (rows.length === 1) {
+        alert("Keep at least one bedroom row.");
+        return;
+      }
+      button.closest(".bedroom-row").remove();
+    }
+
+    function previewBedroomImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const wrapper = input.closest(".bedroom-photo");
+      const image = wrapper.querySelector("img");
+      image.src = URL.createObjectURL(file);
+      image.classList.add("active");
+      wrapper.querySelector("span").style.display = "none";
+    }
+
+    document.getElementById("propertyForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      alert("Prototype only: property details are ready to be sent to the backend.");
+    });
+  </script>
+</body>
+</html>
