@@ -23,6 +23,7 @@ import { PropertyEnquiryCard } from "@/src/features/catalogue/property-enquiry-c
 import { PropertyGallery } from "@/src/features/catalogue/property-gallery";
 import { PropertyManagedByCard } from "@/src/features/catalogue/property-managed-by-card";
 import { PropertyThingsToKnow, type ThingsToKnowBlock } from "@/src/features/catalogue/property-things-to-know";
+import { ShareButton } from "@/src/features/catalogue/share-button";
 import type {
   PropertyDetail,
   PropertyGalleryImage,
@@ -37,9 +38,10 @@ import { formatMoney } from "@/src/lib/utils/money";
  * code. The page checks no availability, calculates no totals and submits no
  * enquiry.
  *
- * Order: title, summary line and gallery; then capacity tiles, highlight rows,
- * about, amenities, stay details, the "Managed by" card, things to know and
- * location, beside a sticky stay card on desktop. Capacity appears once (summary
+ * Order: title (with Share), summary line and gallery; then capacity tiles,
+ * highlight rows, about, amenities, stay details, the "Managed by" card, things
+ * to know and location. The stay card is sticky beside the content on desktop
+ * and comes last on mobile, where the sticky enquiry bar handles quick enquiries. Capacity appears once (summary
  * line plus tiles), and nothing an admin entered is dropped: highlights beyond
  * the first four join the amenities, and long lists open in the shared dialog.
  */
@@ -273,9 +275,12 @@ export function PropertyDetailPage({
       </Link>
 
       <div className="mt-2 mb-4 sm:mb-5">
-        <h1 className="text-[26px] font-extrabold leading-[1.15] tracking-[-0.02em] text-public-ink [overflow-wrap:anywhere] sm:text-[32px]">
-          {name}
-        </h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="min-w-0 text-[26px] font-extrabold leading-[1.15] tracking-[-0.02em] text-public-ink [overflow-wrap:anywhere] sm:text-[32px]">
+            {name}
+          </h1>
+          <ShareButton className="-mr-3 shrink-0 sm:mt-0.5" title={name} url={propertyUrl} />
+        </div>
         {summaryParts.length > 0 ? (
           <p className="mt-2 text-[15px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[16px]">
             {summaryParts.join(" · ")}
@@ -301,9 +306,6 @@ export function PropertyDetailPage({
               ))}
             </div>
           ) : null}
-
-          {/* Mobile and tablet: the stay card sits before the long-form copy. */}
-          <div className="mt-7 lg:hidden">{enquiryCard}</div>
 
           {highlightRows.length > 0 ? (
             <>
@@ -421,6 +423,15 @@ export function PropertyDetailPage({
               </section>
             </>
           ) : null}
+
+          {/* Mobile and tablet: the full stay card comes last, so it never pushes the
+              content down; the sticky enquiry bar covers quick enquiries until then. */}
+          <div className="lg:hidden">
+            <Rule />
+            <section aria-label="Ask us about this stay" id="enquire">
+              {enquiryCard}
+            </section>
+          </div>
         </div>
 
         {/* Desktop: the same card, sticky beside the content. */}

@@ -108,12 +108,12 @@ function DateField({
   }
 
   return (
-    <label className="relative block cursor-pointer px-3.5 py-2.5 has-[input:focus-visible]:rounded-[11px] has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-inset has-[input:focus-visible]:ring-[#ff5a5f]">
-      <span className="block text-[10.5px] font-bold uppercase leading-[13px] tracking-[0.06em] text-[#222222]">
+    <label className="relative block cursor-pointer px-3.5 py-2.5 has-[input:focus-visible]:rounded-[11px] has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-inset has-[input:focus-visible]:ring-public-coral">
+      <span className="block text-[10.5px] font-bold uppercase leading-[13px] tracking-[0.06em] text-public-ink">
         {label}
       </span>
       <span
-        className={`mt-0.5 block truncate text-[14.5px] leading-[21px] ${value ? "text-[#222222]" : "text-[#b0b0b0]"}`}
+        className={`mt-0.5 block truncate text-[14.5px] leading-[21px] ${value ? "text-public-ink" : "text-public-faint"}`}
       >
         {(value && formatFieldDate(value)) || "Add date"}
       </span>
@@ -188,35 +188,35 @@ export function PropertyEnquiryCard({
   ].filter((row) => row !== null);
 
   return (
-    <div className="rounded-[20px] border border-[#dddddd] bg-white p-5 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:p-6">
+    <div className="rounded-[20px] border border-public-control bg-white p-5 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:p-6">
       {priceLabel ? (
         <div>
           <div className="flex flex-wrap items-baseline gap-x-2 [overflow-wrap:anywhere]">
-            <span className="text-[26px] font-extrabold leading-tight tracking-[-0.01em] text-[#222222]">
+            <span className="text-[26px] font-extrabold leading-tight tracking-[-0.01em] text-public-ink">
               {priceLabel}
             </span>
-            <span className="text-[15px] text-[#717171]">per night</span>
+            <span className="text-[15px] text-public-muted">per night</span>
           </div>
           {priceNote ? (
-            <p className="mt-1.5 text-[13px] leading-5 text-[#717171]">{priceNote}</p>
+            <p className="mt-1.5 text-[13px] leading-5 text-public-muted">{priceNote}</p>
           ) : null}
         </div>
       ) : (
         <div>
-          <div className="text-[19px] font-bold leading-snug tracking-[-0.01em] text-[#222222]">
+          <div className="text-[19px] font-bold leading-snug tracking-[-0.01em] text-public-ink">
             Ask us about this stay
           </div>
           {priceNote ? (
-            <p className="mt-1.5 text-[13px] leading-5 text-[#717171]">{priceNote}</p>
+            <p className="mt-1.5 text-[13px] leading-5 text-public-muted">{priceNote}</p>
           ) : null}
         </div>
       )}
 
       {acceptBookingRequests && whatsappUrl ? (
         <>
-          <div className="mt-4 rounded-xl border border-[#dddddd]">
+          <div className="mt-4 rounded-xl border border-public-control">
             <div className="grid grid-cols-2">
-              <div className="min-w-0 border-r border-[#dddddd]">
+              <div className="min-w-0 border-r border-public-control">
                 <DateField
                   label="Check-in"
                   min={today}
@@ -236,12 +236,12 @@ export function PropertyEnquiryCard({
                 />
               </div>
             </div>
-            <label className="relative block cursor-pointer border-t border-[#dddddd] px-3.5 py-2.5 has-[select:focus-visible]:rounded-b-[11px] has-[select:focus-visible]:ring-2 has-[select:focus-visible]:ring-inset has-[select:focus-visible]:ring-[#ff5a5f]">
-              <span className="block text-[10.5px] font-bold uppercase leading-[13px] tracking-[0.06em] text-[#222222]">
+            <label className="relative block cursor-pointer border-t border-public-control px-3.5 py-2.5 has-[select:focus-visible]:rounded-b-[11px] has-[select:focus-visible]:ring-2 has-[select:focus-visible]:ring-inset has-[select:focus-visible]:ring-public-coral">
+              <span className="block text-[10.5px] font-bold uppercase leading-[13px] tracking-[0.06em] text-public-ink">
                 Guests
               </span>
               <select
-                className="mt-0.5 block w-full cursor-pointer appearance-none truncate bg-transparent pr-6 text-[14.5px] leading-[21px] text-[#222222] outline-none"
+                className="mt-0.5 block w-full cursor-pointer appearance-none truncate bg-transparent pr-6 text-[14.5px] leading-[21px] text-public-ink outline-none"
                 onChange={(event) => setGuestCount(Number(event.target.value))}
                 value={guestCount}
               >
@@ -253,19 +253,19 @@ export function PropertyEnquiryCard({
               </select>
               <ChevronDown
                 aria-hidden="true"
-                className="pointer-events-none absolute bottom-3 right-3.5 h-4 w-4 text-[#717171]"
+                className="pointer-events-none absolute bottom-3 right-3.5 h-4 w-4 text-public-muted"
               />
             </label>
           </div>
 
           {showDateWarning ? (
-            <p className="mt-2 text-[13px] leading-5 text-[#c13515]" id={warningId} role="alert">
+            <p className="mt-2 text-[13px] leading-5 text-public-error" id={warningId} role="alert">
               Please select your preferred dates first.
             </p>
           ) : null}
 
           {bookingEnquiryNote ? (
-            <p className="mt-4 whitespace-pre-line text-[13.5px] leading-6 text-[#484848]">
+            <p className="mt-4 whitespace-pre-line text-[13.5px] leading-6 text-public-body">
               {bookingEnquiryNote}
             </p>
           ) : null}
@@ -278,7 +278,7 @@ export function PropertyEnquiryCard({
             */}
             <a
               aria-describedby={showDateWarning ? warningId : undefined}
-              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-[#25D366] px-6 py-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition duration-150 hover:bg-[#20bd5a] focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 active:scale-[0.99]"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-whatsapp px-6 py-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition duration-150 hover:bg-whatsapp-hover focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2 active:scale-[0.99]"
               href={whatsappUrl}
               onClick={handleWhatsAppClick}
               rel="noopener noreferrer"
@@ -291,10 +291,10 @@ export function PropertyEnquiryCard({
             </a>
             {phoneHref ? (
               <a
-                className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl border border-[#dddddd] bg-white px-6 py-3 text-center outline-none transition duration-150 hover:bg-[#f7f7f7] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 active:scale-[0.99]"
+                className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl border border-public-control bg-white px-6 py-3 text-center outline-none transition duration-150 hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 active:scale-[0.99]"
                 href={phoneHref}
               >
-                <span className="inline-flex items-center gap-2 text-[17px] font-semibold leading-6 text-[#222222]">
+                <span className="inline-flex items-center gap-2 text-[17px] font-semibold leading-6 text-public-ink">
                   <Phone aria-hidden="true" className="h-[19px] w-[19px] shrink-0" />
                   Call us
                 </span>
@@ -302,22 +302,22 @@ export function PropertyEnquiryCard({
             ) : null}
           </div>
 
-          <p className="mb-1 mt-3 text-center text-[13px] leading-5 text-[#717171]">
+          <p className="mb-1 mt-3 text-center text-[13px] leading-5 text-public-muted">
             Nothing is booked or charged here. Our team will confirm availability with you.
           </p>
         </>
       ) : (
-        <p className="mt-5 rounded-xl bg-[#fbf7f1] px-4 py-3.5 text-[13.5px] leading-6 text-[#484848]">
+        <p className="mt-5 rounded-xl bg-public-cream px-4 py-3.5 text-[13.5px] leading-6 text-public-body">
           Enquiries for this stay are currently paused.
         </p>
       )}
 
       {stayTimeRows.length > 0 ? (
-        <div className="mt-4 flex flex-col gap-[9px] border-t border-[#ebebeb] pt-3.5">
+        <div className="mt-4 flex flex-col gap-[9px] border-t border-public-hairline pt-3.5">
           {stayTimeRows.map((row) => (
             <div className="flex items-baseline justify-between gap-3" key={row.label}>
-              <span className="text-[13px] text-[#717171]">{row.label}</span>
-              <span className="text-right text-[13px] font-semibold text-[#222222]">
+              <span className="text-[13px] text-public-muted">{row.label}</span>
+              <span className="text-right text-[13px] font-semibold text-public-ink">
                 {row.value}
               </span>
             </div>

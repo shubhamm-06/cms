@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { notFound } from "next/navigation";
-import { buildMarketingMetadata } from "@/app/seo";
+import { buildMarketingMetadata, siteOrigin } from "@/app/seo";
 import { PublicFooter } from "@/components/home/public-footer";
 import { PublicHeader } from "@/components/home/public-header";
 import { PropertyDetailPage } from "@/src/features/catalogue/property-detail-page";
+import { PropertyMobileEnquiryBar } from "@/src/features/catalogue/property-mobile-enquiry-bar";
 import { loadPublicPropertyDetail } from "@/src/features/catalogue/public-property-detail-data";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
 
@@ -97,6 +98,13 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         )}
 
         <PublicFooter analyticsLocation="property_page" homeAnchorPrefix="/" />
+        {result.status === "found" ? (
+          <PropertyMobileEnquiryBar
+            acceptBookingRequests={result.property.accept_booking_requests}
+            propertyName={result.property.public_name || "Curated stay"}
+            propertyUrl={`${siteOrigin}/property/${result.property.slug}`}
+          />
+        ) : null}
       </main>
     </div>
   );

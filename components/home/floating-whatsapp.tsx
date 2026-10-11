@@ -15,17 +15,17 @@ const publicMarketingPaths = new Set([
   "/property-management-goa",
 ]);
 
-/** Dynamic public routes that cannot be listed as exact paths. */
-const publicMarketingPrefixes = ["/property/"];
+/**
+ * Property detail pages (`/property/*`) are deliberately not listed: their own
+ * sticky enquiry bar and sticky stay card replace this button there.
+ */
 
 export function FloatingWhatsApp() {
   const pathname = usePathname();
   const normalizedPath =
     pathname === "/" ? "/" : pathname.replace(/\/$/, "");
   const whatsappUrl = getPublicWhatsAppUrl();
-  const isPublicMarketingPath =
-    publicMarketingPaths.has(normalizedPath) ||
-    publicMarketingPrefixes.some((prefix) => normalizedPath.startsWith(prefix));
+  const isPublicMarketingPath = publicMarketingPaths.has(normalizedPath);
 
   if (!isPublicMarketingPath || !whatsappUrl) {
     return null;
