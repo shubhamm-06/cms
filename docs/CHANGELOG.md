@@ -753,3 +753,12 @@
 - Added best-effort property Storage cleanup using only trusted image paths after confirmed database deletion, with a warning when cleanup needs manual attention.
 - Centralized server-only service-role key validation so `sb_publishable_` keys and legacy anon JWTs cannot be mistaken for service-role credentials.
 - Documented the still-manual owner/month payout uniqueness index, duplicate-detection query, `contact_submissions` RLS verification, and Storage policy check without claiming they are deployed.
+
+## Property Photo Tour, Scroll Lock and Pointer Cursor
+
+- Rebuilt the `/property/[slug]` gallery: one set of photo buttons now serves a full-width snap carousel with a `1 / N` counter below `lg` and the 1 + 4 grid with `Show all photos` from `lg`. Only real photos render, which removes the empty beige tiles the old stacked mobile grid could show while lazy images loaded, and the cover is downloaded once instead of twice.
+- Added a full-screen photo tour and lightbox on Radix Dialog with prev/next, a continuous `N / total` counter, captions, arrow keys, swipe and Esc. Open state syncs to `?photos=1` and `?photo=N` so the browser and phone back buttons close it, and deep links work. Added a Web Share / copy-link `ShareButton`.
+- Fixed two bugs in that work: every `<button>` showed the default arrow because Tailwind v4's preflight no longer sets a pointer cursor (now one base-layer rule in `globals.css`), and the page behind the tour stayed scrollable, showing a second scrollbar, because the dialogs rendered no `Dialog.Overlay` (which carries Radix's scroll lock). Closing the lightbox also no longer moves the tour's scroll position.
+- The tour groups photos into room sections inferred from the existing `alt_text` and sort order, with no schema change: an explicit `Room | description` prefix, else keyword inference with room numbers, else a final `Additional photos` section. A `Photo tour` thumbnail index jumps to each room. Logic and unit tests live in `src/lib/utils/photo-rooms.ts`; `npm test` runs them.
+- Admin gallery manager: each photo card shows its detected room and a hint when none is found, a room picker writes the `Room | ` prefix into the alt text field, and several photos can be ticked and given a room at once through the existing alt-text action.
+- Named the public catalogue colours as tokens in `globals.css` and added `@radix-ui/react-dialog`. No database, view, Storage or Supabase change. An earlier `room_label` column proposal was dropped and its code removed.

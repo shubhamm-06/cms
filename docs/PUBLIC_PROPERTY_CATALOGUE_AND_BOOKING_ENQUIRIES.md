@@ -497,9 +497,9 @@ The public-safe read source is live and wired in: `/booking` loads real publishe
 `/property/[slug]` completes this phase:
 
 - one server route resolves the slug, loads the property and its gallery through the public-safe detail/gallery views, and renders a server component; there is no new API route, no client-side data fetching and no service-role access;
-- the layout follows the `Curate My Stay — Property Detail Page` screen in `reference/booking.html`: back link, title block, hero-plus-2x2 gallery, then a two-column body with a sticky 384px stay card that stacks above the long-form copy below `lg`;
+- the layout follows the `Curate My Stay — Property Detail Page` screen in `reference/booking.html`: back link, title block, gallery (a snap-scrolling carousel below `lg`, the 1 + 4 grid from `lg`), then a two-column body with a sticky 384px stay card that stacks above the long-form copy below `lg`;
 - all property content comes from Admin -> Properties. Only generic section headings are hard-coded, and empty optional fields hide their whole section;
-- gallery images use `property_images` data through the existing `getPropertyImageUrl()` helper with the cover first; legacy `image_url` is not used, and there is no carousel, lightbox or full-screen gallery;
+- gallery images use `property_images` data through the existing `getPropertyImageUrl()` helper with the cover first; legacy `image_url` is not used. Photos open a full-screen photo tour and lightbox (Radix Dialog, URL-synced with `?photos=1` and `?photo=N`) grouped into room sections inferred from `alt_text` and `sort_order` only, with no schema change; see AI Project Context for the room rules;
 - missing, unpublished and operationally inactive slugs are all absent from the views, so they produce the same `notFound()` result and the page never reveals that a private property exists. A real query failure returns a separate public error state and logs only the Supabase error code and message;
 - the stay card is display-only: price behind `show_price`, price note, minimum stay, check-in/check-out, the admin enquiry note, and a WhatsApp CTA built from the shared helper. When `accept_booking_requests` is false the CTA is replaced by a paused message. No dates, guests, totals, taxes, availability check or enquiry submission exist on this page.
 
