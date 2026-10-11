@@ -8,7 +8,7 @@ import type { PropertyGalleryImage } from "@/src/features/catalogue/public-prope
 import { ShareButton } from "@/src/features/catalogue/share-button";
 import { cn } from "@/src/lib/utils/cn";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
-import { ADDITIONAL_PHOTOS_LABEL, parsePhotoRoom } from "@/src/lib/utils/photo-rooms";
+import { ADDITIONAL_PHOTOS_LABEL, groupByRoom, orderByAdminOrder, parsePhotoRoom } from "@/src/lib/utils/photo-rooms";
 
 /**
  * Photo tour and lightbox for `/property/[slug]`.
@@ -16,7 +16,8 @@ import { ADDITIONAL_PHOTOS_LABEL, parsePhotoRoom } from "@/src/lib/utils/photo-r
  * The tour is laid out like a "photo tour": an index of one thumbnail per room,
  * then one section per room. Each photo's room comes from its `alt_text` (see
  * `photo-rooms.ts`: an explicit `Room | description` prefix, else keywords). Rooms
- * are ordered by where their first photo appears in the admin order, and photos
+ * are ordered by their earliest photo in the admin order (`sort_order`; the cover has no
+ * special place in the tour), and photos
  * with no detected room go last under "Additional photos". With fewer than two
  * detected rooms the index and headings are skipped and the photos show in one
  * plain 2-column grid.
@@ -42,40 +43,22 @@ export type TourGroup = {
   photos: Array<{ photo: TourPhoto; index: number }>;
 };
 
-/** Builds the tour order. `index` is the photo's position in that order. */
+/**
+ * Builds the tour order from the admin photo order (`sort_order`) only: the
+ * cover gets no special treatment here. `index` is the photo's position in the
+ * resulting tour order.
+ */
 export function buildTourGroups(photos: TourPhoto[]): TourGroup[] {
-  const rooms = new Map<string, { label: string; photos: TourPhoto[] }>();
-  const additional: TourPhoto[] = [];
-
-  photos.forEach((photo) => {
-    if (!photo.roomKey || !photo.room) {
-      additional.push(photo);
-      return;
-    }
-    const entry = rooms.get(photo.roomKey) || { label: photo.room, photos: [] };
-    entry.photos.push(photo);
-    rooms.set(photo.roomKey, entry);
-  });
-
-  if (rooms.size < 2) {
-    return [{ id: "all", label: null, photos: photos.map((photo, index) => ({ index, photo })) }];
-  }
-
-  // Map insertion order is each room's first appearance, i.e. its lowest sort position.
-  const sections = [...rooms.entries()].map(([key, room], position) => ({
-    id: `room-${position}-${key.replace(/[^a-z0-9]+/g, "-")}`,
-    label: room.label,
-    photos: room.photos,
-  }));
-  if (additional.length > 0) {
-    sections.push({ id: "room-additional", label: ADDITIONAL_PHOTOS_LABEL, photos: additional });
+  const grouped = groupByRoom(photos);
+  if (!grouped) {
+    return [{ id: "all", label: null, photos: orderByAdminOrder(photos).map((photo, index) => ({ index, photo })) }];
   }
 
   let index = 0;
-  return sections.map((section) => ({
-    id: section.id,
-    label: section.label,
-    photos: section.photos.map((photo) => ({ index: index++, photo })),
+  return grouped.map((group, position) => ({
+    id: group.key ? `room-${position}-${group.key.replace(/[^a-z0-9]+/g, "-")}` : "room-additional",
+    label: group.room ?? ADDITIONAL_PHOTOS_LABEL,
+    photos: group.items.map((photo) => ({ index: index++, photo })),
   }));
 }
 

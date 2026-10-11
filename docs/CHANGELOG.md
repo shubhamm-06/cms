@@ -762,3 +762,10 @@
 - The tour groups photos into room sections inferred from the existing `alt_text` and sort order, with no schema change: an explicit `Room | description` prefix, else keyword inference with room numbers, else a final `Additional photos` section. A `Photo tour` thumbnail index jumps to each room. Logic and unit tests live in `src/lib/utils/photo-rooms.ts`; `npm test` runs them.
 - Admin gallery manager: each photo card shows its detected room and a hint when none is found, a room picker writes the `Room | ` prefix into the alt text field, and several photos can be ticked and given a room at once through the existing alt-text action.
 - Named the public catalogue colours as tokens in `globals.css` and added `@radix-ui/react-dialog`. No database, view, Storage or Supabase change. An earlier `room_label` column proposal was dropped and its code removed.
+
+## Photo Tour Order Follows Admin Order
+
+- The photo tour's room sections now follow the admin photo order (`sort_order`, then creation time) only. Previously the public loader's cover-first ordering fed the tour, so the cover's room always led it. The page's top grid still leads with the cover; the tour gives the cover no special place.
+- Moved the ordering and grouping into `src/lib/utils/photo-rooms.ts` (`orderByAdminOrder`, `groupByRoom`, `tourRoomOrder`), shared by the tour and the admin. Each room sits at its earliest photo's position, "Additional photos" is always last, and fewer than two named rooms still falls back to a plain grid in admin order.
+- The admin gallery manager shows a read-only `Tour order:` line above the photo list that updates live as photos are reordered or a room prefix is edited, including unsaved alt text edits.
+- Added unit tests for a non-contiguous room, the cover in a later position, and a later photo moved to first. No database, view or Supabase change.

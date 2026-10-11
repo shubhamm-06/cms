@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   applyRoomPrefix,
+  groupByRoom,
   inferRoom,
   normaliseRoomName,
+  orderByAdminOrder,
   parsePhotoRoom,
   roomKey,
+  tourRoomOrder,
 } from "./photo-rooms.ts";
 
 /**
@@ -151,4 +154,78 @@ test("applyRoomPrefix adds, replaces and removes the prefix", () => {
   assert.equal(applyRoomPrefix(null, "bedroom two"), "Bedroom 2 |");
   assert.equal(applyRoomPrefix("Pool | Evening light", ""), "Evening light");
   assert.equal(parsePhotoRoom(applyRoomPrefix("Evening light", "Pool")).room, "Pool");
+});
+
+// ---- tour order: admin photo order only, the cover gets no special place -----------
+
+type Photo = { alt_text: string | null; created_at: string; id: string; is_cover: boolean; sort_order: number };
+
+function photo(id: string, sort_order: number, alt_text: string | null, is_cover = false): Photo {
+  return { alt_text, created_at: `2026-01-01T00:00:0${sort_order % 10}Z`, id, is_cover, sort_order };
+}
+
+const ids = (groups: ReturnType<typeof groupByRoom<Photo>>) => (groups ?? []).map((group) => `${group.room ?? "Additional"}:${group.items.map((item) => item.id).join("")}`);
+
+test("a room whose photos are not contiguous groups together at its earliest photo", () => {
+  const photos = [
+    photo("a", 0, "Living room | Sofa"),
+    photo("b", 1, "Kitchen | Counter"),
+    photo("c", 2, "Living room | Window"),
+    photo("d", 3, "Pool | Deck"),
+    photo("e", 4, "Kitchen | Fridge"),
+    photo("f", 5, "Living room | Shelves"),
+  ];
+  // Living room first (photo a), Kitchen second (photo b), Pool third; photos keep admin order inside a room.
+  assert.deepEqual(ids(groupByRoom(photos)), ["Living room:acf", "Kitchen:be", "Pool:d"]);
+  assert.deepEqual(tourRoomOrder(photos), ["Living room", "Kitchen", "Pool"]);
+});
+
+test("the cover in a later position does not lead the tour", () => {
+  const photos = [
+    photo("a", 0, "Kitchen | Counter"),
+    photo("b", 1, "Bedroom 1 | Bed"),
+    photo("c", 2, "Exterior | Front of the villa", true), // the cover, third in admin order
+    photo("d", 3, "Pool | Deck"),
+  ];
+  assert.deepEqual(tourRoomOrder(photos), ["Kitchen", "Bedroom 1", "Exterior", "Pool"]);
+  // The loader sends the cover first; the order must not change because of it.
+  const coverFirst = [photos[2], photos[0], photos[1], photos[3]];
+  assert.deepEqual(tourRoomOrder(coverFirst), ["Kitchen", "Bedroom 1", "Exterior", "Pool"]);
+  assert.deepEqual(orderByAdminOrder(coverFirst).map((item) => item.id), ["a", "b", "c", "d"]);
+});
+
+test("moving a later photo to first moves its room to the front", () => {
+  const before = [
+    photo("a", 0, "Living room | Sofa"),
+    photo("b", 1, "Kitchen | Counter"),
+    photo("c", 2, "Bedroom 1 | Bed"),
+    photo("d", 3, "Pool | Deck"),
+    photo("e", 4, "Pool | Steps"),
+  ];
+  assert.deepEqual(tourRoomOrder(before), ["Living room", "Kitchen", "Bedroom 1", "Pool"]);
+
+  // Move photo d (Pool) to the front: sort_order is renumbered, the others shift down.
+  const after = [photo("d", 0, "Pool | Deck"), photo("a", 1, "Living room | Sofa"), photo("b", 2, "Kitchen | Counter"), photo("c", 3, "Bedroom 1 | Bed"), photo("e", 4, "Pool | Steps")];
+  assert.deepEqual(tourRoomOrder(after), ["Pool", "Living room", "Kitchen", "Bedroom 1"]);
+  assert.deepEqual(ids(groupByRoom(after))[0], "Pool:de");
+});
+
+test("Additional photos is always last, however early its photos are", () => {
+  const photos = [photo("a", 0, null), photo("b", 1, "Kitchen | Counter"), photo("c", 2, "A sunny afternoon"), photo("d", 3, "Pool | Deck")];
+  assert.deepEqual(tourRoomOrder(photos), ["Kitchen", "Pool", "Additional photos"]);
+});
+
+test("equal sort_order falls back to creation time, and editing a prefix changes the order live", () => {
+  const photos = [
+    { ...photo("a", 1, "Kitchen | Counter"), created_at: "2026-01-02T00:00:00Z" },
+    { ...photo("b", 1, "Pool | Deck"), created_at: "2026-01-01T00:00:00Z" },
+  ];
+  assert.deepEqual(tourRoomOrder(photos), ["Pool", "Kitchen"]);
+  const renamed = photos.map((item) => (item.id === "b" ? { ...item, alt_text: "Kitchen | Deck" } : item));
+  assert.deepEqual(tourRoomOrder(renamed), [], "one room left: no grouping");
+});
+
+test("fewer than two named rooms gives no sections", () => {
+  assert.equal(groupByRoom([photo("a", 0, "Pool | Deck"), photo("b", 1, null)]), null);
+  assert.deepEqual(tourRoomOrder([]), []);
 });

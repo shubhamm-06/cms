@@ -14,7 +14,7 @@ import {
 } from "@/src/features/properties/property-image-actions";
 import { optimizePropertyImage } from "@/src/features/properties/property-image-optimization";
 import { createClient } from "@/src/lib/supabase/client";
-import { applyRoomPrefix, parsePhotoRoom, ROOM_SUGGESTIONS } from "@/src/lib/utils/photo-rooms";
+import { applyRoomPrefix, parsePhotoRoom, ROOM_SUGGESTIONS, tourRoomOrder } from "@/src/lib/utils/photo-rooms";
 import type { Database } from "@/types/database.types";
 import {
   AlertDialog,
@@ -285,6 +285,8 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
 
   const orderedImages = sortImages(images);
   const galleryImages = displayImages(images);
+  // Live preview of the public tour order: admin photo order plus the alt text as typed, saved or not.
+  const tourOrder = tourRoomOrder(orderedImages.map((image) => ({ ...image, alt_text: altValues[image.id] ?? image.alt_text })));
 
   return (
     <section className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/45 p-4 sm:p-5">
@@ -324,6 +326,16 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
             <div className="h-full bg-[var(--brand)] transition-[width]" style={{ width: `${(uploadProgress.completed / uploadProgress.total) * 100}%` }} />
           </div>
         </div>
+      ) : null}
+
+      {images.length ? (
+        <p className="mt-4 text-sm leading-6 text-[var(--muted)]" aria-live="polite">
+          <span className="font-semibold text-[var(--foreground)]">Tour order: </span>
+          {tourOrder.length > 0
+            ? tourOrder.join(", ")
+            : "no room sections yet (fewer than two rooms detected), so the public tour shows one plain grid in this photo order."}
+          <span className="block text-xs">Follows the order set with the up and down arrows; the cover has no special place in the tour. Updates as you reorder photos or edit a room prefix; alt text changes go public once saved.</span>
+        </p>
       ) : null}
 
       {!images.length ? (

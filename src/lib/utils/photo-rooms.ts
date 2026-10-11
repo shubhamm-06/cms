@@ -230,3 +230,57 @@ export function applyRoomPrefix(altText: string | null | undefined, room: string
   if (!name) return description;
   return description ? `${name} | ${description}` : `${name} |`;
 }
+
+type AdminOrdered = { created_at: string; sort_order: number };
+
+/**
+ * The admin photo order: `sort_order`, then creation time. The cover flag is
+ * deliberately ignored, so the tour's room order is exactly the order set in the
+ * admin gallery. (The page's top grid may still put the cover first.)
+ */
+export function orderByAdminOrder<T extends AdminOrdered>(items: T[]): T[] {
+  return [...items].sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at));
+}
+
+export type RoomGroup<T> = {
+  items: T[];
+  /** Room identity, or null for the "Additional photos" group. */
+  key: string | null;
+  /** Display name, or null for "Additional photos". */
+  room: string | null;
+};
+
+/**
+ * Groups photos into the tour's room sections. Photos are first put in admin
+ * order; each room's position is then that of its earliest photo, photos keep
+ * admin order inside a room, and photos with no room go to a final group.
+ *
+ * Returns null when fewer than two named rooms are detected: the tour then shows
+ * one plain grid (still in admin order) instead of room sections.
+ */
+export function groupByRoom<T extends AdminOrdered & { alt_text: string | null }>(items: T[]): RoomGroup<T>[] | null {
+  const rooms = new Map<string, RoomGroup<T>>();
+  const additional: T[] = [];
+
+  for (const item of orderByAdminOrder(items)) {
+    const { room, roomKey: key } = parsePhotoRoom(item.alt_text);
+    if (!room || !key) {
+      additional.push(item);
+      continue;
+    }
+    const group = rooms.get(key) ?? { items: [], key, room };
+    group.items.push(item);
+    rooms.set(key, group);
+  }
+
+  if (rooms.size < 2) return null;
+
+  const groups = [...rooms.values()];
+  if (additional.length > 0) groups.push({ items: additional, key: null, room: null });
+  return groups;
+}
+
+/** Section labels in tour order, for a read-only preview in the admin. Empty when no grouping applies. */
+export function tourRoomOrder<T extends AdminOrdered & { alt_text: string | null }>(items: T[]): string[] {
+  return (groupByRoom(items) ?? []).map((group) => group.room ?? ADDITIONAL_PHOTOS_LABEL);
+}
