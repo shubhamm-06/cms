@@ -56,6 +56,35 @@
   width: 100%;
 }
 
+/*
+ * Public catalogue palette (`/booking`, `/property/[slug]`). These are the values
+ * those pages already used as literals, named so new public UI reuses them
+ * instead of adding more hex codes. Tailwind exposes each as a colour utility,
+ * for example `text-public-ink` or `bg-public-coral-soft`.
+ */
+@theme {
+  --color-public-ink: #222222;
+  --color-public-body: #484848;
+  --color-public-muted: #717171;
+  --color-public-faint: #b0b0b0;
+  --color-public-hairline: #ebebeb;
+  --color-public-control: #dddddd;
+  --color-public-divider: #f2ede9;
+  --color-public-hover: #f7f7f7;
+  --color-public-coral: #ff5a5f;
+  --color-public-coral-hover: #e54b50;
+  --color-public-coral-soft: #fff1f1;
+  --color-public-coral-ink: #d63e43;
+  --color-public-tag-ink: #9e4347;
+  --color-public-cream: #fbf7f1;
+  --color-public-sand: #f1e0d7;
+  --color-public-sand-line: #e2d5cd;
+  --color-public-taupe: #9a7770;
+  --color-public-taupe-soft: #c9a79a;
+  --color-whatsapp: #25d366;
+  --color-whatsapp-hover: #20bd5a;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

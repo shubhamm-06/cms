@@ -10,7 +10,7 @@ import {
   deletePropertyImageAction,
   movePropertyImageAction,
   setPropertyImageCoverAction,
-  updatePropertyImageAltTextAction,
+  updatePropertyImageDetailsAction,
 } from "@/src/features/properties/property-image-actions";
 import { optimizePropertyImage } from "@/src/features/properties/property-image-optimization";
 import { createClient } from "@/src/lib/supabase/client";
@@ -37,6 +37,20 @@ const SUPPORTED_IMAGE_TYPES = {
   "image/webp": "webp",
 } as const;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const commonRoomLabels = [
+  "Exterior",
+  "Living room",
+  "Dining area",
+  "Kitchen",
+  "Bedroom 1",
+  "Bedroom 2",
+  "Bedroom 3",
+  "Bathroom",
+  "Balcony",
+  "Pool",
+  "Garden",
+  "Neighbourhood",
+];
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function sortImages(images: PropertyImage[]) {
@@ -111,6 +125,9 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
   const [altValues, setAltValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(initialImages.map((image) => [image.id, image.alt_text || ""])),
   );
+  const [roomValues, setRoomValues] = useState<Record<string, string>>(() =>
+    Object.fromEntries(initialImages.map((image) => [image.id, image.room_label || ""])),
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!propertyId) {
@@ -123,12 +140,21 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
   }
 
   const activePropertyId = propertyId;
+  const roomListId = `property-image-rooms-${propertyId}`;
+  // Rooms already used on this property come first so labels stay consistent.
+  const roomSuggestions = Array.from(
+    new Set([...images.map((image) => image.room_label?.trim() || "").filter(Boolean), ...commonRoomLabels]),
+  );
 
   function replaceImages(nextImages: PropertyImage[]) {
     setImages(sortImages(nextImages));
     setAltValues((current) => ({
       ...current,
       ...Object.fromEntries(nextImages.map((image) => [image.id, image.alt_text || ""])),
+    }));
+    setRoomValues((current) => ({
+      ...current,
+      ...Object.fromEntries(nextImages.map((image) => [image.id, image.room_label || ""])),
     }));
   }
 
@@ -198,12 +224,13 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
     failures.forEach((message) => toast.error(message));
   }
 
-  async function saveAltText(image: PropertyImage) {
+  async function saveImageDetails(image: PropertyImage) {
     setSavingAltId(image.id);
-    const result = await updatePropertyImageAltTextAction({
+    const result = await updatePropertyImageDetailsAction({
       altText: altValues[image.id] || "",
       imageId: image.id,
       propertyId: activePropertyId,
+      roomLabel: roomValues[image.id] || "",
     });
     setSavingAltId(null);
     if (!result.ok || !result.image) {
@@ -212,7 +239,12 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
     }
     setImages((current) => current.map((currentImage) => (currentImage.id === image.id ? result.image : currentImage)));
     setAltValues((current) => ({ ...current, [image.id]: result.image.alt_text || "" }));
-    toast.success("Alt text saved.");
+    if (result.roomLabelUnavailable) {
+      toast.warning(result.message);
+      return;
+    }
+    setRoomValues((current) => ({ ...current, [image.id]: result.image.room_label || "" }));
+    toast.success(result.message);
   }
 
   async function setCover(image: PropertyImage) {
@@ -288,6 +320,11 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
         </div>
       ) : (
         <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <datalist id={roomListId}>
+            {roomSuggestions.map((room) => (
+              <option key={room} value={room} />
+            ))}
+          </datalist>
           {galleryImages.map((image) => {
             const orderIndex = orderedImages.findIndex((orderedImage) => orderedImage.id === image.id);
             const isSavingAlt = savingAltId === image.id;
@@ -308,12 +345,23 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
                       placeholder="Describe this image"
                       value={altValues[image.id] || ""}
                     />
-                    <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">Describe the image for accessibility and search engines.</span>
+                    <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">Describe the image for accessibility and search engines. Also shown as the photo caption.</span>
+                  </label>
+                  <label>
+                    <span className="cms-label">Room</span>
+                    <Input
+                      list={roomListId}
+                      maxLength={60}
+                      onChange={(event) => setRoomValues((current) => ({ ...current, [image.id]: event.target.value }))}
+                      placeholder="For example Living room, Bedroom 1, Pool"
+                      value={roomValues[image.id] || ""}
+                    />
+                    <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">Groups photos in the public photo tour. Use the same spelling for every photo of one room.</span>
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    <Button disabled={isSavingAlt} onClick={() => void saveAltText(image)} size="sm" type="button" variant="secondary">
+                    <Button disabled={isSavingAlt} onClick={() => void saveImageDetails(image)} size="sm" type="button" variant="secondary">
                       {isSavingAlt ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                      {isSavingAlt ? "Saving..." : "Save alt"}
+                      {isSavingAlt ? "Saving..." : "Save details"}
                     </Button>
                     <Button disabled={image.is_cover || isUpdatingCover} onClick={() => void setCover(image)} size="sm" type="button" variant="secondary">
                       {isUpdatingCover ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}

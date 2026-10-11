@@ -15,9 +15,14 @@ const createPropertyImageSchema = z.object({
   storagePath: z.string().min(1).max(255),
 });
 
-const updateAltTextSchema = propertyImageTargetSchema.extend({
+const updateImageDetailsSchema = propertyImageTargetSchema.extend({
   altText: z.string().max(500),
+  roomLabel: z.string().max(60),
 });
+
+// Postgres/PostgREST codes for a column that does not exist yet. `room_label` is
+// added by a manual Supabase step, so until then only the alt text is saved.
+const missingColumnCodes = new Set(["42703", "PGRST204"]);
 
 const movePropertyImageSchema = propertyImageTargetSchema.extend({
   direction: z.enum(["up", "down"]),
@@ -89,9 +94,14 @@ export async function createPropertyImageMetadataAction(input: { propertyId: str
   return { image: inserted.data, ok: true };
 }
 
-export async function updatePropertyImageAltTextAction(input: { altText: string; imageId: string; propertyId: string }) {
+export async function updatePropertyImageDetailsAction(input: {
+  altText: string;
+  imageId: string;
+  propertyId: string;
+  roomLabel: string;
+}) {
   await requireRole("admin");
-  const parsed = updateAltTextSchema.safeParse(input);
+  const parsed = updateImageDetailsSchema.safeParse(input);
   if (!parsed.success) return { message: "Image details are not valid.", ok: false };
 
   const supabase = await createClient();
@@ -103,20 +113,37 @@ export async function updatePropertyImageAltTextAction(input: { altText: string;
     .maybeSingle();
   if (image.error || !image.data) return { message: "Image was not found for this property.", ok: false };
 
-  const updated = await supabase
-    .from("property_images")
-    .update({ alt_text: parsed.data.altText.trim() || null })
-    .eq("id", parsed.data.imageId)
-    .eq("property_id", parsed.data.propertyId)
-    .select("*")
-    .single();
+  const altText = parsed.data.altText.trim() || null;
+  const roomLabel = parsed.data.roomLabel.trim().replace(/\s+/g, " ") || null;
+  const updateImage = (values: { alt_text: string | null; room_label?: string | null }) =>
+    supabase
+      .from("property_images")
+      .update(values)
+      .eq("id", parsed.data.imageId)
+      .eq("property_id", parsed.data.propertyId)
+      .select("*")
+      .single();
+
+  let updated = await updateImage({ alt_text: altText, room_label: roomLabel });
+  let roomLabelUnavailable = false;
+  if (updated.error && missingColumnCodes.has(updated.error.code)) {
+    roomLabelUnavailable = true;
+    updated = await updateImage({ alt_text: altText });
+  }
   if (updated.error || !updated.data) {
-    safeImageFailure("update-alt-text", updated.error, parsed.data);
-    return { message: "Alt text could not be saved.", ok: false };
+    safeImageFailure("update-image-details", updated.error, parsed.data);
+    return { message: "Image details could not be saved.", ok: false };
   }
 
   revalidatePath("/dashboard/properties");
-  return { image: updated.data, ok: true };
+  return {
+    image: updated.data,
+    message: roomLabelUnavailable
+      ? "Alt text saved. Room labels will save once the gallery database update is applied."
+      : "Image details saved.",
+    ok: true,
+    roomLabelUnavailable,
+  };
 }
 
 export async function setPropertyImageCoverAction(input: { imageId: string; propertyId: string }) {

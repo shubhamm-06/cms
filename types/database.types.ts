@@ -91,6 +91,7 @@ export type Database = {
           storage_path: string;
           alt_text: string | null;
           sort_order: number;
+          room_label: string | null;
           is_cover: boolean;
           created_at: string;
           updated_at: string;
@@ -321,6 +322,7 @@ export type Database = {
           storage_path: string;
           alt_text: string | null;
           sort_order: number;
+          room_label: string | null;
           is_cover: boolean;
           created_at: string;
         };

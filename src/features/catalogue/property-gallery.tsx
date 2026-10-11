@@ -1,131 +1,186 @@
+"use client";
+
+import { House, LayoutGrid } from "lucide-react";
 import Image from "next/image";
-import { House } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  buildTourGroups,
+  PropertyPhotoTour,
+  toTourPhotos,
+} from "@/src/features/catalogue/property-photo-tour";
 import type { PropertyGalleryImage } from "@/src/features/catalogue/public-property-detail-data";
-import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
+import { usePhotoTourUrl } from "@/src/features/catalogue/use-photo-tour-url";
+import { cn } from "@/src/lib/utils/cn";
 
 /**
- * Hero-plus-grid gallery from `reference/booking.html`: one large cover on the
- * left and up to four smaller images in a 2x2 grid on the right. Images arrive
- * already ordered (cover, then sort order, then creation time), so this only
- * lays them out. Deliberately static — no carousel, no lightbox.
+ * Property gallery for `/property/[slug]`.
+ *
+ * One list of photo buttons serves both layouts, so the cover is preloaded once:
+ * below `lg` it is a full-width, snap-scrolling carousel with a "1 / N" counter;
+ * from `lg` the same elements become the reference's 1.4fr cover beside up to
+ * four smaller photos, and the rest are `display: none` (so their lazy images are
+ * never fetched there). Only real photos render: there are no padding tiles.
+ * Any photo, and "Show all photos", opens the full photo tour.
  */
 
 const maxSideImages = 4;
 
-/**
- * Keeps the right-hand grid balanced for every real gallery size rather than
- * padding it with repeats of the cover image.
- */
-function sideGridClasses(count: number) {
-  if (count <= 1) return "grid-cols-1 grid-rows-1";
-  if (count === 2) return "grid-cols-1 grid-rows-2";
+/** Desktop grid tracks for the cover plus `side` smaller photos. */
+function desktopGridClasses(side: number) {
+  if (side === 0) return "lg:grid-cols-1 lg:grid-rows-1";
+  if (side === 1) return "lg:grid-cols-[1.4fr_1fr] lg:grid-rows-1";
+  if (side === 2) return "lg:grid-cols-[1.4fr_1fr] lg:grid-rows-2";
 
-  return "grid-cols-2 grid-rows-2";
+  return "lg:grid-cols-[1.4fr_0.5fr_0.5fr] lg:grid-rows-2";
 }
 
-function GalleryImage({
-  alt,
-  className,
-  priority,
-  sizes,
-  storagePath,
-}: {
-  alt: string;
-  className?: string;
-  priority?: boolean;
-  sizes: string;
-  storagePath: string;
-}) {
-  const url = getPropertyImageUrl(storagePath);
-  if (!url) return null;
+/** Desktop placement for the photo at `index`; every real gallery size fills evenly. */
+function desktopTileClasses(index: number, side: number) {
+  if (index > maxSideImages) return "lg:hidden";
+  if (index === 0) return side >= 2 ? "lg:row-span-2" : "";
+  // With exactly three, the first small photo fills the middle column.
+  if (side === 3 && index === 1) return "lg:row-span-2";
 
-  return (
-    <div className={`relative min-h-0 overflow-hidden bg-[#f1e0d7] ${className || ""}`}>
-      <Image alt={alt} className="object-cover" fill priority={priority} sizes={sizes} src={url} />
-    </div>
-  );
+  return "";
+}
+
+function desktopSizes(index: number, side: number) {
+  if (index === 0) return side === 0 ? "(min-width: 1024px) 1120px, 100vw" : "(min-width: 1024px) 690px, 100vw";
+  if (side <= 2) return "(min-width: 1024px) 490px, 100vw";
+
+  return "(min-width: 1024px) 245px, 100vw";
 }
 
 export function PropertyGallery({
   images,
   propertyName,
+  propertyUrl,
 }: {
   images: PropertyGalleryImage[];
   propertyName: string;
+  propertyUrl: string;
 }) {
-  const cover = images[0];
+  const photos = useMemo(() => toTourPhotos(images, propertyName), [images, propertyName]);
+  const groups = useMemo(() => buildTourGroups(photos), [photos]);
+  const tourIndexByPath = useMemo(
+    () => new Map(groups.flatMap((group) => group.photos.map(({ index, photo }) => [photo.storage_path, index]))),
+    [groups],
+  );
+  const tour = usePhotoTourUrl(photos.length);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [scrollToIndex, setScrollToIndex] = useState<number | null>(null);
+  const lastPhotoIndex = useRef<number | null>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
 
-  if (!cover) {
+  // Remember the last lightbox photo so closing the lightbox returns to it in the tour.
+  useEffect(() => {
+    if (tour.photoIndex !== null) lastPhotoIndex.current = tour.photoIndex;
+  }, [tour.photoIndex]);
+
+  if (photos.length === 0) {
     return (
-      <div className="flex h-[240px] w-full flex-col items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-br from-[#fbf7f1] to-[#f1e0d7] sm:h-[320px] lg:h-[440px] lg:rounded-[20px]">
-        <House aria-hidden="true" className="h-9 w-9 text-[#c9a79a]" />
-        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#9a7770]">
+      <div className="flex h-[240px] w-full flex-col items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-br from-public-cream to-public-sand sm:h-[320px] lg:h-[440px] lg:rounded-[20px]">
+        <House aria-hidden="true" className="h-9 w-9 text-public-taupe-soft" />
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-public-taupe">
           Photos coming soon
         </span>
       </div>
     );
   }
 
-  // Desktop has room for four beside the cover; the stacked mobile grid can show
-  // every remaining photo, so nothing an admin uploaded is silently dropped.
-  const remainingImages = images.slice(1);
-  const sideImages = remainingImages.slice(0, maxSideImages);
-  const coverAlt = cover.alt_text || propertyName;
+  const side = Math.min(photos.length - 1, maxSideImages);
+
+  function openTourAt(galleryIndex: number) {
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setScrollToIndex(tourIndexByPath.get(photos[galleryIndex].storage_path) ?? 0);
+    tour.openTour();
+  }
+
+  function closePhoto() {
+    setScrollToIndex(lastPhotoIndex.current);
+    tour.closePhoto();
+  }
+
+  function handleScroll() {
+    const element = scroller.current;
+    if (!element || element.clientWidth === 0) return;
+    setActiveSlide(Math.round(element.scrollLeft / element.clientWidth));
+  }
 
   return (
     <>
-      {/* Mobile and tablet: cover first, remaining images in a compact grid. */}
-      <div className="lg:hidden">
-        <GalleryImage
-          alt={coverAlt}
-          className="aspect-[4/3] w-full rounded-2xl"
-          priority
-          sizes="100vw"
-          storagePath={cover.storage_path}
-        />
-        {remainingImages.length > 0 ? (
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {remainingImages.map((image) => (
-              <GalleryImage
-                alt={image.alt_text || propertyName}
-                className="aspect-[4/3] w-full rounded-xl"
-                key={image.storage_path}
-                sizes="50vw"
-                storagePath={image.storage_path}
+      <div className="relative -mx-4 sm:mx-0">
+        <div
+          aria-label={`${propertyName} photos`}
+          className={cn(
+            // Mobile and tablet: full-width snap carousel.
+            "flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain sm:rounded-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            // Desktop: cover beside the smaller photos.
+            "lg:grid lg:h-[440px] lg:snap-none lg:gap-2 lg:overflow-hidden lg:rounded-[20px]",
+            desktopGridClasses(side),
+          )}
+          onScroll={handleScroll}
+          ref={scroller}
+          role="region"
+        >
+          {photos.map((photo, index) => (
+            <button
+              aria-label={`Open photo ${index + 1} of ${photos.length}${photo.caption ? `: ${photo.caption}` : ""}`}
+              className={cn(
+                "relative aspect-[4/3] w-full shrink-0 snap-start snap-always overflow-hidden bg-public-sand outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-public-coral sm:aspect-[16/10] lg:aspect-auto lg:min-h-0",
+                desktopTileClasses(index, side),
+              )}
+              key={photo.storage_path}
+              onClick={() => openTourAt(index)}
+              type="button"
+            >
+              <Image
+                alt={photo.alt}
+                className="object-cover transition-[filter] duration-200 lg:hover:brightness-90"
+                fill
+                preload={index === 0}
+                sizes={desktopSizes(index, side)}
+                src={photo.url}
               />
-            ))}
-          </div>
+            </button>
+          ))}
+        </div>
+
+        {photos.length > 1 ? (
+          <>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-3 right-3 rounded-md bg-public-ink/75 px-2.5 py-1 text-[12.5px] font-semibold tabular-nums text-white lg:hidden"
+            >
+              {Math.min(activeSlide + 1, photos.length)} / {photos.length}
+            </span>
+            <button
+              className="absolute bottom-4 right-4 hidden min-h-10 items-center gap-2 rounded-xl border border-public-ink bg-white px-3.5 py-2 text-[14px] font-semibold text-public-ink shadow-[0_2px_8px_rgba(0,0,0,0.12)] outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 lg:inline-flex"
+              onClick={() => openTourAt(0)}
+              type="button"
+            >
+              <LayoutGrid aria-hidden="true" className="h-4 w-4 shrink-0" />
+              Show all photos
+            </button>
+          </>
         ) : null}
       </div>
 
-      {/* Desktop: reference proportions — 1.4fr hero beside a 2x2 grid. */}
-      <div
-        className={`hidden h-[440px] gap-2 overflow-hidden rounded-[20px] lg:grid ${
-          sideImages.length > 0 ? "grid-cols-[1.4fr_1fr]" : "grid-cols-1"
-        }`}
-      >
-        <GalleryImage
-          alt={coverAlt}
-          priority
-          sizes="690px"
-          storagePath={cover.storage_path}
-        />
-        {sideImages.length > 0 ? (
-          <div className={`grid min-h-0 gap-2 ${sideGridClasses(sideImages.length)}`}>
-            {sideImages.map((image, index) => (
-              <GalleryImage
-                alt={image.alt_text || propertyName}
-                // With exactly three, the first fills the left column so no cell
-                // is left empty.
-                className={sideImages.length === 3 && index === 0 ? "row-span-2" : undefined}
-                key={image.storage_path}
-                sizes="245px"
-                storagePath={image.storage_path}
-              />
-            ))}
-          </div>
-        ) : null}
-      </div>
+      <PropertyPhotoTour
+        groups={groups}
+        onClose={tour.closeTour}
+        onClosePhoto={closePhoto}
+        onOpenPhoto={tour.openPhoto}
+        onShowPhoto={tour.showPhoto}
+        open={tour.tourOpen}
+        photoIndex={tour.photoIndex}
+        propertyName={propertyName}
+        propertyUrl={propertyUrl}
+        // A deep-linked tour has no opener, so focus the first photo instead.
+        returnFocusTo={() => opener.current ?? scroller.current?.querySelector("button") ?? null}
+        scrollToIndex={scrollToIndex}
+      />
     </>
   );
 }

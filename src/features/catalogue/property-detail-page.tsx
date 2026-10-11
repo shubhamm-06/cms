@@ -155,6 +155,7 @@ export function PropertyDetailPage({
   const checkIn = formatTime(property.check_in_time);
   const checkOut = formatTime(property.check_out_time);
   const showPrice = property.show_price && property.starting_price != null;
+  const propertyUrl = `${siteOrigin}/property/${property.slug}`;
 
   const quickStats = [
     property.max_guests != null
@@ -220,7 +221,7 @@ export function PropertyDetailPage({
       priceLabel={showPrice ? formatMoney(property.starting_price) : null}
       priceNote={property.price_note}
       propertyName={name}
-      propertyUrl={`${siteOrigin}/property/${property.slug}`}
+      propertyUrl={propertyUrl}
     />
   );
 
@@ -258,7 +259,7 @@ export function PropertyDetailPage({
         </div>
       </div>
 
-      <PropertyGallery images={gallery} propertyName={name} />
+      <PropertyGallery images={gallery} propertyName={name} propertyUrl={propertyUrl} />
 
       <div className="pt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_384px] lg:gap-14 lg:pt-10">
         <div className="min-w-0">
