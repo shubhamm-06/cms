@@ -777,3 +777,7 @@
 - Added an area-only map to `Where you'll be`: a keyless Google Maps embed searched by area and region, never `google_maps_url`, with a soft approximate-area circle, lazy-loaded with its height reserved.
 - Added a Share button by the title, a mobile sticky enquiry bar (WhatsApp with the property name and URL, plus Call), moved the full stay card to the end of the content on mobile, kept it sticky on desktop, and hid the floating WhatsApp button on `/property/*`. All enquiry CTAs share one message builder.
 - Lifted the remaining hex literals on the page, route and stay card into the public tokens (adding `--color-public-error` for the existing error red). Admin-controlled price display is unchanged. No reviews section (no review data), no schema, view, Storage or Supabase change.
+
+## Photo Tour Opens at the Top
+
+- Fixed the photo tour opening scrolled to the end ("Additional photos") when opened from the page's cover photo or `Show all photos`: the tour no longer scrolls to the tapped photo at all, always opens at scrollTop 0 with the `Photo tour` heading and room index, and sends initial focus to the Back button without scrolling. The lightbox still opens only from a photo inside the tour.

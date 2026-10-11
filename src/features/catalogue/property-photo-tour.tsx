@@ -149,7 +149,6 @@ export function PropertyPhotoTour({
   propertyName,
   propertyUrl,
   returnFocusTo,
-  scrollToIndex,
 }: {
   groups: TourGroup[];
   onClose: () => void;
@@ -160,30 +159,11 @@ export function PropertyPhotoTour({
   photoIndex: number | null;
   propertyName: string;
   propertyUrl: string;
-  /** Tour photo to bring into view when the tour opens. */
-  scrollToIndex: number | null;
   /** Element that opened the tour; focus returns there when the tour closes. */
   returnFocusTo: () => HTMLElement | null;
 }) {
   const photos = groups.flatMap((group) => group.photos.map(({ photo }) => photo));
   const showIndex = groups.length > 1;
-
-  // Scroll to the tapped photo once per opening. Closing the lightbox must not
-  // move the tour, so this never re-runs while the tour stays open.
-  const scrolledThisOpening = useRef(false);
-  useEffect(() => {
-    if (!open) {
-      scrolledThisOpening.current = false;
-      return;
-    }
-    if (scrolledThisOpening.current || scrollToIndex === null) return;
-    scrolledThisOpening.current = true;
-    // Radix mounts the content on open, so wait a frame before scrolling.
-    const frame = requestAnimationFrame(() => {
-      document.getElementById(`tour-photo-${scrollToIndex}`)?.scrollIntoView({ block: "center" });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [open, scrollToIndex]);
 
   function jumpTo(groupId: string) {
     document.getElementById(groupId)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -199,6 +179,15 @@ export function PropertyPhotoTour({
         <Dialog.Content
           aria-describedby={undefined}
           className="fixed inset-0 z-[80] overflow-y-auto overscroll-contain bg-white text-public-ink outline-none"
+          // The tour always opens at the top, whichever photo or button opened it, and
+          // never scrolls to a photo or room. Initial focus goes to the Back button in
+          // the sticky header (without scrolling) rather than anything lower down.
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            const content = event.currentTarget as HTMLElement;
+            content.scrollTop = 0;
+            content.querySelector<HTMLElement>("[data-tour-initial-focus]")?.focus({ preventScroll: true });
+          }}
           // The tour closes on a history change rather than a click, so Radix's own
           // focus return lands on <body>; send focus back to the opener explicitly.
           onCloseAutoFocus={(event) => {
@@ -207,7 +196,7 @@ export function PropertyPhotoTour({
           }}
         >
           <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-public-hairline bg-white/95 px-2 py-2 backdrop-blur sm:px-4">
-            <Dialog.Close className={cn(tourButton, "hover:bg-public-hover")}>
+            <Dialog.Close className={cn(tourButton, "hover:bg-public-hover")} data-tour-initial-focus>
               <ChevronLeft aria-hidden="true" className="h-5 w-5 shrink-0" />
               <span>Back</span>
             </Dialog.Close>

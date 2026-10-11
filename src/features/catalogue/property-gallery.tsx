@@ -63,13 +63,8 @@ export function PropertyGallery({
 }) {
   const photos = useMemo(() => toTourPhotos(images, propertyName), [images, propertyName]);
   const groups = useMemo(() => buildTourGroups(photos), [photos]);
-  const tourIndexByPath = useMemo(
-    () => new Map(groups.flatMap((group) => group.photos.map(({ index, photo }) => [photo.storage_path, index]))),
-    [groups],
-  );
   const tour = usePhotoTourUrl(photos.length);
   const [activeSlide, setActiveSlide] = useState(0);
-  const [scrollToIndex, setScrollToIndex] = useState<number | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const opener = useRef<HTMLElement | null>(null);
 
@@ -86,9 +81,10 @@ export function PropertyGallery({
 
   const side = Math.min(photos.length - 1, maxSideImages);
 
-  function openTourAt(galleryIndex: number) {
+  // Any page photo or "Show all photos" opens the tour at its top; the lightbox only
+  // opens from a photo inside the tour.
+  function openTour() {
     opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setScrollToIndex(tourIndexByPath.get(photos[galleryIndex].storage_path) ?? 0);
     tour.openTour();
   }
 
@@ -122,7 +118,7 @@ export function PropertyGallery({
                 desktopTileClasses(index, side),
               )}
               key={photo.storage_path}
-              onClick={() => openTourAt(index)}
+              onClick={() => openTour()}
               type="button"
             >
               <Image
@@ -147,7 +143,7 @@ export function PropertyGallery({
             </span>
             <button
               className="absolute bottom-4 right-4 hidden min-h-10 items-center gap-2 rounded-xl border border-public-ink bg-white px-3.5 py-2 text-[14px] font-semibold text-public-ink shadow-[0_2px_8px_rgba(0,0,0,0.12)] outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 lg:inline-flex"
-              onClick={() => openTourAt(0)}
+              onClick={() => openTour()}
               type="button"
             >
               <LayoutGrid aria-hidden="true" className="h-4 w-4 shrink-0" />
@@ -169,7 +165,6 @@ export function PropertyGallery({
         propertyUrl={propertyUrl}
         // A deep-linked tour has no opener, so focus the first photo instead.
         returnFocusTo={() => opener.current ?? scroller.current?.querySelector("button") ?? null}
-        scrollToIndex={scrollToIndex}
       />
     </>
   );
