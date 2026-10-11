@@ -85,13 +85,6 @@ create table if not exists public.property_images (
   constraint property_images_sort_order_nonnegative check (sort_order >= 0)
 );
 
--- Optional room/area grouping for the public photo tour (Living, Bedroom 1, Pool...).
--- Null keeps a photo in the ungrouped, sort-ordered fallback.
-alter table public.property_images add column if not exists room_label text;
-alter table public.property_images drop constraint if exists property_images_room_label_length;
-alter table public.property_images add constraint property_images_room_label_length
-  check (room_label is null or (btrim(room_label) <> '' and char_length(room_label) <= 60));
-
 create unique index if not exists property_images_storage_path_unique
   on public.property_images (storage_path);
 
@@ -277,8 +270,7 @@ select
   i.alt_text,
   i.sort_order,
   i.is_cover,
-  i.created_at,
-  i.room_label
+  i.created_at
 from public.property_images i
 join public.properties p on p.id = i.property_id
 where p.show_on_website

@@ -20,16 +20,7 @@ import type { Database } from "@/types/database.types";
 const detailColumns =
   "id,slug,public_name,public_property_type,region,area,short_location_line,public_location_text,google_maps_url,tagline,short_description,full_description,promotional_badge,bedrooms,beds,bathrooms,max_guests,pool_type,distance_from_beach,amenities,property_highlights,house_rules,starting_price,show_price,price_note,minimum_nights,check_in_time,check_out_time,booking_enquiry_note,accept_booking_requests,seo_title,seo_description";
 
-const galleryColumns = "property_id,storage_path,alt_text,sort_order,is_cover,created_at,room_label";
-
-/**
- * `room_label` is added to the gallery view by a manual Supabase step. Until that
- * step is applied the column does not exist (Postgres 42703), so the read retries
- * without it and the photo tour falls back to its ungrouped, sort-ordered layout.
- * Remove this fallback once the column is confirmed live.
- */
-const legacyGalleryColumns = "property_id,storage_path,alt_text,sort_order,is_cover,created_at";
-const undefinedColumnCode = "42703";
+const galleryColumns = "property_id,storage_path,alt_text,sort_order,is_cover,created_at";
 
 /** Public-safe detail row. Every field here is safe to send to the browser. */
 export type PropertyDetail = Database["public"]["Views"]["public_property_details"]["Row"];
@@ -72,22 +63,13 @@ export const loadPublicPropertyDetail = cache(async function loadPublicPropertyD
   // so they are indistinguishable here and to the visitor.
   if (!property) return { status: "notFound" };
 
-  const readGallery = (columns: string) =>
-    supabase
-      .from("public_property_gallery")
-      .select(columns)
-      .eq("property_id", property.id)
-      .order("is_cover", { ascending: false })
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true })
-      .returns<PropertyGalleryImage[]>();
-
-  let { data: gallery, error: galleryError } = await readGallery(galleryColumns);
-  if (galleryError?.code === undefinedColumnCode) {
-    const legacy = await readGallery(legacyGalleryColumns);
-    gallery = (legacy.data || []).map((image) => ({ ...image, room_label: null }));
-    galleryError = legacy.error;
-  }
+  const { data: gallery, error: galleryError } = await supabase
+    .from("public_property_gallery")
+    .select(galleryColumns)
+    .eq("property_id", property.id)
+    .order("is_cover", { ascending: false })
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
 
   if (galleryError) {
     // A gallery failure should not hide a published property, so the page falls
@@ -96,5 +78,5 @@ export const loadPublicPropertyDetail = cache(async function loadPublicPropertyD
     return { status: "found", property, gallery: [] };
   }
 
-  return { status: "found", property, gallery: gallery || [] };
+  return { status: "found", property, gallery };
 });
