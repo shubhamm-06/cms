@@ -3,6 +3,7 @@
 import { ChevronDown, Phone } from "lucide-react";
 import { useId, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa6";
+import { buildStayEnquiryMessage } from "@/src/features/catalogue/property-enquiry-message";
 import { trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicPhoneUrl, getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
@@ -70,42 +71,6 @@ function formatEnquiryDate(dateInputValue: string) {
   return (
     date?.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) || null
   );
-}
-
-function buildWhatsAppMessage({
-  checkIn,
-  checkOut,
-  guestCount,
-  propertyName,
-  propertyUrl,
-}: {
-  checkIn: string | null;
-  checkOut: string | null;
-  guestCount: number;
-  propertyName: string;
-  propertyUrl: string;
-}) {
-  const opening = `Hi CurateMyStay! I'm interested in staying at ${propertyName}.`;
-
-  // Without both dates there is nothing useful to quote, so the message stays
-  // short rather than carrying an empty or half-filled date block.
-  if (!checkIn || !checkOut) {
-    return `${opening}\n\nCould you please share availability and rates?\n\nProperty: ${propertyUrl}\n\nThanks!`;
-  }
-
-  return [
-    opening,
-    "",
-    `Check-in: ${checkIn}`,
-    `Check-out: ${checkOut}`,
-    `Guests: ${guestCount}`,
-    "",
-    "Could you please confirm availability for these dates and share the final rate?",
-    "",
-    `Property: ${propertyUrl}`,
-    "",
-    "Thanks!",
-  ].join("\n");
 }
 
 /**
@@ -190,7 +155,7 @@ export function PropertyEnquiryCard({
   const hasBothDates = Boolean(selectedCheckIn && selectedCheckOut);
 
   const whatsappUrl = getPublicWhatsAppUrl(
-    buildWhatsAppMessage({
+    buildStayEnquiryMessage({
       checkIn: selectedCheckIn ? formatEnquiryDate(selectedCheckIn) : null,
       checkOut: selectedCheckOut ? formatEnquiryDate(selectedCheckOut) : null,
       guestCount,

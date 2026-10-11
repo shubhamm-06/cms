@@ -77,16 +77,16 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
   return (
     <div className={`${propertyFont.variable} cms-homepage`}>
-      <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
+      <main className="min-h-screen bg-white font-sans text-public-ink antialiased">
         <PublicHeader analyticsLocation="property_page" />
 
         {result.status === "failed" ? (
           <div className="mx-auto max-w-[1180px] px-4 py-14 sm:px-6 sm:py-16 md:px-8">
-            <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-[#e2d5cd] bg-[#fbf7f1] px-6 py-12 text-center">
-              <h1 className="text-[19px] font-bold tracking-[-0.01em] text-[#222222]">
+            <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-public-sand-line bg-public-cream px-6 py-12 text-center">
+              <h1 className="text-[19px] font-bold tracking-[-0.01em] text-public-ink">
                 We could not load this stay just now
               </h1>
-              <p className="mx-auto mt-2.5 max-w-md text-[15px] leading-7 text-[#484848]">
+              <p className="mx-auto mt-2.5 max-w-md text-[15px] leading-7 text-public-body">
                 Please refresh the page in a moment. If it keeps happening, message us and we will
                 share the homes that suit you.
               </p>

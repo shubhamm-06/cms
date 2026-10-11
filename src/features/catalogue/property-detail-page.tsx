@@ -16,10 +16,12 @@ import {
 } from "lucide-react";
 import { siteOrigin } from "@/app/seo";
 import { ShowMoreDialog } from "@/components/ui/show-more-dialog";
-import { amenityIcon, groupAmenities } from "@/src/features/catalogue/amenity-categories";
+import { amenityCategory, amenityIcon, groupAmenities } from "@/src/features/catalogue/amenity-categories";
 import { PropertyAbout } from "@/src/features/catalogue/property-about";
 import { PropertyEnquiryCard } from "@/src/features/catalogue/property-enquiry-card";
 import { PropertyGallery } from "@/src/features/catalogue/property-gallery";
+import { PropertyManagedByCard } from "@/src/features/catalogue/property-managed-by-card";
+import { PropertyThingsToKnow, type ThingsToKnowBlock } from "@/src/features/catalogue/property-things-to-know";
 import type {
   PropertyDetail,
   PropertyGalleryImage,
@@ -30,13 +32,24 @@ import { formatMoney } from "@/src/lib/utils/money";
  * Public property detail layout for `/property/[slug]`.
  *
  * Every property-specific value here comes from Admin -> Properties through the
- * public-safe detail view. Only the generic section headings are in code. The
- * page checks no availability, calculates no totals and submits no enquiry.
+ * public-safe detail view. Only generic headings and company-level copy are in
+ * code. The page checks no availability, calculates no totals and submits no
+ * enquiry.
  *
- * Visual structure follows the "Curate My Stay — Property Detail Page" screen in
- * `reference/booking.html`: hero-plus-grid gallery, quick-stat tiles, stacked
- * detail blocks separated by hairline rules, and a sticky stay card on the right.
+ * Order: title, summary line and gallery; then capacity tiles, highlight rows,
+ * about, amenities, stay details, the "Managed by" card, things to know and
+ * location, beside a sticky stay card on desktop. Capacity appears once (summary
+ * line plus tiles), and nothing an admin entered is dropped: highlights beyond
+ * the first four join the amenities, and long lists open in the shared dialog.
  */
+
+/** Long lists show this many items inline; the rest open in the shared dialog. */
+const inlineAmenityCount = 10;
+const highlightRowCount = 4;
+
+/** Company-level enquiry line: the same for every listing, never property-specific. */
+const enquiryPolicyLine =
+  "An enquiry is not a booking. Our team confirms availability, the final rate and the house rules with you before anything is booked or paid.";
 
 /**
  * Admins store either "Private" or "Private pool", so only append the noun when
@@ -48,10 +61,6 @@ function poolLabel(poolType: string | null) {
 
   return /pool/i.test(value) ? value : `${value} pool`;
 }
-
-/** Long lists show this many items inline; the rest open in the shared dialog. */
-const inlineAmenityCount = 10;
-const inlineRuleCount = 3;
 
 function plural(count: number, singular: string) {
   return `${count} ${count === 1 ? singular : `${singular}s`}`;
@@ -81,6 +90,46 @@ function cleanList(values: string[]) {
   return values.map((value) => value.trim()).filter((value) => value.length > 0);
 }
 
+/** "Title: subtitle" becomes a bold title and a one-line subtitle; no colon means title only. */
+function splitHighlight(highlight: string) {
+  const colon = highlight.indexOf(":");
+  if (colon <= 0) return { subtitle: null, title: highlight };
+
+  const title = highlight.slice(0, colon).trim();
+  const subtitle = highlight.slice(colon + 1).trim();
+  return title ? { subtitle: subtitle || null, title } : { subtitle: null, title: highlight };
+}
+
+/** Appends `extra` items that are not already in `list`, compared case-insensitively. */
+function mergeUnique(list: string[], extra: string[]) {
+  const seen = new Set(list.map((item) => item.toLowerCase()));
+  return [...list, ...extra.filter((item) => !seen.has(item.toLowerCase()))];
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-4 text-[21px] font-bold leading-tight tracking-[-0.01em] text-public-ink sm:text-[23px]">
+      {children}
+    </h2>
+  );
+}
+
+function Rule() {
+  return <div className="my-7 h-px bg-public-hairline sm:my-8" />;
+}
+
+/** Bordered icon tile used by the capacity tiles and the stay/location facts. */
+function FactTile({ icon, label }: { icon: LucideIcon; label: string }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2.5 rounded-[14px] border border-public-hairline p-3 sm:gap-3 sm:p-4">
+      {createElement(icon, { "aria-hidden": true, className: "h-5 w-5 shrink-0 text-public-coral" })}
+      <span className="min-w-0 text-[13.5px] font-bold leading-5 text-public-ink [overflow-wrap:anywhere] sm:text-[14.5px]">
+        {label}
+      </span>
+    </div>
+  );
+}
+
 function ShowAllButton({ label }: { label: string }) {
   return (
     <button
@@ -101,36 +150,23 @@ function AmenityRow({ amenity }: { amenity: string }) {
   );
 }
 
-function RuleRow({ rule }: { rule: string }) {
-  return (
-    <div className="flex min-w-0 items-start gap-3 border-b border-public-divider py-2.5">
-      <Check aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-public-taupe" />
-      <span className="min-w-0 text-[14.5px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[15px]">{rule}</span>
-    </div>
-  );
-}
+function HighlightRow({ highlight }: { highlight: string }) {
+  const { subtitle, title } = splitHighlight(highlight);
+  const icon = amenityIcon(highlight);
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-4 text-[21px] font-bold leading-tight tracking-[-0.01em] text-[#222222] sm:text-[23px]">
-      {children}
-    </h2>
-  );
-}
-
-function Rule() {
-  return <div className="my-7 h-px bg-[#ebebeb] sm:my-8" />;
-}
-
-/** Bordered icon tile used by the quick stats and the location facts. */
-function FactTile({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
-  return (
-    <div className="flex min-w-0 items-center gap-2.5 rounded-[14px] border border-[#ebebeb] p-3 sm:gap-3 sm:p-4">
-      <Icon aria-hidden="true" className="h-5 w-5 shrink-0 text-[#ff5a5f]" />
-      <span className="min-w-0 text-[13.5px] font-bold leading-5 text-[#222222] [overflow-wrap:anywhere] sm:text-[14.5px]">
-        {label}
-      </span>
-    </div>
+    <li className="flex min-w-0 items-start gap-4">
+      {createElement(icon === Check ? Sparkles : icon, {
+        "aria-hidden": true,
+        className: "mt-0.5 h-6 w-6 shrink-0 text-public-ink",
+      })}
+      <div className="min-w-0">
+        <p className="text-[15.5px] font-semibold leading-6 text-public-ink [overflow-wrap:anywhere]">{title}</p>
+        {subtitle ? (
+          <p className="text-[14.5px] leading-6 text-public-muted [overflow-wrap:anywhere]">{subtitle}</p>
+        ) : null}
+      </div>
+    </li>
   );
 }
 
@@ -143,61 +179,64 @@ export function PropertyDetailPage({
 }) {
   const name = property.public_name || "Curated stay";
   const pool = poolLabel(property.pool_type);
-  const location =
-    property.short_location_line || [property.area, property.region].filter(Boolean).join(", ");
-  const amenities = cleanList(property.amenities);
+  const place = property.short_location_line || [property.area, property.region].filter(Boolean).join(", ");
   const highlights = cleanList(property.property_highlights);
+  const highlightRows = highlights.slice(0, highlightRowCount);
+  // Highlights beyond the rows are never dropped: they join the amenities.
+  const amenities = mergeUnique(cleanList(property.amenities), highlights.slice(highlightRowCount));
   const houseRules = cleanList(property.house_rules);
   const checkIn = formatTime(property.check_in_time);
   const checkOut = formatTime(property.check_out_time);
   const showPrice = property.show_price && property.starting_price != null;
   const propertyUrl = `${siteOrigin}/property/${property.slug}`;
 
-  const quickStats = [
-    property.max_guests != null
-      ? { icon: Users, label: plural(property.max_guests, "guest") }
-      : null,
-    property.bedrooms != null
-      ? { icon: BedDouble, label: plural(property.bedrooms, "bedroom") }
-      : null,
-    property.beds != null ? { icon: BedDouble, label: plural(property.beds, "bed") } : null,
-    property.bathrooms != null
-      ? { icon: Bath, label: plural(property.bathrooms, "bathroom") }
-      : null,
-    pool ? { icon: Waves, label: pool } : null,
-  ].filter((stat) => stat !== null);
+  // "Villa in Varca, South Goa · 8 guests · 3 bedrooms · 3 beds · 3.5 bathrooms".
+  const summaryParts = [
+    property.public_property_type && place
+      ? `${property.public_property_type} in ${place}`
+      : property.public_property_type || place || null,
+    property.max_guests != null ? plural(property.max_guests, "guest") : null,
+    property.bedrooms != null ? plural(property.bedrooms, "bedroom") : null,
+    property.beds != null ? plural(property.beds, "bed") : null,
+    property.bathrooms != null ? plural(property.bathrooms, "bathroom") : null,
+  ].filter((part): part is string => Boolean(part));
 
-  // Stay facts repeat some capacity numbers on purpose: this block is the
-  // practical "before you enquire" summary rather than the headline strip.
+  const capacityTiles = [
+    property.max_guests != null ? { icon: Users, label: plural(property.max_guests, "guest") } : null,
+    property.bedrooms != null ? { icon: BedDouble, label: plural(property.bedrooms, "bedroom") } : null,
+    property.beds != null ? { icon: BedDouble, label: plural(property.beds, "bed") } : null,
+    property.bathrooms != null ? { icon: Bath, label: plural(property.bathrooms, "bathroom") } : null,
+    pool ? { icon: Waves, label: pool } : null,
+  ].filter((tile) => tile !== null);
+
+  // Capacity lives in the summary line and tiles; stay details are practical stay facts only.
   const stayFacts = [
-    property.minimum_nights != null
-      ? { icon: Moon, label: `Minimum ${plural(property.minimum_nights, "night")}` }
-      : null,
     checkIn ? { icon: Clock, label: `Check-in from ${checkIn}` } : null,
     checkOut ? { icon: Clock, label: `Check-out by ${checkOut}` } : null,
-    property.max_guests != null
-      ? { icon: Users, label: `Sleeps ${property.max_guests}` }
+    property.minimum_nights != null
+      ? { icon: Moon, label: `Minimum stay ${plural(property.minimum_nights, "night")}` }
       : null,
-    property.bedrooms != null
-      ? { icon: BedDouble, label: plural(property.bedrooms, "bedroom") }
-      : null,
-    property.beds != null ? { icon: BedDouble, label: plural(property.beds, "bed") } : null,
-    property.bathrooms != null
-      ? { icon: Bath, label: plural(property.bathrooms, "bathroom") }
-      : null,
-    pool ? { icon: Waves, label: pool } : null,
-    property.distance_from_beach
-      ? { icon: Footprints, label: property.distance_from_beach }
-      : null,
+    property.distance_from_beach ? { icon: Footprints, label: property.distance_from_beach } : null,
   ].filter((fact) => fact !== null);
 
   const locationFacts = [
     property.area ? { icon: MapPin, label: property.area } : null,
     property.region ? { icon: MapPin, label: property.region } : null,
-    property.distance_from_beach
-      ? { icon: Footprints, label: property.distance_from_beach }
-      : null,
+    property.distance_from_beach ? { icon: Footprints, label: property.distance_from_beach } : null,
   ].filter((fact) => fact !== null);
+
+  const safetyItems = amenities.filter((amenity) => amenityCategory(amenity) === "Safety");
+  const enquiryItems = [
+    property.booking_enquiry_note?.trim() || null,
+    property.minimum_nights != null ? `Minimum stay of ${plural(property.minimum_nights, "night")}.` : null,
+    property.accept_booking_requests ? null : "Enquiries for this stay are currently paused.",
+    enquiryPolicyLine,
+  ].filter((item): item is string => Boolean(item));
+  const thingsToKnow: ThingsToKnowBlock[] = [
+    { icon: "rules" as const, items: houseRules, showAllLabel: "Show all rules", title: "House rules" },
+    { icon: "safety" as const, items: safetyItems, showAllLabel: "Show more", title: "Safety & property" },
+    { icon: "enquiry" as const, items: enquiryItems, showAllLabel: "Show more", title: "Enquiry policy" },
+  ].filter((block) => block.items.length > 0);
 
   // Skip copy a longer field already covers so the page never reads twice.
   const showTagline = !isRepeated(property.tagline, property.full_description);
@@ -224,7 +263,7 @@ export function PropertyDetailPage({
   return (
     <div className="mx-auto w-full max-w-[1180px] px-4 pb-16 pt-5 sm:px-6 sm:pb-20 md:px-8">
       <Link
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-md pr-2 text-[14.5px] font-semibold text-[#222222] outline-none transition-colors hover:text-[#e54b50] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2"
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-md pr-2 text-[14.5px] font-semibold text-public-ink outline-none transition-colors hover:text-public-coral-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
         href="/booking"
       >
         <ArrowLeft aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
@@ -232,37 +271,31 @@ export function PropertyDetailPage({
       </Link>
 
       <div className="mt-2 mb-4 sm:mb-5">
-        <h1 className="text-[26px] font-extrabold leading-[1.15] tracking-[-0.02em] text-[#222222] [overflow-wrap:anywhere] sm:text-[32px]">
+        <h1 className="text-[26px] font-extrabold leading-[1.15] tracking-[-0.02em] text-public-ink [overflow-wrap:anywhere] sm:text-[32px]">
           {name}
         </h1>
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-2 text-[14.5px] text-[#484848]">
-          {property.public_property_type ? (
-            <span className="rounded-full bg-[#fff1f1] px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-[0.08em] text-[#9e4347]">
-              {property.public_property_type}
-            </span>
-          ) : null}
-          {property.promotional_badge ? (
-            <span className="rounded-full bg-[#ff5a5f] px-2.5 py-1 text-[11.5px] font-semibold text-white">
+        {summaryParts.length > 0 ? (
+          <p className="mt-2 text-[15px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[16px]">
+            {summaryParts.join(" · ")}
+          </p>
+        ) : null}
+        {property.promotional_badge ? (
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-public-coral px-2.5 py-1 text-[11.5px] font-semibold text-white">
               {property.promotional_badge}
             </span>
-          ) : null}
-          {location ? (
-            <span className="inline-flex min-w-0 items-center gap-1.5">
-              <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-[#9a7770]" />
-              <span className="min-w-0 [overflow-wrap:anywhere]">{location}</span>
-            </span>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
 
       <PropertyGallery images={gallery} propertyName={name} propertyUrl={propertyUrl} />
 
       <div className="pt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_384px] lg:gap-14 lg:pt-10">
         <div className="min-w-0">
-          {quickStats.length > 0 ? (
+          {capacityTiles.length > 0 ? (
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-              {quickStats.map((stat) => (
-                <FactTile icon={stat.icon} key={stat.label} label={stat.label} />
+              {capacityTiles.map((tile) => (
+                <FactTile icon={tile.icon} key={tile.label} label={tile.label} />
               ))}
             </div>
           ) : null}
@@ -270,18 +303,15 @@ export function PropertyDetailPage({
           {/* Mobile and tablet: the stay card sits before the long-form copy. */}
           <div className="mt-7 lg:hidden">{enquiryCard}</div>
 
-          {highlights.length > 0 ? (
-            <div className="mt-7 flex flex-wrap gap-2 sm:gap-2.5">
-              {highlights.map((highlight) => (
-                <span
-                  className="inline-flex min-w-0 items-center gap-2 rounded-xl bg-[#fff1f1] px-3 py-2.5 text-[13.5px] font-semibold leading-5 text-[#d63e43] [overflow-wrap:anywhere] sm:text-sm"
-                  key={highlight}
-                >
-                  <Sparkles aria-hidden="true" className="h-4 w-4 shrink-0 text-[#ff5a5f]" />
-                  {highlight}
-                </span>
-              ))}
-            </div>
+          {highlightRows.length > 0 ? (
+            <>
+              <Rule />
+              <ul aria-label="Highlights" className="grid gap-5">
+                {highlightRows.map((highlight) => (
+                  <HighlightRow highlight={highlight} key={highlight} />
+                ))}
+              </ul>
+            </>
           ) : null}
 
           {hasDescription ? (
@@ -347,24 +377,13 @@ export function PropertyDetailPage({
             </>
           ) : null}
 
-          {houseRules.length > 0 ? (
+          <Rule />
+          <PropertyManagedByCard propertyName={name} propertyUrl={propertyUrl} />
+
+          {thingsToKnow.length > 0 ? (
             <>
               <Rule />
-              <section>
-                <SectionHeading>House rules</SectionHeading>
-                <div className="max-w-2xl">
-                  {houseRules.slice(0, inlineRuleCount).map((rule) => (
-                    <RuleRow key={rule} rule={rule} />
-                  ))}
-                </div>
-                {houseRules.length > inlineRuleCount ? (
-                  <ShowMoreDialog title="House rules" trigger={<ShowAllButton label="Show all rules" />}>
-                    {houseRules.map((rule) => (
-                      <RuleRow key={rule} rule={rule} />
-                    ))}
-                  </ShowMoreDialog>
-                ) : null}
-              </section>
+              <PropertyThingsToKnow blocks={thingsToKnow} />
             </>
           ) : null}
 
@@ -374,7 +393,7 @@ export function PropertyDetailPage({
               <section>
                 <SectionHeading>Where you&rsquo;ll be</SectionHeading>
                 {property.public_location_text ? (
-                  <p className="mb-4 whitespace-pre-line text-[15.5px] leading-[1.7] text-[#484848] sm:text-base">
+                  <p className="mb-4 whitespace-pre-line text-[15.5px] leading-[1.7] text-public-body sm:text-base">
                     {property.public_location_text}
                   </p>
                 ) : null}
@@ -387,7 +406,7 @@ export function PropertyDetailPage({
                 ) : null}
                 {property.google_maps_url ? (
                   <a
-                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#222222] px-4 py-2.5 text-[14.5px] font-semibold text-[#222222] outline-none transition-colors hover:bg-[#f7f7f7] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2"
+                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-public-ink px-4 py-2.5 text-[14.5px] font-semibold text-public-ink outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
                     href={property.google_maps_url}
                     rel="noopener noreferrer"
                     target="_blank"
