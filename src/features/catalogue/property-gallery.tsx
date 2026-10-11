@@ -2,7 +2,7 @@
 
 import { House, LayoutGrid } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   buildTourGroups,
   PropertyPhotoTour,
@@ -69,14 +69,8 @@ export function PropertyGallery({
   const tour = usePhotoTourUrl(photos.length);
   const [activeSlide, setActiveSlide] = useState(0);
   const [scrollToIndex, setScrollToIndex] = useState<number | null>(null);
-  const lastPhotoIndex = useRef<number | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const opener = useRef<HTMLElement | null>(null);
-
-  // Remember the last lightbox photo so closing the lightbox returns to it in the tour.
-  useEffect(() => {
-    if (tour.photoIndex !== null) lastPhotoIndex.current = tour.photoIndex;
-  }, [tour.photoIndex]);
 
   if (photos.length === 0) {
     return (
@@ -95,11 +89,6 @@ export function PropertyGallery({
     opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setScrollToIndex(tourIndexByPath.get(photos[galleryIndex].storage_path) ?? 0);
     tour.openTour();
-  }
-
-  function closePhoto() {
-    setScrollToIndex(lastPhotoIndex.current);
-    tour.closePhoto();
   }
 
   function handleScroll() {
@@ -137,7 +126,7 @@ export function PropertyGallery({
             >
               <Image
                 alt={photo.alt}
-                className="object-cover transition-[filter] duration-200 lg:hover:brightness-90"
+                className="object-cover transition-[filter] duration-200 hover:brightness-90"
                 fill
                 preload={index === 0}
                 sizes={desktopSizes(index, side)}
@@ -170,7 +159,7 @@ export function PropertyGallery({
       <PropertyPhotoTour
         groups={groups}
         onClose={tour.closeTour}
-        onClosePhoto={closePhoto}
+        onClosePhoto={tour.closePhoto}
         onOpenPhoto={tour.openPhoto}
         onShowPhoto={tour.showPhoto}
         open={tour.tourOpen}

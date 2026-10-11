@@ -78,7 +78,7 @@ export function PropertyPhotoTour({
   photoIndex: number | null;
   propertyName: string;
   propertyUrl: string;
-  /** Tour photo to bring into view when the tour opens or the lightbox closes. */
+  /** Tour photo to bring into view when the tour opens. */
   scrollToIndex: number | null;
   /** Element that opened the tour; focus returns there when the tour closes. */
   returnFocusTo: () => HTMLElement | null;
@@ -86,14 +86,22 @@ export function PropertyPhotoTour({
   const photos = groups.flatMap((group) => group.photos.map(({ photo }) => photo));
   const showJumpStrip = groups.length > 1;
 
+  // Scroll to the tapped photo once per opening. Closing the lightbox must not
+  // move the tour, so this never re-runs while the tour stays open.
+  const scrolledThisOpening = useRef(false);
   useEffect(() => {
-    if (!open || photoIndex !== null || scrollToIndex === null) return;
+    if (!open) {
+      scrolledThisOpening.current = false;
+      return;
+    }
+    if (scrolledThisOpening.current || scrollToIndex === null) return;
+    scrolledThisOpening.current = true;
     // Radix mounts the content on open, so wait a frame before scrolling.
     const frame = requestAnimationFrame(() => {
       document.getElementById(`tour-photo-${scrollToIndex}`)?.scrollIntoView({ block: "center" });
     });
     return () => cancelAnimationFrame(frame);
-  }, [open, photoIndex, scrollToIndex]);
+  }, [open, scrollToIndex]);
 
   function jumpTo(groupId: string) {
     document.getElementById(groupId)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -102,6 +110,10 @@ export function PropertyPhotoTour({
   return (
     <Dialog.Root onOpenChange={(next) => (next ? undefined : onClose())} open={open}>
       <Dialog.Portal>
+        {/* The overlay is what carries Radix's scroll lock: it locks the page
+            behind the tour and pads the page by the scrollbar width, so the tour
+            content is the only scroll container. */}
+        <Dialog.Overlay className="fixed inset-0 z-[80] bg-white" />
         <Dialog.Content
           aria-describedby={undefined}
           className="fixed inset-0 z-[80] overflow-y-auto overscroll-contain bg-white text-public-ink outline-none"
@@ -139,7 +151,7 @@ export function PropertyPhotoTour({
                         >
                           <span className="relative block aspect-[4/3] overflow-hidden rounded-xl bg-public-sand">
                             {cover ? (
-                              <Image alt="" className="object-cover transition-opacity group-hover:opacity-90" fill sizes="128px" src={cover.url} />
+                              <Image alt="" className="object-cover transition-[filter] duration-200 group-hover:brightness-90" fill sizes="128px" src={cover.url} />
                             ) : null}
                           </span>
                           <span className="mt-1.5 block truncate text-[13.5px] font-semibold">{group.label}</span>
@@ -182,7 +194,7 @@ export function PropertyPhotoTour({
                         >
                           <Image
                             alt={photo.alt}
-                            className="object-cover transition-opacity hover:opacity-95"
+                            className="object-cover transition-[filter] duration-200 hover:brightness-90"
                             fill
                             sizes={
                               group.photos.length % 2 === 1 && position === 0
@@ -276,6 +288,7 @@ function PhotoLightbox({
   return (
     <Dialog.Root onOpenChange={(next) => (next ? undefined : onClose())} open={photo !== null}>
       <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[90] bg-public-ink" />
         <Dialog.Content
           aria-describedby={photo?.caption ? "lightbox-caption" : undefined}
           className="fixed inset-0 z-[90] flex flex-col bg-public-ink text-white outline-none"
