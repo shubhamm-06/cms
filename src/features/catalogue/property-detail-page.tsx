@@ -1,32 +1,23 @@
 import Link from "next/link";
+import { createElement } from "react";
 import {
-  AirVent,
   ArrowLeft,
   Bath,
   BedDouble,
-  Car,
   Check,
-  ChefHat,
   Clock,
-  Dumbbell,
   Footprints,
   MapPin,
   Moon,
-  PawPrint,
-  Refrigerator,
-  ShieldCheck,
-  ShowerHead,
   Sparkles,
-  Trees,
-  Tv,
   Users,
-  UtensilsCrossed,
   Waves,
-  Wifi,
-  Zap,
   type LucideIcon,
 } from "lucide-react";
 import { siteOrigin } from "@/app/seo";
+import { ShowMoreDialog } from "@/components/ui/show-more-dialog";
+import { amenityIcon, groupAmenities } from "@/src/features/catalogue/amenity-categories";
+import { PropertyAbout } from "@/src/features/catalogue/property-about";
 import { PropertyEnquiryCard } from "@/src/features/catalogue/property-enquiry-card";
 import { PropertyGallery } from "@/src/features/catalogue/property-gallery";
 import type {
@@ -48,34 +39,6 @@ import { formatMoney } from "@/src/lib/utils/money";
  */
 
 /**
- * Obvious amenity matches only, first match wins. Anything unrecognised gets the
- * neutral tick, so admins can enter free text without breaking the layout.
- */
-const amenityIcons: Array<[RegExp, LucideIcon]> = [
-  [/wi-?fi|internet|broadband/i, Wifi],
-  [/pool/i, Waves],
-  [/air.?condition|\bac\b|cooling/i, AirVent],
-  [/fridge|refrigerat|freezer/i, Refrigerator],
-  [/kitchen|stove|cook|microwave/i, ChefHat],
-  [/\btv\b|television|netflix/i, Tv],
-  [/park|garage|\bcar\b|driver/i, Car],
-  [/wash|laundry|dryer/i, Sparkles],
-  [/pet|dog|cat/i, PawPrint],
-  [/security|cctv|gated|safe|first aid/i, ShieldCheck],
-  [/power|inverter|backup|generator|charging/i, Zap],
-  [/breakfast|dining|chef|restaurant/i, UtensilsCrossed],
-  [/bed|linen|mattress/i, BedDouble],
-  [/garden|terrace|balcony|outdoor|lawn|sit-?out/i, Trees],
-  [/hot water|geyser|shower|bath|toiletr|towel/i, ShowerHead],
-  [/gym|fitness/i, Dumbbell],
-  [/beach|walk/i, Footprints],
-];
-
-function amenityIcon(amenity: string): LucideIcon {
-  return amenityIcons.find(([pattern]) => pattern.test(amenity))?.[1] || Check;
-}
-
-/**
  * Admins store either "Private" or "Private pool", so only append the noun when
  * it is missing. "None" is a real stored value that is not worth showing.
  */
@@ -85,6 +48,10 @@ function poolLabel(poolType: string | null) {
 
   return /pool/i.test(value) ? value : `${value} pool`;
 }
+
+/** Long lists show this many items inline; the rest open in the shared dialog. */
+const inlineAmenityCount = 10;
+const inlineRuleCount = 3;
 
 function plural(count: number, singular: string) {
   return `${count} ${count === 1 ? singular : `${singular}s`}`;
@@ -112,6 +79,35 @@ function isRepeated(candidate: string | null, longerText: string | null) {
 
 function cleanList(values: string[]) {
   return values.map((value) => value.trim()).filter((value) => value.length > 0);
+}
+
+function ShowAllButton({ label }: { label: string }) {
+  return (
+    <button
+      className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-public-ink bg-white px-4 py-2.5 text-[15px] font-semibold text-public-ink outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
+      type="button"
+    >
+      {label}
+    </button>
+  );
+}
+
+function AmenityRow({ amenity }: { amenity: string }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3 border-b border-public-divider py-2.5">
+      {createElement(amenityIcon(amenity), { "aria-hidden": true, className: "h-5 w-5 shrink-0 text-public-body" })}
+      <span className="min-w-0 text-[14.5px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[15px]">{amenity}</span>
+    </div>
+  );
+}
+
+function RuleRow({ rule }: { rule: string }) {
+  return (
+    <div className="flex min-w-0 items-start gap-3 border-b border-public-divider py-2.5">
+      <Check aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-public-taupe" />
+      <span className="min-w-0 text-[14.5px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[15px]">{rule}</span>
+    </div>
+  );
 }
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
@@ -291,28 +287,18 @@ export function PropertyDetailPage({
           {hasDescription ? (
             <>
               <Rule />
-              <section>
-                <SectionHeading>
-                  {property.public_property_type
+              <PropertyAbout
+                heading={
+                  property.public_property_type
                     ? `About this ${property.public_property_type.toLowerCase()}`
-                    : "About this stay"}
-                </SectionHeading>
-                {showTagline ? (
-                  <p className="mb-3.5 text-[16.5px] font-semibold leading-[1.6] text-[#222222] sm:text-[17.5px]">
-                    {property.tagline}
-                  </p>
-                ) : null}
-                {showShortDescription ? (
-                  <p className="mb-3.5 whitespace-pre-line text-[15.5px] leading-[1.7] text-[#484848] sm:text-base">
-                    {property.short_description}
-                  </p>
-                ) : null}
-                {property.full_description?.trim() ? (
-                  <p className="whitespace-pre-line text-[15.5px] leading-[1.7] text-[#484848] sm:text-base">
-                    {property.full_description}
-                  </p>
-                ) : null}
-              </section>
+                    : "About this stay"
+                }
+                paragraphs={[
+                  showShortDescription ? property.short_description?.trim() : null,
+                  property.full_description?.trim() || null,
+                ].filter((text): text is string => Boolean(text))}
+                tagline={showTagline ? property.tagline : null}
+              />
             </>
           ) : null}
 
@@ -322,22 +308,27 @@ export function PropertyDetailPage({
               <section>
                 <SectionHeading>What this place offers</SectionHeading>
                 <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-                  {amenities.map((amenity) => {
-                    const Icon = amenityIcon(amenity);
-
-                    return (
-                      <div
-                        className="flex min-w-0 items-center gap-3 border-b border-[#f2ede9] py-2.5"
-                        key={amenity}
-                      >
-                        <Icon aria-hidden="true" className="h-5 w-5 shrink-0 text-[#484848]" />
-                        <span className="min-w-0 text-[14.5px] leading-6 text-[#484848] [overflow-wrap:anywhere] sm:text-[15px]">
-                          {amenity}
-                        </span>
-                      </div>
-                    );
-                  })}
+                  {amenities.slice(0, inlineAmenityCount).map((amenity) => (
+                    <AmenityRow amenity={amenity} key={amenity} />
+                  ))}
                 </div>
+                {amenities.length > inlineAmenityCount ? (
+                  <ShowMoreDialog
+                    title="What this place offers"
+                    trigger={<ShowAllButton label={`Show all ${amenities.length} amenities`} />}
+                  >
+                    <div className="grid gap-7">
+                      {groupAmenities(amenities).map((group) => (
+                        <section aria-label={group.category} key={group.category}>
+                          <h3 className="mb-1 text-[16.5px] font-bold text-public-ink">{group.category}</h3>
+                          {group.items.map((amenity) => (
+                            <AmenityRow amenity={amenity} key={amenity} />
+                          ))}
+                        </section>
+                      ))}
+                    </div>
+                  </ShowMoreDialog>
+                ) : null}
               </section>
             </>
           ) : null}
@@ -362,18 +353,17 @@ export function PropertyDetailPage({
               <section>
                 <SectionHeading>House rules</SectionHeading>
                 <div className="max-w-2xl">
-                  {houseRules.map((rule) => (
-                    <div
-                      className="flex min-w-0 items-start gap-3 border-b border-[#f2ede9] py-2.5"
-                      key={rule}
-                    >
-                      <Check aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#9a7770]" />
-                      <span className="min-w-0 text-[14.5px] leading-6 text-[#484848] [overflow-wrap:anywhere] sm:text-[15px]">
-                        {rule}
-                      </span>
-                    </div>
+                  {houseRules.slice(0, inlineRuleCount).map((rule) => (
+                    <RuleRow key={rule} rule={rule} />
                   ))}
                 </div>
+                {houseRules.length > inlineRuleCount ? (
+                  <ShowMoreDialog title="House rules" trigger={<ShowAllButton label="Show all rules" />}>
+                    {houseRules.map((rule) => (
+                      <RuleRow key={rule} rule={rule} />
+                    ))}
+                  </ShowMoreDialog>
+                ) : null}
               </section>
             </>
           ) : null}
