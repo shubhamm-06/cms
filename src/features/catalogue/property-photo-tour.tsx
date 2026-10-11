@@ -6,41 +6,76 @@ import Image from "next/image";
 import { useEffect, useRef, type KeyboardEvent, type PointerEvent } from "react";
 import type { PropertyGalleryImage } from "@/src/features/catalogue/public-property-detail-data";
 import { ShareButton } from "@/src/features/catalogue/share-button";
-import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
 import { cn } from "@/src/lib/utils/cn";
+import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
+import { ADDITIONAL_PHOTOS_LABEL, parsePhotoRoom } from "@/src/lib/utils/photo-rooms";
 
 /**
- * Full photo tour and lightbox for `/property/[slug]`.
+ * Photo tour and lightbox for `/property/[slug]`.
  *
- * Photos are grouped by `room_label` in the order each room first appears in the
- * admin sort order. Unlabelled photos go to a trailing "More photos" group, and a
- * gallery with no labels at all renders one ungrouped 2-column section. Both
- * overlays are Radix dialogs, so focus is trapped and Esc closes the topmost one;
- * their open state lives in the URL (see `usePhotoTourUrl`).
+ * The tour is laid out like a "photo tour": an index of one thumbnail per room,
+ * then one section per room. Each photo's room comes from its `alt_text` (see
+ * `photo-rooms.ts`: an explicit `Room | description` prefix, else keywords). Rooms
+ * are ordered by where their first photo appears in the admin order, and photos
+ * with no detected room go last under "Additional photos". With fewer than two
+ * detected rooms the index and headings are skipped and the photos show in one
+ * plain 2-column grid.
+ *
+ * Both overlays are Radix dialogs, so focus is trapped and Esc closes the
+ * topmost one; their open state lives in the URL (see `usePhotoTourUrl`).
  */
 
-export type TourPhoto = PropertyGalleryImage & { alt: string; caption: string | null; url: string };
+export type TourPhoto = PropertyGalleryImage & {
+  alt: string;
+  /** Text shown after the room name in captions, without any room prefix. */
+  description: string | null;
+  /** Detected room name, or null for "Additional photos". */
+  room: string | null;
+  roomKey: string | null;
+  url: string;
+};
 
-export type TourGroup = { id: string; label: string | null; photos: Array<{ photo: TourPhoto; index: number }> };
+export type TourGroup = {
+  id: string;
+  /** Null for the single ungrouped fallback section. */
+  label: string | null;
+  photos: Array<{ photo: TourPhoto; index: number }>;
+};
 
 /** Builds the tour order. `index` is the photo's position in that order. */
 export function buildTourGroups(photos: TourPhoto[]): TourGroup[] {
-  const labelled = photos.some((photo) => photo.room_label?.trim());
-  if (!labelled) return [{ id: "all", label: null, photos: photos.map((photo, index) => ({ index, photo })) }];
+  const rooms = new Map<string, { label: string; photos: TourPhoto[] }>();
+  const additional: TourPhoto[] = [];
 
-  const groups = new Map<string, TourPhoto[]>();
   photos.forEach((photo) => {
-    const label = photo.room_label?.trim() || "";
-    groups.set(label, [...(groups.get(label) || []), photo]);
+    if (!photo.roomKey || !photo.room) {
+      additional.push(photo);
+      return;
+    }
+    const entry = rooms.get(photo.roomKey) || { label: photo.room, photos: [] };
+    entry.photos.push(photo);
+    rooms.set(photo.roomKey, entry);
   });
 
-  // Unlabelled photos always come last, under a neutral heading.
-  const ordered = [...groups.entries()].sort(([a], [b]) => Number(a === "") - Number(b === ""));
+  if (rooms.size < 2) {
+    return [{ id: "all", label: null, photos: photos.map((photo, index) => ({ index, photo })) }];
+  }
+
+  // Map insertion order is each room's first appearance, i.e. its lowest sort position.
+  const sections = [...rooms.entries()].map(([key, room], position) => ({
+    id: `room-${position}-${key.replace(/[^a-z0-9]+/g, "-")}`,
+    label: room.label,
+    photos: room.photos,
+  }));
+  if (additional.length > 0) {
+    sections.push({ id: "room-additional", label: ADDITIONAL_PHOTOS_LABEL, photos: additional });
+  }
+
   let index = 0;
-  return ordered.map(([label, groupPhotos], groupIndex) => ({
-    id: `room-${groupIndex}`,
-    label: label || "More photos",
-    photos: groupPhotos.map((photo) => ({ index: index++, photo })),
+  return sections.map((section) => ({
+    id: section.id,
+    label: section.label,
+    photos: section.photos.map((photo) => ({ index: index++, photo })),
   }));
 }
 
@@ -48,13 +83,77 @@ export function toTourPhotos(images: PropertyGalleryImage[], propertyName: strin
   return images.flatMap((image, position) => {
     const url = getPropertyImageUrl(image.storage_path);
     if (!url) return [];
-    const caption = image.alt_text?.trim() || null;
-    return [{ ...image, alt: caption || `${propertyName} photo ${position + 1}`, caption, url }];
+    const { description, room, roomKey } = parsePhotoRoom(image.alt_text);
+    // The room prefix is stripped so screen readers hear the description only.
+    const alt = description || (room ? `${room}, ${propertyName}` : `${propertyName} photo ${position + 1}`);
+    return [{ ...image, alt, description, room, roomKey, url }];
   });
+}
+
+/** Accessible label for opening a photo: its room, then its description. */
+export function photoLabel(photo: TourPhoto, index: number, total: number) {
+  const detail = [photo.room, photo.description].filter(Boolean).join(": ");
+  return `Open photo ${index + 1} of ${total}${detail ? `: ${detail}` : ""}`;
 }
 
 const tourButton =
   "inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-[14.5px] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2";
+
+const photoButton =
+  "relative block h-full w-full overflow-hidden rounded-xl bg-public-sand outline-none focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2";
+
+/**
+ * One room's photos: the first photo full width (3:2), the rest in side-by-side
+ * pairs (4:3), and a single leftover photo at the end full width. Fixed aspect
+ * ratios with object-cover keep portrait photos from breaking the grid.
+ */
+function RoomPhotos({
+  group,
+  onOpenPhoto,
+  total,
+}: {
+  group: TourGroup;
+  onOpenPhoto: (index: number) => void;
+  total: number;
+}) {
+  const count = group.photos.length;
+  const grouped = group.label !== null;
+
+  return (
+    <ul className="grid grid-cols-2 gap-2 sm:gap-3">
+      {group.photos.map(({ index, photo }, position) => {
+        // The ungrouped fallback is a plain 2-column grid of equal tiles.
+        const full = grouped && (position === 0 || (position === count - 1 && (count - 1) % 2 === 1));
+        return (
+          <li
+            className={cn(full ? "col-span-2 aspect-[3/2]" : "aspect-[4/3]")}
+            id={`tour-photo-${index}`}
+            key={photo.storage_path}
+          >
+            <button
+              aria-label={photoLabel(photo, index, total)}
+              className={photoButton}
+              onClick={() => onOpenPhoto(index)}
+              type="button"
+            >
+              <Image
+                alt={photo.alt}
+                className="object-cover transition-[filter] duration-200 hover:brightness-90"
+                fill
+                sizes={
+                  full
+                    ? "(min-width: 1120px) 700px, (min-width: 768px) 60vw, 100vw"
+                    : "(min-width: 1120px) 345px, (min-width: 768px) 30vw, 50vw"
+                }
+                src={photo.url}
+              />
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 export function PropertyPhotoTour({
   groups,
@@ -84,7 +183,7 @@ export function PropertyPhotoTour({
   returnFocusTo: () => HTMLElement | null;
 }) {
   const photos = groups.flatMap((group) => group.photos.map(({ photo }) => photo));
-  const showJumpStrip = groups.length > 1;
+  const showIndex = groups.length > 1;
 
   // Scroll to the tapped photo once per opening. Closing the lightbox must not
   // move the tour, so this never re-runs while the tour stays open.
@@ -136,25 +235,34 @@ export function PropertyPhotoTour({
             <ShareButton title={propertyName} url={propertyUrl} />
           </div>
 
-          <div className="mx-auto w-full max-w-[1120px] px-4 pb-16 pt-6 sm:px-6">
-            {showJumpStrip ? (
-              <nav aria-label="Jump to a room" className="-mx-4 mb-8 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-                <ul className="flex gap-3 pb-1">
+          <div className="mx-auto w-full max-w-[1120px] px-4 pb-20 pt-8 sm:px-6">
+            {showIndex ? (
+              <nav aria-label="Photo tour" className="mb-12 sm:mb-14">
+                <h2 className="mb-4 text-[26px] font-bold leading-tight tracking-[-0.01em] sm:text-[30px]">
+                  Photo tour
+                </h2>
+                <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
                   {groups.map((group) => {
                     const cover = group.photos[0]?.photo;
                     return (
-                      <li className="shrink-0" key={group.id}>
+                      <li className="w-[104px] shrink-0 sm:w-[132px]" key={group.id}>
                         <button
-                          className="group w-[104px] rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 sm:w-[128px]"
+                          className="group block w-full rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
                           onClick={() => jumpTo(group.id)}
                           type="button"
                         >
                           <span className="relative block aspect-[4/3] overflow-hidden rounded-xl bg-public-sand">
                             {cover ? (
-                              <Image alt="" className="object-cover transition-[filter] duration-200 group-hover:brightness-90" fill sizes="128px" src={cover.url} />
+                              <Image
+                                alt=""
+                                className="object-cover transition-[filter] duration-200 group-hover:brightness-90"
+                                fill
+                                sizes="132px"
+                                src={cover.url}
+                              />
                             ) : null}
                           </span>
-                          <span className="mt-1.5 block truncate text-[13.5px] font-semibold">{group.label}</span>
+                          <span className="mt-1.5 block truncate text-[13px] font-semibold">{group.label}</span>
                         </button>
                       </li>
                     );
@@ -163,50 +271,22 @@ export function PropertyPhotoTour({
               </nav>
             ) : null}
 
-            <div className="grid gap-10 sm:gap-14">
+            <div className="grid gap-12 sm:gap-16">
               {groups.map((group) => (
                 <section
                   aria-label={group.label || `${propertyName} photos`}
-                  className="scroll-mt-20 md:grid md:grid-cols-[200px_minmax(0,1fr)] md:gap-8"
+                  className="scroll-mt-20 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-8"
                   id={group.id}
                   key={group.id}
                 >
                   {group.label ? (
-                    <h2 className="mb-3 text-[19px] font-bold tracking-[-0.01em] md:mb-0 md:text-[21px]">
+                    <h3 className="mb-3 text-[17px] font-bold tracking-[-0.005em] md:mb-0 md:pt-1 md:text-[18px]">
                       {group.label}
-                    </h2>
+                    </h3>
                   ) : null}
-                  <ul className={cn("grid grid-cols-1 gap-2 sm:grid-cols-2", !group.label && "md:col-span-2")}>
-                    {group.photos.map(({ index, photo }, position) => (
-                      <li
-                        className={cn(
-                          // An odd count leads with one full-width photo so rows stay even.
-                          group.photos.length % 2 === 1 && position === 0 && "sm:col-span-2",
-                        )}
-                        id={`tour-photo-${index}`}
-                        key={photo.storage_path}
-                      >
-                        <button
-                          aria-label={`Open photo ${index + 1} of ${photos.length}${photo.caption ? `: ${photo.caption}` : ""}`}
-                          className="relative block aspect-[4/3] w-full overflow-hidden rounded-lg bg-public-sand outline-none focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
-                          onClick={() => onOpenPhoto(index)}
-                          type="button"
-                        >
-                          <Image
-                            alt={photo.alt}
-                            className="object-cover transition-[filter] duration-200 hover:brightness-90"
-                            fill
-                            sizes={
-                              group.photos.length % 2 === 1 && position === 0
-                                ? "(min-width: 1120px) 860px, 100vw"
-                                : "(min-width: 1120px) 430px, (min-width: 640px) 50vw, 100vw"
-                            }
-                            src={photo.url}
-                          />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className={cn(!group.label && "md:col-span-2")}>
+                    <RoomPhotos group={group} onOpenPhoto={onOpenPhoto} total={photos.length} />
+                  </div>
                 </section>
               ))}
             </div>
@@ -290,7 +370,7 @@ function PhotoLightbox({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[90] bg-public-ink" />
         <Dialog.Content
-          aria-describedby={photo?.caption ? "lightbox-caption" : undefined}
+          aria-describedby={photo?.room || photo?.description ? "lightbox-caption" : undefined}
           className="fixed inset-0 z-[90] flex flex-col bg-public-ink text-white outline-none"
           onCloseAutoFocus={(event) => {
             event.preventDefault();
@@ -380,7 +460,9 @@ function PhotoLightbox({
               className="min-w-0 text-center text-[14.5px] leading-6 text-white/85 [overflow-wrap:anywhere]"
               id="lightbox-caption"
             >
-              {photo?.caption || ""}
+              {photo?.room ? <span className="font-semibold text-white">{photo.room}</span> : null}
+              {photo?.room && photo.description ? <span aria-hidden="true"> · </span> : null}
+              {photo?.description || ""}
             </p>
             <button
               aria-label="Next photo"

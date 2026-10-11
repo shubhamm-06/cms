@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { ImagePlus, Loader2, MoveDown, MoveUp, Save, Star, Trash2 } from "lucide-react";
+import { ImagePlus, Loader2, MoveDown, MoveUp, Save, Star, Tag, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/src/features/properties/property-image-actions";
 import { optimizePropertyImage } from "@/src/features/properties/property-image-optimization";
 import { createClient } from "@/src/lib/supabase/client";
+import { applyRoomPrefix, parsePhotoRoom, ROOM_SUGGESTIONS } from "@/src/lib/utils/photo-rooms";
 import type { Database } from "@/types/database.types";
 import {
   AlertDialog,
@@ -28,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 type PropertyImage = Database["public"]["Tables"]["property_images"]["Row"];
 
@@ -111,6 +113,9 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
   const [altValues, setAltValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(initialImages.map((image) => [image.id, image.alt_text || ""])),
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkRoom, setBulkRoom] = useState("");
+  const [isBulkSaving, setIsBulkSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!propertyId) {
@@ -196,6 +201,45 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (completed > failures.length) toast.success(`${completed - failures.length} image${completed - failures.length === 1 ? "" : "s"} uploaded.`);
     failures.forEach((message) => toast.error(message));
+  }
+
+  function toggleSelected(imageId: string) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(imageId)) next.delete(imageId);
+      else next.add(imageId);
+      return next;
+    });
+  }
+
+  // Writes the `Room | ` prefix into each selected photo's alt text through the
+  // existing alt-text action: no new field and no separate save path.
+  async function applyRoomToSelected() {
+    if (!bulkRoom || selectedIds.size === 0 || isBulkSaving) return;
+    setIsBulkSaving(true);
+    let saved = 0;
+    let failed = 0;
+    for (const image of orderedImages.filter((candidate) => selectedIds.has(candidate.id))) {
+      const result = await updatePropertyImageAltTextAction({
+        altText: applyRoomPrefix(altValues[image.id] ?? image.alt_text, bulkRoom),
+        imageId: image.id,
+        propertyId: activePropertyId,
+      });
+      if (!result.ok || !result.image) {
+        failed += 1;
+        continue;
+      }
+      saved += 1;
+      setImages((current) => current.map((currentImage) => (currentImage.id === image.id ? result.image : currentImage)));
+      setAltValues((current) => ({ ...current, [image.id]: result.image.alt_text || "" }));
+    }
+    setIsBulkSaving(false);
+    if (saved > 0) {
+      toast.success(`${bulkRoom} applied to ${saved} photo${saved === 1 ? "" : "s"}.`);
+      setSelectedIds(new Set());
+      setBulkRoom("");
+    }
+    if (failed > 0) toast.error(`${failed} photo${failed === 1 ? "" : "s"} could not be updated.`);
   }
 
   async function saveAltText(image: PropertyImage) {
@@ -287,18 +331,62 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
           No gallery images yet. Upload the first image to make it the cover image automatically.
         </div>
       ) : (
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <>
+        <div className="mt-5 flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-[var(--foreground)]">Group photos by room</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+              The public photo tour groups photos by the room named in the alt text, for example &ldquo;Bedroom 2 | Bed with ceiling fan&rdquo;. Tick photos, pick a room, and the prefix is added to each alt text. Rooms appear in the order of each room&rsquo;s first photo.
+            </p>
+          </div>
+          <label className="sm:w-48">
+            <span className="cms-label">Room for selected</span>
+            <Select disabled={isBulkSaving} onChange={(event) => setBulkRoom(event.target.value)} value={bulkRoom}>
+              <option value="">Choose a room</option>
+              {ROOM_SUGGESTIONS.map((room) => (
+                <option key={room} value={room}>{room}</option>
+              ))}
+            </Select>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              disabled={isBulkSaving}
+              onClick={() => setSelectedIds(selectedIds.size === orderedImages.length ? new Set() : new Set(orderedImages.map((image) => image.id)))}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              {selectedIds.size === orderedImages.length ? "Clear selection" : "Select all"}
+            </Button>
+            <Button disabled={!bulkRoom || selectedIds.size === 0 || isBulkSaving} onClick={() => void applyRoomToSelected()} size="sm" type="button" variant="primary">
+              {isBulkSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Tag className="h-4 w-4" />}
+              {isBulkSaving ? "Applying..." : `Apply to ${selectedIds.size} selected`}
+            </Button>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {galleryImages.map((image) => {
             const orderIndex = orderedImages.findIndex((orderedImage) => orderedImage.id === image.id);
             const isSavingAlt = savingAltId === image.id;
             const isMoving = movingImageId === image.id;
             const isUpdatingCover = coverImageId === image.id;
+            const detected = parsePhotoRoom(altValues[image.id]);
 
             return (
               <article className="overflow-hidden rounded-xl border border-[var(--border)] bg-white" key={image.id}>
                 <div className="relative aspect-[4/3] bg-[var(--surface-2)]">
                   <img alt={image.alt_text || "Property gallery image"} className="h-full w-full object-cover" src={getPublicImageUrl(image.storage_path)} />
                   {image.is_cover ? <Badge className="absolute left-3 top-3" tone="brand"><Star className="h-3.5 w-3.5" />Cover</Badge> : null}
+                  <label className="absolute right-3 top-3 inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-md bg-white/95 px-2 py-1 text-xs font-semibold shadow-sm">
+                    <input
+                      checked={selectedIds.has(image.id)}
+                      className="h-4 w-4 accent-[var(--brand)]"
+                      disabled={isBulkSaving}
+                      onChange={() => toggleSelected(image.id)}
+                      type="checkbox"
+                    />
+                    Select
+                  </label>
                 </div>
                 <div className="grid gap-3 p-3">
                   <label>
@@ -308,8 +396,39 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
                       placeholder="Describe this image"
                       value={altValues[image.id] || ""}
                     />
-                    <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">Describe the image for accessibility and search engines.</span>
+                    <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">Describe the image for accessibility and search engines. Also shown as the photo caption.</span>
                   </label>
+                  <div className="grid gap-2 rounded-lg bg-[var(--surface-2)] p-2.5">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="font-bold uppercase tracking-[0.06em] text-[var(--muted)]">Detected room</span>
+                      {detected.room ? (
+                        <Badge tone={detected.source === "prefix" ? "green" : "teal"}>{detected.room}</Badge>
+                      ) : (
+                        <Badge tone="amber">Additional photos</Badge>
+                      )}
+                      {detected.room ? (
+                        <span className="text-[var(--muted)]">{detected.source === "prefix" ? "from the room prefix" : "guessed from the text"}</span>
+                      ) : null}
+                    </div>
+                    {!detected.room ? (
+                      <p className="text-xs leading-5 text-[var(--muted)]">
+                        Add a room name, for example &ldquo;Bedroom 2 | Bed with ceiling fan&rdquo;, so this photo is grouped.
+                      </p>
+                    ) : null}
+                    <Select
+                      aria-label="Set room for this photo"
+                      onChange={(event) => {
+                        const room = event.target.value;
+                        if (room) setAltValues((current) => ({ ...current, [image.id]: applyRoomPrefix(current[image.id], room) }));
+                      }}
+                      value=""
+                    >
+                      <option value="">Set room in alt text...</option>
+                      {ROOM_SUGGESTIONS.map((room) => (
+                        <option key={room} value={room}>{room}</option>
+                      ))}
+                    </Select>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <Button disabled={isSavingAlt} onClick={() => void saveAltText(image)} size="sm" type="button" variant="secondary">
                       {isSavingAlt ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -336,6 +455,7 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
             );
           })}
         </div>
+        </>
       )}
     </section>
   );

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import {
   buildTourGroups,
+  photoLabel,
   PropertyPhotoTour,
   toTourPhotos,
 } from "@/src/features/catalogue/property-photo-tour";
@@ -115,7 +116,7 @@ export function PropertyGallery({
         >
           {photos.map((photo, index) => (
             <button
-              aria-label={`Open photo ${index + 1} of ${photos.length}${photo.caption ? `: ${photo.caption}` : ""}`}
+              aria-label={photoLabel(photo, index, photos.length)}
               className={cn(
                 "relative aspect-[4/3] w-full shrink-0 snap-start snap-always overflow-hidden bg-public-sand outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-public-coral sm:aspect-[16/10] lg:aspect-auto lg:min-h-0",
                 desktopTileClasses(index, side),
