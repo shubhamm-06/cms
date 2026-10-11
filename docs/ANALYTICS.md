@@ -256,6 +256,10 @@ tiers
 investment_accordion
 footer_cta
 footer
+floating_whatsapp
+property_page_enquiry_card
+property_page_managed_by
+property_page_mobile_bar
 ```
 
 ### Example Event Payload
