@@ -18,6 +18,7 @@ import { siteOrigin } from "@/app/seo";
 import { ShowMoreDialog } from "@/components/ui/show-more-dialog";
 import { amenityCategory, amenityIcon, groupAmenities } from "@/src/features/catalogue/amenity-categories";
 import { PropertyAbout } from "@/src/features/catalogue/property-about";
+import { areaMapQuery, PropertyAreaMap } from "@/src/features/catalogue/property-area-map";
 import { PropertyEnquiryCard } from "@/src/features/catalogue/property-enquiry-card";
 import { PropertyGallery } from "@/src/features/catalogue/property-gallery";
 import { PropertyManagedByCard } from "@/src/features/catalogue/property-managed-by-card";
@@ -225,6 +226,7 @@ export function PropertyDetailPage({
     property.distance_from_beach ? { icon: Footprints, label: property.distance_from_beach } : null,
   ].filter((fact) => fact !== null);
 
+  const mapQuery = areaMapQuery(property);
   const safetyItems = amenities.filter((amenity) => amenityCategory(amenity) === "Safety");
   const enquiryItems = [
     property.booking_enquiry_note?.trim() || null,
@@ -387,11 +389,12 @@ export function PropertyDetailPage({
             </>
           ) : null}
 
-          {property.public_location_text || locationFacts.length > 0 || property.google_maps_url ? (
+          {mapQuery || property.public_location_text || locationFacts.length > 0 || property.google_maps_url ? (
             <>
               <Rule />
               <section>
                 <SectionHeading>Where you&rsquo;ll be</SectionHeading>
+                {mapQuery ? <PropertyAreaMap query={mapQuery} /> : null}
                 {property.public_location_text ? (
                   <p className="mb-4 whitespace-pre-line text-[15.5px] leading-[1.7] text-public-body sm:text-base">
                     {property.public_location_text}
