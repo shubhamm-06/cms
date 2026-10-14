@@ -11,6 +11,7 @@ import { bookingSchema } from "@/src/lib/validators/bookings";
 import { expenseSchema } from "@/src/lib/validators/expenses";
 import { profileSchema } from "@/src/lib/validators/profile";
 import { propertySchema } from "@/src/lib/validators/properties";
+import { resolveMapUrlForSave } from "@/src/lib/maps";
 import { userSchema } from "@/src/lib/validators/users";
 import { isProtectedAdmin } from "@/src/lib/utils/permissions";
 import { isPayoutReviewWindow } from "@/src/lib/utils/dates";
@@ -241,11 +242,22 @@ export async function deleteUserAction(formData: FormData) {
   redirect("/dashboard/users?notice=user_deleted");
 }
 
+// A failed edit returns to the same property's edit form so the admin can retry, and every
+// failure carries a notice code: a redirect without one shows nothing and looks like a hang.
+function propertySaveFailureUrl(mode: string, id: string, notice: string) {
+  const edit = mode === "edit" && isUuid(id) ? `edit=${id}&` : "";
+  return `/dashboard/properties?${edit}notice=${notice}`;
+}
+
 export async function savePropertyAction(formData: FormData) {
   await requireRole("admin");
-  const parsed = propertySchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) redirect("/dashboard/properties?notice=property_validation_failed");
   const mode = String(formData.get("mode") || "add");
+  const submittedId = String(formData.get("id") || "");
+  const parsed = propertySchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    console.error("Property save rejected by validation", parsed.error.issues.map((issue) => issue.path.join(".")));
+    redirect(propertySaveFailureUrl(mode, submittedId, "property_validation_failed"));
+  }
   const { id, ...parsedValues } = parsed.data;
   const values = emptyToNull(parsedValues);
   delete values.image_url;
@@ -261,20 +273,32 @@ export async function savePropertyAction(formData: FormData) {
     status: values.status,
   };
   const valuesToSave = (values.show_on_website ? values : operationalValues) as PropertyUpdate;
+  const mapLocation = await resolveMapUrlForSave(valuesToSave.google_maps_url);
+  if (valuesToSave.google_maps_url) valuesToSave.google_maps_url = mapLocation.url;
   const supabase = await createClient();
   if (mode === "edit") {
-    if (!id) redirect("/dashboard/properties?error=missing-property-id");
+    if (!id) redirect(propertySaveFailureUrl(mode, submittedId, "property_save_failed"));
     const existing = await supabase.from("properties").select("id").eq("id", id).maybeSingle();
-    if (!existing.data) redirect("/dashboard/properties?error=property-not-found");
+    if (!existing.data) {
+      console.error("Property save could not find the property", { id, code: existing.error?.code });
+      redirect(propertySaveFailureUrl(mode, id, "property_save_failed"));
+    }
     const { error } = await supabase.from("properties").update(valuesToSave).eq("id", id);
-    if (error) redirect(`/dashboard/properties?notice=${propertySaveFailureNotice(error)}`);
+    if (error) {
+      console.error("Property update failed", { code: error.code, id });
+      redirect(propertySaveFailureUrl(mode, id, propertySaveFailureNotice(error)));
+    }
   } else {
     const { error } = await supabase.from("properties").insert(valuesToSave as PropertyInsert);
-    if (error) redirect(`/dashboard/properties?notice=${propertySaveFailureNotice(error)}`);
+    if (error) {
+      console.error("Property insert failed", { code: error.code });
+      redirect(propertySaveFailureUrl(mode, "", propertySaveFailureNotice(error)));
+    }
   }
   revalidatePath("/dashboard/properties");
   revalidatePath("/dashboard");
-  redirect(`/dashboard/properties?notice=${mode === "edit" ? "property_updated" : "property_created"}`);
+  const notice = mode === "edit" ? "property_updated" : "property_created";
+  redirect(`/dashboard/properties?notice=${notice}${mapLocation.warning ? "_map_warning" : ""}`);
 }
 
 export async function deletePropertyAction(formData: FormData) {

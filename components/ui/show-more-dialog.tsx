@@ -43,8 +43,8 @@ export function ShowMoreDialog({
           {...(description ? {} : { "aria-describedby": undefined })}
           className={cn(
             "fixed z-[80] flex flex-col bg-white text-public-ink shadow-[0_8px_28px_rgba(0,0,0,0.28)] outline-none",
-            // Mobile: bottom sheet.
-            "inset-x-0 bottom-0 max-h-[88dvh] rounded-t-[20px] pb-[env(safe-area-inset-bottom)]",
+            // Mobile: bottom sheet that slides up as it opens.
+            "inset-x-0 bottom-0 max-h-[90dvh] rounded-t-[20px] pb-[env(safe-area-inset-bottom)] max-sm:transition-transform max-sm:duration-300 max-sm:ease-out max-sm:starting:translate-y-full motion-reduce:transition-none",
             // Desktop: centred modal.
             "sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-h-[85dvh] sm:w-[calc(100vw-48px)] sm:max-w-[680px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[20px] sm:pb-0",
           )}

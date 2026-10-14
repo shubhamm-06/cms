@@ -754,6 +754,16 @@
 - Centralized server-only service-role key validation so `sb_publishable_` keys and legacy anon JWTs cannot be mistaken for service-role credentials.
 - Documented the still-manual owner/month payout uniqueness index, duplicate-detection query, `contact_submissions` RLS verification, and Storage policy check without claiming they are deployed.
 
+## Property CSV Import: Website Listing Fields
+
+- Extended the admin property CSV import so one CSV can create a complete property, including the non-image website listing fields. The original seven headers (`property_name`, `owner_email`, `address`, `city`, `bedrooms`, `owner_share_percentage`, `status`) still work exactly as before, and a CSV with only those headers imports hidden (`show_on_website = false`).
+- Added 34 optional headers: `show_on_website`, `accept_booking_requests`, `slug`, `public_name`, `public_property_type`, `promotional_badge`, `display_order`, `is_featured`, `show_in_similar_properties`, `region`, `area`, `short_location_line`, `public_location_text`, `google_maps_url`, `distance_from_beach`, `tagline`, `short_description`, `full_description`, `beds`, `bathrooms`, `max_guests`, `pool_type`, `property_highlights`, `amenities`, `house_rules`, `show_price`, `starting_price`, `price_note`, `minimum_nights`, `check_in_time`, `check_out_time`, `booking_enquiry_note`, `seo_title`, and `seo_description`.
+- Values are validated through the existing `propertySchema`, so blank cells take the admin form defaults and rows with `show_on_website` true run the same publish-readiness checks as the admin form. Hidden rows only have the format of provided values validated, so partial listing data can be saved as a hidden draft.
+- Booleans accept true/false, yes/no or 1/0; lists use `|` as the separator; times are 24-hour `HH:MM`. A slug is generated from `public_name` for published rows with a blank slug, and a slug that already exists or repeats in the CSV makes the row invalid. A `23505` slug violation on insert now returns a row-level message instead of a generic failure.
+- The preview gained Website and Slug columns, per-row validation messages, a non-blocking "Published without images" warning, and a per-row details view for the remaining values. `image_url` is never written and images cannot be imported.
+- Rebuilt the demo CSV with all headers and three fictional Goa sample rows (operational-only, fully published, and hidden with partial listing data).
+- No schema, RLS, Storage, view, or Supabase change. Bookings, expenses, payouts, and public pages are untouched.
+
 ## Property Photo Tour, Scroll Lock and Pointer Cursor
 
 - Rebuilt the `/property/[slug]` gallery: one set of photo buttons now serves a full-width snap carousel with a `1 / N` counter below `lg` and the 1 + 4 grid with `Show all photos` from `lg`. Only real photos render, which removes the empty beige tiles the old stacked mobile grid could show while lazy images loaded, and the cover is downloaded once instead of twice.
@@ -781,3 +791,33 @@
 ## Photo Tour Opens at the Top
 
 - Fixed the photo tour opening scrolled to the end ("Additional photos") when opened from the page's cover photo or `Show all photos`: the tour no longer scrolls to the tapped photo at all, always opens at scrollTop 0 with the `Photo tour` heading and room index, and sends initial focus to the Back button without scrolling. The lightbox still opens only from a photo inside the tour.
+
+## Where You'll Be: Map From the Saved Google Maps URL
+
+- The `Where you'll be` map now comes from the property's saved `google_maps_url` (replacing the area-text search) through `src/lib/maps.ts`: coordinates are read from long links, `<iframe>` embed codes and embed URLs, and short links are followed on the server only (Google hosts only at every hop, 5 second timeout, cached for a week). The embed is `google.com/maps?ll=lat,lng&z=14&output=embed`, pinless (`q=` would drop a pin on the exact spot), with coordinates rounded to about 1 km and a non-interactive iframe, under the existing pink circle and `Approximate area` pill.
+- A property with no saved Google Maps URL no longer renders `Where you'll be`. A value that cannot be embedded keeps the placeholder card and the `View on Google Maps` button (web links only). The admin field accepts a pasted embed code and stores the link inside it. No schema, key or dependency change. Unit tests for the parser and the redirect resolver run with `npm test`.
+
+## Where You'll Be: Map Fallback Chain
+
+- The map now degrades in steps instead of dropping to the placeholder: coordinates from the saved Google Maps value, else an embed searched by the area text shown in the `Approximate area` pill (never anything from the saved URL), else the placeholder card. `View on Google Maps` still links to the saved value in every case.
+- Short-link lookups log one `[property map] short link lookup` line per attempt (input, hop hosts, trimmed final URL and a reason: `dns-failure`, `timeout`, `network-error`, `non-google-host`, `no-redirect`, `no-coordinates`). A failed lookup is remembered for one minute only (previously five), concurrent visitors share one lookup, and only successes are cached for a week. Unit tests cover the fallback order and DNS, network and timeout failures.
+
+## Public Property Detail and Photo Tour Fixes (2026-10-13)
+
+- Removed the unused Managed by card and its divider. Coordinate maps retain full precision at zoom 15 with pinless `ll=` embeds; admin saves resolve Google short links into long URLs when possible and keep unresolved links with a warning and field hint. Existing cached short-link and area-text fallbacks remain.
+- Shared enquiry dates/guests and validation between the stay card and sticky mobile WhatsApp bar. Missing, past and reversed dates show inline feedback and focus the relevant input; valid messages include readable dates, nights and guests. Call remains independent.
+- Added shared native-share, secure-copy, insecure-HTTP textarea-copy and manual WhatsApp/selectable-link fallbacks using canonical public URLs. Photo-tour room titles stick within each section on tablet/desktop with matching thumbnail offsets; mobile titles remain static.
+- Added map-save, date-validation and share-fallback tests. No database, RLS, Storage, dependency or booking/payout calculation changes.
+
+## Property Page: Mobile Layout (below md)
+
+- Below `md` the property detail page follows a familiar listing flow, in CurateMyStay's own styling: an edge-to-edge swipeable photo hero (native scroll snap, `1 / N` counter, tap opens the photo tour) with round back and share buttons in place of the site header and `All stays` link; a white title sheet with rounded top corners overlapping the photo, with the title, a place line and a capacity line centred (replacing the capacity chips); highlights; About clamped to six lines; six amenities with a full-width `Show all N amenities` button; `Where you'll be` with an area line, a 224px map with a corner expand link to the saved Google Maps URL (replacing the separate button and the location chips); an inline `Select dates` calendar; and `Things to know` rows.
+- The inline calendar (`property-mobile-date-picker.tsx`, plain `Date` maths, no new dependency) replaces the stay card below `md` and shares the enquiry context with the sticky bar, so picked dates show in the bar at once. The bar shows `Add dates` or the chosen range (which scrolls to the calendar); its no-dates validation now scrolls to and focuses the calendar and shows the error there. The guest picker is shared between the stay card and the calendar.
+- Long content keeps using the shared Radix bottom sheet, which now slides up on phones via Tailwind's `starting:` variant. Mobile ordering uses `order-*` utilities inside a `md:block` column, so tablet and desktop layout, data fetching, metadata, map privacy and validation rules are unchanged. No custom CSS, schema or dependency change.
+
+## Airbnb Listing Link as Social Proof
+
+- Added an optional `Airbnb listing URL` to the Website listing section of Admin -> Properties, validated as an HTTPS Airbnb listing link (`/rooms/<id>` on an Airbnb domain) and saved through the existing property action.
+- `/property/[slug]` shows `See Our Guest Reviews & Airbnb Listing` with a new-tab, `noopener noreferrer` link to the listing, followed by `Book Directly for a Better Rate` using the existing WhatsApp enquiry button. It renders only for a valid link, so no stay implies reviews it does not have. No Airbnb API, scraping, package or table.
+- The `properties` column and its `public_property_details` view column were added manually in Supabase (SQL in the catalogue doc).
+- Follow-up: with the view column confirmed live, removed the temporary Postgres 42703 fallback; the detail page reads `airbnb_listing_url` in its normal single query.

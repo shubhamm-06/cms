@@ -1,11 +1,11 @@
 "use client";
 
 import { ChevronDown, Phone } from "lucide-react";
-import { useId, useState } from "react";
+import { useId } from "react";
 import { FaWhatsapp } from "react-icons/fa6";
-import { buildStayEnquiryMessage } from "@/src/features/catalogue/property-enquiry-message";
-import { trackWhatsAppClick } from "@/src/lib/analytics";
-import { getPublicPhoneUrl, getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
+import { usePropertyEnquiry } from "@/src/features/catalogue/property-enquiry-context";
+import { addOneDay, parseDateInputValue, toDateInputValue } from "@/src/features/catalogue/property-enquiry-message";
+import { getPublicPhoneUrl } from "@/src/lib/public-whatsapp";
 
 /**
  * Stay card for `/property/[slug]`, laid out from the `BookingWidget` of the
@@ -29,48 +29,16 @@ type PropertyEnquiryCardProps = {
   maxGuests: number | null;
   priceLabel: string | null;
   priceNote: string | null;
-  propertyName: string;
-  propertyUrl: string;
 };
 
-/** `YYYY-MM-DD` in the visitor's own timezone, which is what `<input type="date">` expects. */
-function toDateInputValue(date: Date) {
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 10);
-}
-
-function addOneDay(dateInputValue: string) {
-  const date = new Date(`${dateInputValue}T00:00:00`);
-  date.setDate(date.getDate() + 1);
-
-  return toDateInputValue(date);
-}
-
-function parseDateInputValue(dateInputValue: string) {
-  const date = new Date(`${dateInputValue}T00:00:00`);
-
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
 /**
- * "2026-08-18" becomes "18 Aug", matching the reference field. The long form is
- * reserved for the WhatsApp message, because the full month name overflows the
- * half-width field on a 320px screen.
+ * "2026-08-18" becomes "18 Aug", matching the compact reference field.
+ * The WhatsApp message also includes the year.
  */
 function formatFieldDate(dateInputValue: string) {
   const date = parseDateInputValue(dateInputValue);
 
   return date?.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) || null;
-}
-
-/** "2026-08-18" becomes "18 August 2026"; anything unparseable becomes null. */
-function formatEnquiryDate(dateInputValue: string) {
-  const date = parseDateInputValue(dateInputValue);
-
-  return (
-    date?.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) || null
-  );
 }
 
 /**
@@ -86,11 +54,17 @@ function formatEnquiryDate(dateInputValue: string) {
  * input stays typeable by keyboard either way.
  */
 function DateField({
+  errorId,
+  field,
+  invalid,
   label,
   min,
   onChange,
   value,
 }: {
+  errorId?: string;
+  field: "check-in" | "check-out";
+  invalid: boolean;
   label: string;
   min: string;
   onChange: (value: string) => void;
@@ -118,7 +92,10 @@ function DateField({
         {(value && formatFieldDate(value)) || "Add date"}
       </span>
       <input
+        aria-describedby={invalid ? errorId : undefined}
+        aria-invalid={invalid || undefined}
         aria-label={label}
+        data-stay-date={field}
         className="absolute inset-0 h-full w-full cursor-pointer opacity-0 [&::-webkit-calendar-picker-indicator]:hidden"
         min={min}
         onChange={(event) => onChange(event.target.value)}
@@ -126,6 +103,36 @@ function DateField({
         type="date"
         value={value}
       />
+    </label>
+  );
+}
+
+/**
+ * Guest picker shared by the stay card and the mobile date section; both read and write
+ * the same enquiry context. Capacity only shapes the list and the message, so an
+ * unconfigured `max_guests` falls back to a plain range rather than blocking.
+ */
+export function StayGuestSelect({ className = "", maxGuests }: { className?: string; maxGuests: number | null }) {
+  const { guestCount, setGuestCount } = usePropertyEnquiry();
+  const guestLimit = maxGuests && maxGuests > 0 ? maxGuests : 10;
+
+  return (
+    <label className={`relative block cursor-pointer px-3.5 py-2.5 has-[select:focus-visible]:ring-2 has-[select:focus-visible]:ring-inset has-[select:focus-visible]:ring-public-coral ${className}`}>
+      <span className="block text-[10.5px] font-bold uppercase leading-[13px] tracking-[0.06em] text-public-ink">
+        Guests
+      </span>
+      <select
+        className="mt-0.5 block w-full cursor-pointer appearance-none truncate bg-transparent pr-6 text-[14.5px] leading-[21px] text-public-ink outline-none"
+        onChange={(event) => setGuestCount(Number(event.target.value))}
+        value={guestCount}
+      >
+        {Array.from({ length: guestLimit }, (_, index) => index + 1).map((count) => (
+          <option key={count} value={count}>
+            {`${count} ${count === 1 ? "guest" : "guests"}`}
+          </option>
+        ))}
+      </select>
+      <ChevronDown aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3.5 h-4 w-4 text-public-muted" />
     </label>
   );
 }
@@ -138,49 +145,12 @@ export function PropertyEnquiryCard({
   maxGuests,
   priceLabel,
   priceNote,
-  propertyName,
-  propertyUrl,
 }: PropertyEnquiryCardProps) {
-  // Capacity only shapes the guest dropdown and the enquiry message, so an
-  // unconfigured `max_guests` falls back to a plain range rather than blocking.
-  const guestLimit = maxGuests && maxGuests > 0 ? maxGuests : 10;
-
-  const [selectedCheckIn, setSelectedCheckIn] = useState("");
-  const [selectedCheckOut, setSelectedCheckOut] = useState("");
-  const [guestCount, setGuestCount] = useState(Math.min(2, guestLimit));
-  const [showDateWarning, setShowDateWarning] = useState(false);
+  const { checkIn: selectedCheckIn, checkOut: selectedCheckOut, error, setCheckIn, setCheckOut, whatsappUrl, handleWhatsAppClick } = usePropertyEnquiry();
 
   const today = toDateInputValue(new Date());
   const warningId = useId();
-  const hasBothDates = Boolean(selectedCheckIn && selectedCheckOut);
-
-  const whatsappUrl = getPublicWhatsAppUrl(
-    buildStayEnquiryMessage({
-      checkIn: selectedCheckIn ? formatEnquiryDate(selectedCheckIn) : null,
-      checkOut: selectedCheckOut ? formatEnquiryDate(selectedCheckOut) : null,
-      guestCount,
-      propertyName,
-      propertyUrl,
-    }),
-  );
   const phoneHref = getPublicPhoneUrl();
-
-  function handleCheckInChange(value: string) {
-    setSelectedCheckIn(value);
-    setShowDateWarning(false);
-    // A check-out on or before the new check-in is no longer a valid stay.
-    if (selectedCheckOut && selectedCheckOut <= value) setSelectedCheckOut("");
-  }
-
-  function handleWhatsAppClick(event: React.MouseEvent<HTMLAnchorElement>) {
-    if (!hasBothDates) {
-      event.preventDefault();
-      setShowDateWarning(true);
-      return;
-    }
-
-    trackWhatsAppClick("property_page_enquiry_card");
-  }
 
   const stayTimeRows = [
     checkInLabel ? { label: "Check-in", value: checkInLabel } : null,
@@ -188,7 +158,7 @@ export function PropertyEnquiryCard({
   ].filter((row) => row !== null);
 
   return (
-    <div className="rounded-[20px] border border-public-control bg-white p-5 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:p-6">
+    <div className="scroll-mt-24 scroll-mb-[calc(100px+env(safe-area-inset-bottom))] rounded-[20px] border border-public-control bg-white p-5 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:p-6" data-stay-enquiry-card>
       {priceLabel ? (
         <div>
           <div className="flex flex-wrap items-baseline gap-x-2 [overflow-wrap:anywhere]">
@@ -218,51 +188,33 @@ export function PropertyEnquiryCard({
             <div className="grid grid-cols-2">
               <div className="min-w-0 border-r border-public-control">
                 <DateField
+                  errorId={warningId}
+                  field="check-in"
+                  invalid={error?.field === "check-in"}
                   label="Check-in"
                   min={today}
-                  onChange={handleCheckInChange}
+                  onChange={setCheckIn}
                   value={selectedCheckIn}
                 />
               </div>
               <div className="min-w-0">
                 <DateField
+                  errorId={warningId}
+                  field="check-out"
+                  invalid={error?.field === "check-out"}
                   label="Check-out"
                   min={selectedCheckIn ? addOneDay(selectedCheckIn) : addOneDay(today)}
-                  onChange={(value) => {
-                    setSelectedCheckOut(value);
-                    setShowDateWarning(false);
-                  }}
+                  onChange={setCheckOut}
                   value={selectedCheckOut}
                 />
               </div>
             </div>
-            <label className="relative block cursor-pointer border-t border-public-control px-3.5 py-2.5 has-[select:focus-visible]:rounded-b-[11px] has-[select:focus-visible]:ring-2 has-[select:focus-visible]:ring-inset has-[select:focus-visible]:ring-public-coral">
-              <span className="block text-[10.5px] font-bold uppercase leading-[13px] tracking-[0.06em] text-public-ink">
-                Guests
-              </span>
-              <select
-                className="mt-0.5 block w-full cursor-pointer appearance-none truncate bg-transparent pr-6 text-[14.5px] leading-[21px] text-public-ink outline-none"
-                onChange={(event) => setGuestCount(Number(event.target.value))}
-                value={guestCount}
-              >
-                {Array.from({ length: guestLimit }, (_, index) => index + 1).map((count) => (
-                  <option key={count} value={count}>
-                    {`${count} ${count === 1 ? "guest" : "guests"}`}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                aria-hidden="true"
-                className="pointer-events-none absolute bottom-3 right-3.5 h-4 w-4 text-public-muted"
-              />
-            </label>
+            <StayGuestSelect className="border-t border-public-control has-[select:focus-visible]:rounded-b-[11px]" maxGuests={maxGuests} />
           </div>
 
-          {showDateWarning ? (
-            <p className="mt-2 text-[13px] leading-5 text-public-error" id={warningId} role="alert">
-              Please select your preferred dates first.
-            </p>
-          ) : null}
+          <p aria-live="polite" className={error ? "mt-2 text-[13px] leading-5 text-public-error" : "sr-only"} id={warningId}>
+            {error?.message || ""}
+          </p>
 
           {bookingEnquiryNote ? (
             <p className="mt-4 whitespace-pre-line text-[13.5px] leading-6 text-public-body">
@@ -277,10 +229,10 @@ export function PropertyEnquiryCard({
               their colour on an inner span. The icons follow via `currentColor`.
             */}
             <a
-              aria-describedby={showDateWarning ? warningId : undefined}
+              aria-describedby={error ? warningId : undefined}
               className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-whatsapp px-6 py-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition duration-150 hover:bg-whatsapp-hover focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2 active:scale-[0.99]"
               href={whatsappUrl}
-              onClick={handleWhatsAppClick}
+              onClick={(event) => handleWhatsAppClick(event, "property_page_enquiry_card")}
               rel="noopener noreferrer"
               target="_blank"
             >

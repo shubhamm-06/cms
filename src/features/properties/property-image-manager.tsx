@@ -256,6 +256,12 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
     }
     setImages((current) => current.map((currentImage) => (currentImage.id === image.id ? result.image : currentImage)));
     setAltValues((current) => ({ ...current, [image.id]: result.image.alt_text || "" }));
+    // A link is saved as text only: photos come from uploads, never from a URL, and alt text is
+    // shown publicly as the caption. Warn instead of blocking so nothing is lost.
+    if (/https?:\/\/|^www\./i.test(result.image.alt_text || "")) {
+      toast.warning("Alt text saved, but it looks like a link. Photos are added by upload, and alt text is shown as the photo caption, so describe the photo instead.");
+      return;
+    }
     toast.success("Alt text saved.");
   }
 

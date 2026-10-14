@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { extractIframeSrc, isAllowedMapHost, safeHttpUrl } from "@/src/lib/maps";
 import { normalizePropertySlug } from "@/src/lib/utils/property-slug";
 
 const optionalText = z.preprocess(
@@ -42,6 +43,25 @@ const slug = z.preprocess(
   z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and hyphens only.").nullable().optional(),
 );
 
+/**
+ * An HTTPS Airbnb listing link, for example https://www.airbnb.co.in/rooms/12345678.
+ * Any Airbnb country domain is accepted; the path must be a listing (`/rooms/...`).
+ */
+export function isAirbnbListingUrl(value: string | null | undefined) {
+  try {
+    const url = new URL(value?.trim() ?? "");
+    return (
+      url.protocol === "https:" &&
+      !url.username &&
+      !url.password &&
+      /^(?:[a-z]+\.)?airbnb\.(?:[a-z]{2,3}|co\.[a-z]{2}|com\.[a-z]{2})$/i.test(url.hostname) &&
+      /^\/rooms\/(plus\/)?\d+/.test(url.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const propertySchema = z
   .object({
     id: z.string().uuid().optional().or(z.literal("")),
@@ -64,8 +84,20 @@ export const propertySchema = z
     short_location_line: optionalText,
     public_location_text: optionalText,
     google_maps_url: z.preprocess(
+      // A pasted <iframe> embed code is stored as the link inside it.
+      (value) => (typeof value === "string" && value.trim() === "" ? null : typeof value === "string" ? extractIframeSrc(value) ?? value.trim() : value),
+      z.string().url("Enter a valid Google Maps URL.").refine((value) => {
+        const url = safeHttpUrl(value);
+        return Boolean(url && !url.username && !url.password && isAllowedMapHost(url.hostname));
+      }, "Use a Google Maps link.").nullable().optional(),
+    ),
+    airbnb_listing_url: z.preprocess(
       (value) => (typeof value === "string" && value.trim() === "" ? null : typeof value === "string" ? value.trim() : value),
-      z.string().url("Enter a valid Google Maps URL.").nullable().optional(),
+      z
+        .string()
+        .refine(isAirbnbListingUrl, "Use an HTTPS Airbnb listing link, for example https://www.airbnb.co.in/rooms/12345678.")
+        .nullable()
+        .optional(),
     ),
     tagline: optionalText,
     short_description: optionalText,

@@ -53,6 +53,7 @@ export default async function PropertiesPage({
               ) : null}
               <PropertyImportDialog
                 existingPropertyNames={properties.map((property) => property.name)}
+                existingPropertySlugs={properties.flatMap((property) => (property.slug ? [property.slug] : []))}
                 profiles={importProfiles}
               />
             </div>
@@ -71,8 +72,8 @@ export default async function PropertiesPage({
           </div>
         </CardHeader>
         <CardBody>
-          <PropertyForm formId={propertyFormId} key={propertyToEdit?.id || "new-property"} owners={owners} property={propertyToEdit} />
-          <PropertyImageManager key={propertyToEdit?.id || "new-property-images"} images={propertyImages} propertyId={propertyToEdit?.id} />
+          <PropertyForm formId={propertyFormId} key={propertyFormId} owners={owners} property={propertyToEdit} />
+          <PropertyImageManager key={`property-images-${propertyToEdit?.id || "new"}`} images={propertyImages} propertyId={propertyToEdit?.id} />
           <div className="mt-6 flex flex-col gap-2 sm:items-end">
             <PropertyFormSaveButton formId={propertyFormId} isEditing={Boolean(propertyToEdit)} />
             <p className="text-xs text-[var(--muted)]">

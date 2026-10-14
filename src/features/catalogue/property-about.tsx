@@ -48,7 +48,7 @@ export function PropertyAbout({
       ) : null}
       {paragraphs.length > 0 ? (
         <div
-          className="line-clamp-5 whitespace-pre-line text-[15.5px] leading-[1.7] text-public-body sm:text-base"
+          className="line-clamp-6 whitespace-pre-line text-[15.5px] leading-[1.7] text-public-body sm:text-base md:line-clamp-5"
           ref={body}
         >
           {paragraphs.join("\n\n")}
@@ -59,11 +59,12 @@ export function PropertyAbout({
           title={heading}
           trigger={
             <button
-              className="mt-3 inline-flex min-h-11 items-center gap-1 rounded-lg text-[15px] font-semibold text-public-ink underline underline-offset-4 outline-none hover:text-public-coral-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
+              // Below md: a full-width grey button. From md: the existing underlined link.
+              className="mt-4 flex min-h-12 w-full items-center justify-center gap-1 rounded-lg bg-public-hover text-[15px] font-semibold text-public-ink outline-none focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 md:mt-3 md:inline-flex md:min-h-11 md:w-auto md:justify-start md:bg-transparent md:underline md:underline-offset-4 md:hover:text-public-coral-hover"
               type="button"
             >
               Show more
-              <ChevronRight aria-hidden="true" className="h-4 w-4" />
+              <ChevronRight aria-hidden="true" className="hidden h-4 w-4 md:block" />
             </button>
           }
         >

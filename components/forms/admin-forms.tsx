@@ -1,8 +1,9 @@
 "use client";
 
 import { Building2, ReceiptText, Save, WalletCards } from "lucide-react";
-import { useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +14,7 @@ import {
   saveSettingsAction,
   updateUserAction,
 } from "@/src/features/shared/actions";
+import { announcePropertySaveStart, PROPERTY_SAVE_EVENT, trackPropertySave } from "@/src/features/properties/property-save-state";
 import { accountStatuses } from "@/src/lib/constants/statuses";
 import { normalizePropertySlug } from "@/src/lib/utils/property-slug";
 import type { Database } from "@/types/database.types";
@@ -100,17 +102,46 @@ function linesFromList(items: string[] | null | undefined) {
   return items?.join("\n") || "";
 }
 
+/**
+ * The browser blocks a submit while any field is invalid, and its own message cannot
+ * show for a field inside the collapsed "Website listing" section (hidden until "Show
+ * on website" is ticked). Without this the click looks like it did nothing. Name the
+ * field in a toast and log it.
+ */
+function reportBlockedSubmit(form: HTMLFormElement) {
+  const field = form.querySelector<HTMLInputElement>(":invalid");
+  const name = field?.name || "a field";
+  const hidden = Boolean(field?.closest("[hidden]"));
+  console.warn("[property form] save blocked by browser validation", { field: name, message: field?.validationMessage, hidden });
+  toast.error(
+    `Not saved: "${name}" is invalid${field?.validationMessage ? ` (${field.validationMessage})` : ""}.${
+      hidden ? " It is in the Website listing section: tick Show on website to see and fix it." : ""
+    }`,
+  );
+}
+
 export function PropertyFormSaveButton({ formId, isEditing }: { formId: string; isEditing: boolean }) {
   const [pending, setPending] = useState(false);
+
+  // The form's action reports start and finish (see property-save-state.ts). The button
+  // must not disable itself in its own click handler: that cancels the form submission.
+  useEffect(() => {
+    function handleSaveState(event: Event) {
+      const { formId: eventFormId, pending: nextPending } = (event as CustomEvent<{ formId: string; pending: boolean }>).detail;
+      if (eventFormId === formId) setPending(nextPending);
+    }
+
+    window.addEventListener(PROPERTY_SAVE_EVENT, handleSaveState);
+    return () => window.removeEventListener(PROPERTY_SAVE_EVENT, handleSaveState);
+  }, [formId]);
 
   function handleSubmitClick(event: MouseEvent<HTMLButtonElement>) {
     const form = document.getElementById(formId) as HTMLFormElement | null;
     if (!form || !form.checkValidity()) {
       event.preventDefault();
       form?.reportValidity();
-      return;
+      if (form) reportBlockedSubmit(form);
     }
-    setPending(true);
   }
 
   return (
@@ -187,7 +218,7 @@ export function PropertyForm({ formId, owners, property }: { formId: string; own
   const [slugEdited, setSlugEdited] = useState(Boolean(property?.slug));
 
   return (
-    <form action={savePropertyAction} className="grid gap-5" id={formId} key={property?.id || "new-property-form"}>
+    <form action={(formData) => trackPropertySave(formId, () => savePropertyAction(formData))} className="grid gap-5" id={formId} onSubmit={() => announcePropertySaveStart(formId)} key={property?.id || "new-property-form"}>
       <input name="mode" type="hidden" value={property ? "edit" : "add"} />
       <input name="id" type="hidden" value={property?.id || ""} />
       <PropertySection description="Internal operations, owner assignment, and financial splits. This information is not used as public website copy." title="Operational property">
@@ -305,8 +336,11 @@ export function PropertyForm({ formId, owners, property }: { formId: string; own
               <PropertyField className="md:col-span-6" label="Public location description">
                 <Textarea defaultValue={property?.public_location_text || ""} name="public_location_text" rows={3} />
               </PropertyField>
-              <PropertyField className="md:col-span-3" label="Google Maps URL">
-                <Input defaultValue={property?.google_maps_url || ""} name="google_maps_url" type="url" />
+              <PropertyField className="md:col-span-3" helper="For the most accurate map, open Google Maps in your browser and paste the full address-bar URL containing @latitude,longitude." label="Google Maps URL">
+                <Input defaultValue={property?.google_maps_url || ""} inputMode="url" name="google_maps_url" placeholder="Paste a Google Maps link or embed code" />
+              </PropertyField>
+              <PropertyField className="md:col-span-6" helper="Optional. The public page links to it so guests can read the listing's reviews. Leave blank if the stay has no Airbnb listing." label="Airbnb listing URL">
+                <Input defaultValue={property?.airbnb_listing_url || ""} inputMode="url" name="airbnb_listing_url" placeholder="https://www.airbnb.co.in/rooms/12345678" type="url" />
               </PropertyField>
               <PropertyField className="md:col-span-3" label="Distance from beach">
                 <Input defaultValue={property?.distance_from_beach || ""} name="distance_from_beach" />

@@ -18,7 +18,7 @@ import type { Database } from "@/types/database.types";
  */
 
 const detailColumns =
-  "id,slug,public_name,public_property_type,region,area,short_location_line,public_location_text,google_maps_url,tagline,short_description,full_description,promotional_badge,bedrooms,beds,bathrooms,max_guests,pool_type,distance_from_beach,amenities,property_highlights,house_rules,starting_price,show_price,price_note,minimum_nights,check_in_time,check_out_time,booking_enquiry_note,accept_booking_requests,seo_title,seo_description";
+  "id,slug,public_name,public_property_type,region,area,short_location_line,public_location_text,google_maps_url,tagline,short_description,full_description,promotional_badge,bedrooms,beds,bathrooms,max_guests,pool_type,distance_from_beach,amenities,property_highlights,house_rules,starting_price,show_price,price_note,minimum_nights,check_in_time,check_out_time,booking_enquiry_note,accept_booking_requests,seo_title,seo_description,airbnb_listing_url";
 
 const galleryColumns = "property_id,storage_path,alt_text,sort_order,is_cover,created_at";
 

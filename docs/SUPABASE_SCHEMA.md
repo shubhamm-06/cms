@@ -82,7 +82,7 @@ The live Supabase project includes this public-safe view, created manually and v
 | Item | Details |
 | --- | --- |
 | Purpose | The only public read source for `/property/[slug]` property content |
-| Exposed fields | The catalogue public fields except the catalogue-only `is_featured`, `display_order` and cover columns, plus `public_location_text`, `google_maps_url`, `full_description`, `amenities`, `property_highlights`, `house_rules`, `minimum_nights`, `check_in_time`, `check_out_time`, `booking_enquiry_note`, `accept_booking_requests`, `seo_title`, `seo_description` |
+| Exposed fields | The catalogue public fields except the catalogue-only `is_featured`, `display_order` and cover columns, plus `public_location_text`, `google_maps_url`, `full_description`, `amenities`, `property_highlights`, `house_rules`, `minimum_nights`, `check_in_time`, `check_out_time`, `booking_enquiry_note`, `accept_booking_requests`, `seo_title`, `seo_description`, `airbnb_listing_url` |
 | Row filter | `show_on_website = true`, `status = 'active'`, and `slug is not null`; these are predicates only and are never selected |
 | Reads | Anonymous and authenticated visitors through `grant select`; runs with `security_invoker = false` and `security_barrier = true`, so it, rather than an RLS policy on `properties`, is the boundary |
 | Writes | None; a view is read-only here |

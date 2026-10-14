@@ -1,6 +1,7 @@
 "use client";
 
-import { House, LayoutGrid } from "lucide-react";
+import { ArrowLeft, House, LayoutGrid } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import {
@@ -10,6 +11,7 @@ import {
   toTourPhotos,
 } from "@/src/features/catalogue/property-photo-tour";
 import type { PropertyGalleryImage } from "@/src/features/catalogue/public-property-detail-data";
+import { ShareButton } from "@/src/features/catalogue/share-button";
 import { usePhotoTourUrl } from "@/src/features/catalogue/use-photo-tour-url";
 import { cn } from "@/src/lib/utils/cn";
 
@@ -52,6 +54,32 @@ function desktopSizes(index: number, side: number) {
   return "(min-width: 1024px) 245px, 100vw";
 }
 
+/** Round white buttons over the hero photo below md, where the site header is hidden. */
+const heroButton =
+  "inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-public-ink shadow-[0_2px_8px_rgba(0,0,0,0.18)] outline-none focus-visible:ring-2 focus-visible:ring-public-coral";
+
+function HeroOverlayButtons({ propertyName, propertyUrl }: { propertyName: string; propertyUrl: string }) {
+  const router = useRouter();
+
+  // Back to where the visitor came from when that was this site, otherwise to all stays.
+  function goBack() {
+    const cameFromSite = document.referrer.startsWith(window.location.origin) && window.history.length > 1;
+    if (cameFromSite) router.back();
+    else router.push("/booking");
+  }
+
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-3 pt-[calc(12px+env(safe-area-inset-top))] md:hidden">
+      <button aria-label="Back to all stays" className={cn(heroButton, "pointer-events-auto")} onClick={goBack} type="button">
+        <ArrowLeft aria-hidden="true" className="h-[18px] w-[18px]" />
+      </button>
+      <div className="pointer-events-auto">
+        <ShareButton className={cn(heroButton, "min-h-10 gap-0 px-0 hover:bg-white")} iconOnly title={propertyName} url={propertyUrl} />
+      </div>
+    </div>
+  );
+}
+
 export function PropertyGallery({
   images,
   propertyName,
@@ -70,7 +98,8 @@ export function PropertyGallery({
 
   if (photos.length === 0) {
     return (
-      <div className="flex h-[240px] w-full flex-col items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-br from-public-cream to-public-sand sm:h-[320px] lg:h-[440px] lg:rounded-[20px]">
+      <div className="relative flex h-[240px] w-full flex-col items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-br from-public-cream to-public-sand sm:h-[320px] lg:h-[440px] lg:rounded-[20px]">
+        <HeroOverlayButtons propertyName={propertyName} propertyUrl={propertyUrl} />
         <House aria-hidden="true" className="h-9 w-9 text-public-taupe-soft" />
         <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-public-taupe">
           Photos coming soon
@@ -96,12 +125,14 @@ export function PropertyGallery({
 
   return (
     <>
-      <div className="relative -mx-4 sm:mx-0">
+      {/* Below md the hero runs edge to edge; from md it is the existing carousel/grid. */}
+      <div className="relative -mx-4 sm:-mx-6 md:mx-0">
+        <HeroOverlayButtons propertyName={propertyName} propertyUrl={propertyUrl} />
         <div
           aria-label={`${propertyName} photos`}
           className={cn(
             // Mobile and tablet: full-width snap carousel.
-            "flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain sm:rounded-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            "flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain md:rounded-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
             // Desktop: cover beside the smaller photos.
             "lg:grid lg:h-[440px] lg:snap-none lg:gap-2 lg:overflow-hidden lg:rounded-[20px]",
             desktopGridClasses(side),
@@ -114,7 +145,7 @@ export function PropertyGallery({
             <button
               aria-label={photoLabel(photo, index, photos.length)}
               className={cn(
-                "relative aspect-[4/3] w-full shrink-0 snap-start snap-always overflow-hidden bg-public-sand outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-public-coral sm:aspect-[16/10] lg:aspect-auto lg:min-h-0",
+                "relative aspect-[4/3] w-full shrink-0 snap-center snap-always overflow-hidden bg-public-sand outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-public-coral md:snap-start md:aspect-[16/10] lg:aspect-auto lg:min-h-0",
                 desktopTileClasses(index, side),
               )}
               key={photo.storage_path}
@@ -137,7 +168,7 @@ export function PropertyGallery({
           <>
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute bottom-3 right-3 rounded-md bg-public-ink/75 px-2.5 py-1 text-[12.5px] font-semibold tabular-nums text-white lg:hidden"
+              className="pointer-events-none absolute bottom-9 right-3 rounded-md bg-public-ink/75 md:bottom-3 px-2.5 py-1 text-[12.5px] font-semibold tabular-nums text-white lg:hidden"
             >
               {Math.min(activeSlide + 1, photos.length)} / {photos.length}
             </span>

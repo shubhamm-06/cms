@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createElement } from "react";
+import { createElement, Suspense } from "react";
 import {
   ArrowLeft,
   Bath,
@@ -18,17 +18,21 @@ import { siteOrigin } from "@/app/seo";
 import { ShowMoreDialog } from "@/components/ui/show-more-dialog";
 import { amenityCategory, amenityIcon, groupAmenities } from "@/src/features/catalogue/amenity-categories";
 import { PropertyAbout } from "@/src/features/catalogue/property-about";
-import { areaMapQuery, PropertyAreaMap } from "@/src/features/catalogue/property-area-map";
+import { PropertyAirbnbSection } from "@/src/features/catalogue/property-airbnb-section";
+import { areaMapQuery, PropertyAreaMap, PropertyMapFrame } from "@/src/features/catalogue/property-area-map";
 import { PropertyEnquiryCard } from "@/src/features/catalogue/property-enquiry-card";
 import { PropertyGallery } from "@/src/features/catalogue/property-gallery";
-import { PropertyManagedByCard } from "@/src/features/catalogue/property-managed-by-card";
+import { PropertyMobileDatePicker } from "@/src/features/catalogue/property-mobile-date-picker";
 import { PropertyThingsToKnow, type ThingsToKnowBlock } from "@/src/features/catalogue/property-things-to-know";
 import { ShareButton } from "@/src/features/catalogue/share-button";
 import type {
   PropertyDetail,
   PropertyGalleryImage,
 } from "@/src/features/catalogue/public-property-detail-data";
+import { extractIframeSrc, safeHttpUrl } from "@/src/lib/maps";
 import { formatMoney } from "@/src/lib/utils/money";
+import { isAirbnbListingUrl } from "@/src/lib/validators/properties";
+import { cn } from "@/src/lib/utils/cn";
 
 /**
  * Public property detail layout for `/property/[slug]`.
@@ -39,7 +43,7 @@ import { formatMoney } from "@/src/lib/utils/money";
  * enquiry.
  *
  * Order: title (with Share), summary line and gallery; then capacity tiles,
- * highlight rows, about, amenities, stay details, the "Managed by" card, things
+ * highlight rows, about, amenities, stay details, things
  * to know and location. The stay card is sticky beside the content on desktop
  * and comes last on mobile, where the sticky enquiry bar handles quick enquiries. Capacity appears once (summary
  * line plus tiles), and nothing an admin entered is dropped: highlights beyond
@@ -48,6 +52,8 @@ import { formatMoney } from "@/src/lib/utils/money";
 
 /** Long lists show this many items inline; the rest open in the shared dialog. */
 const inlineAmenityCount = 10;
+/** Below md the amenities list is shorter and single-column. */
+const mobileAmenityCount = 6;
 const highlightRowCount = 4;
 
 /** Company-level enquiry line: the same for every listing, never property-specific. */
@@ -133,10 +139,15 @@ function FactTile({ icon, label }: { icon: LucideIcon; label: string }) {
   );
 }
 
-function ShowAllButton({ label }: { label: string }) {
+function ShowAllButton({ className, label }: { className?: string; label: string }) {
   return (
     <button
-      className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-public-ink bg-white px-4 py-2.5 text-[15px] font-semibold text-public-ink outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
+      className={cn(
+        // Below md: a full-width grey button. From md: the existing outlined button.
+        "mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-public-hover text-[15px] font-semibold text-public-ink outline-none transition-colors focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2",
+        "md:inline-flex md:min-h-11 md:w-auto md:justify-start md:rounded-xl md:border md:border-public-ink md:bg-white md:px-4 md:py-2.5 md:hover:bg-public-hover",
+        className,
+      )}
       type="button"
     >
       {label}
@@ -144,9 +155,9 @@ function ShowAllButton({ label }: { label: string }) {
   );
 }
 
-function AmenityRow({ amenity }: { amenity: string }) {
+function AmenityRow({ amenity, className }: { amenity: string; className?: string }) {
   return (
-    <div className="flex min-w-0 items-center gap-3 border-b border-public-divider py-2.5">
+    <div className={cn("flex min-w-0 items-center gap-3 border-b border-public-divider py-2.5", className)}>
       {createElement(amenityIcon(amenity), { "aria-hidden": true, className: "h-5 w-5 shrink-0 text-public-body" })}
       <span className="min-w-0 text-[14.5px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[15px]">{amenity}</span>
     </div>
@@ -204,6 +215,10 @@ export function PropertyDetailPage({
     property.bathrooms != null ? plural(property.bathrooms, "bathroom") : null,
   ].filter((part): part is string => Boolean(part));
 
+  // Below md the summary reads as two centred lines: the place, then the capacity.
+  const placeSummary = property.public_property_type && place ? `${property.public_property_type} in ${place}` : property.public_property_type || place || null;
+  const capacitySummary = summaryParts.filter((part) => part !== placeSummary).join(" · ");
+
   const capacityTiles = [
     property.max_guests != null ? { icon: Users, label: plural(property.max_guests, "guest") } : null,
     property.bedrooms != null ? { icon: BedDouble, label: plural(property.bedrooms, "bedroom") } : null,
@@ -228,7 +243,11 @@ export function PropertyDetailPage({
     property.distance_from_beach ? { icon: Footprints, label: property.distance_from_beach } : null,
   ].filter((fact) => fact !== null);
 
-  const mapQuery = areaMapQuery(property);
+  // "Where you'll be" exists only when the property has a saved Google Maps value. The button
+  // links to that value when it is a web link (or the link inside a pasted embed code).
+  const savedMapValue = property.google_maps_url?.trim() || null;
+  const areaLabel = areaMapQuery(property);
+  const viewOnMapsUrl = savedMapValue ? safeHttpUrl(extractIframeSrc(savedMapValue) ?? savedMapValue)?.toString() ?? null : null;
   const safetyItems = amenities.filter((amenity) => amenityCategory(amenity) === "Safety");
   const enquiryItems = [
     property.booking_enquiry_note?.trim() || null,
@@ -259,35 +278,45 @@ export function PropertyDetailPage({
       maxGuests={property.max_guests}
       priceLabel={showPrice ? formatMoney(property.starting_price) : null}
       priceNote={property.price_note}
-      propertyName={name}
-      propertyUrl={propertyUrl}
     />
   );
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-4 pb-16 pt-5 sm:px-6 sm:pb-20 md:px-8">
+    // Below md: a column whose `order-*` puts the photo hero first and the title sheet over it.
+    // From md, `md:block` and `md:order-none` restore the existing layout exactly.
+    <div className="mx-auto flex w-full max-w-[1180px] flex-col px-4 pb-16 pt-0 sm:px-6 sm:pb-20 md:block md:px-8 md:pt-5">
       <Link
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-md pr-2 text-[14.5px] font-semibold text-public-ink outline-none transition-colors hover:text-public-coral-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
+        className="hidden min-h-11 items-center gap-1.5 rounded-md pr-2 text-[14.5px] font-semibold text-public-ink outline-none transition-colors hover:text-public-coral-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 md:inline-flex"
         href="/booking"
       >
         <ArrowLeft aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
         All stays
       </Link>
 
-      <div className="mt-2 mb-4 sm:mb-5">
-        <div className="flex items-start justify-between gap-3">
+      {/* Below md: a white sheet with rounded top corners overlapping the hero, text centred. */}
+      <div className="relative z-10 order-2 -mx-4 -mt-6 mb-4 rounded-t-3xl bg-white px-4 pt-6 text-center sm:-mx-6 sm:px-6 md:order-none md:mx-0 md:mt-2 md:mb-5 md:rounded-none md:bg-transparent md:px-0 md:pt-0 md:text-left">
+        <div className="flex items-start justify-center gap-3 md:justify-between">
           <h1 className="min-w-0 text-[26px] font-extrabold leading-[1.15] tracking-[-0.02em] text-public-ink [overflow-wrap:anywhere] sm:text-[32px]">
             {name}
           </h1>
-          <ShareButton className="-mr-3 shrink-0 sm:mt-0.5" title={name} url={propertyUrl} />
+          {/* Below md, Share sits on the hero photo instead. */}
+          <div className="hidden md:block">
+            <ShareButton className="-mr-3 shrink-0 sm:mt-0.5" title={name} url={propertyUrl} />
+          </div>
         </div>
         {summaryParts.length > 0 ? (
-          <p className="mt-2 text-[15px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[16px]">
+          <p className="mt-2 hidden text-[15px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[16px] md:block">
             {summaryParts.join(" · ")}
           </p>
         ) : null}
+        {placeSummary ? (
+          <p className="mt-2 text-[15px] leading-6 text-public-muted [overflow-wrap:anywhere] md:hidden">{placeSummary}</p>
+        ) : null}
+        {capacitySummary ? (
+          <p className="mt-0.5 text-[15px] leading-6 text-public-body [overflow-wrap:anywhere] md:hidden">{capacitySummary}</p>
+        ) : null}
         {property.promotional_badge ? (
-          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2 md:justify-start">
             <span className="rounded-full bg-public-coral px-2.5 py-1 text-[11.5px] font-semibold text-white">
               {property.promotional_badge}
             </span>
@@ -295,12 +324,16 @@ export function PropertyDetailPage({
         ) : null}
       </div>
 
-      <PropertyGallery images={gallery} propertyName={name} propertyUrl={propertyUrl} />
+      <div className="order-1 md:order-none">
+        <PropertyGallery images={gallery} propertyName={name} propertyUrl={propertyUrl} />
+      </div>
 
-      <div className="pt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_384px] lg:gap-14 lg:pt-10">
-        <div className="min-w-0">
+      <div className="order-3 md:order-none md:pt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_384px] lg:gap-14 lg:pt-10">
+        {/* Below md the sections are reordered with `max-md:order-*`; from md this is a plain block. */}
+        <div className="flex min-w-0 flex-col md:block">
           {capacityTiles.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
+            // Below md capacity is the centred line in the title sheet instead.
+            <div className="hidden grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid lg:grid-cols-4">
               {capacityTiles.map((tile) => (
                 <FactTile icon={tile.icon} key={tile.label} label={tile.label} />
               ))}
@@ -308,18 +341,18 @@ export function PropertyDetailPage({
           ) : null}
 
           {highlightRows.length > 0 ? (
-            <>
+            <div className="max-md:order-1">
               <Rule />
               <ul aria-label="Highlights" className="grid gap-5">
                 {highlightRows.map((highlight) => (
                   <HighlightRow highlight={highlight} key={highlight} />
                 ))}
               </ul>
-            </>
+            </div>
           ) : null}
 
           {hasDescription ? (
-            <>
+            <div className="max-md:order-2">
               <Rule />
               <PropertyAbout
                 heading={
@@ -333,23 +366,29 @@ export function PropertyDetailPage({
                 ].filter((text): text is string => Boolean(text))}
                 tagline={showTagline ? property.tagline : null}
               />
-            </>
+            </div>
           ) : null}
 
           {amenities.length > 0 ? (
-            <>
+            <div className="max-md:order-3">
               <Rule />
               <section>
                 <SectionHeading>What this place offers</SectionHeading>
-                <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-                  {amenities.slice(0, inlineAmenityCount).map((amenity) => (
-                    <AmenityRow amenity={amenity} key={amenity} />
+                <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
+                  {amenities.slice(0, inlineAmenityCount).map((amenity, index) => (
+                    <AmenityRow amenity={amenity} className={index >= mobileAmenityCount ? "max-md:hidden" : undefined} key={amenity} />
                   ))}
                 </div>
-                {amenities.length > inlineAmenityCount ? (
+                {amenities.length > mobileAmenityCount ? (
                   <ShowMoreDialog
                     title="What this place offers"
-                    trigger={<ShowAllButton label={`Show all ${amenities.length} amenities`} />}
+                    trigger={
+                      <ShowAllButton
+                        // From md ten are listed inline, so the button only appears when there are more.
+                        className={amenities.length <= inlineAmenityCount ? "md:hidden" : undefined}
+                        label={`Show all ${amenities.length} amenities`}
+                      />
+                    }
                   >
                     <div className="grid gap-7">
                       {groupAmenities(amenities).map((group) => (
@@ -364,11 +403,11 @@ export function PropertyDetailPage({
                   </ShowMoreDialog>
                 ) : null}
               </section>
-            </>
+            </div>
           ) : null}
 
           {stayFacts.length > 0 ? (
-            <>
+            <div className="max-md:order-4">
               <Rule />
               <section>
                 <SectionHeading>Stay details</SectionHeading>
@@ -378,41 +417,51 @@ export function PropertyDetailPage({
                   ))}
                 </div>
               </section>
-            </>
+            </div>
           ) : null}
 
-          <Rule />
-          <PropertyManagedByCard propertyName={name} propertyUrl={propertyUrl} />
+          {/* Only a valid Airbnb listing link shows this, so no stay implies reviews it lacks. */}
+          {property.airbnb_listing_url && isAirbnbListingUrl(property.airbnb_listing_url) ? (
+            <div className="max-md:order-4">
+              <Rule />
+              <PropertyAirbnbSection acceptBookingRequests={property.accept_booking_requests} airbnbListingUrl={property.airbnb_listing_url.trim()} />
+            </div>
+          ) : null}
 
           {thingsToKnow.length > 0 ? (
-            <>
+            <div className="max-md:order-7">
               <Rule />
               <PropertyThingsToKnow blocks={thingsToKnow} />
-            </>
+            </div>
           ) : null}
 
-          {mapQuery || property.public_location_text || locationFacts.length > 0 || property.google_maps_url ? (
-            <>
+          {savedMapValue ? (
+            <div className="max-md:order-5">
               <Rule />
               <section>
                 <SectionHeading>Where you&rsquo;ll be</SectionHeading>
-                {mapQuery ? <PropertyAreaMap query={mapQuery} /> : null}
+                {areaLabel ? <p className="-mt-2 mb-3 text-[15px] text-public-muted md:hidden">{areaLabel}</p> : null}
+                {/* A short link is resolved on the server; the placeholder shows meanwhile. */}
+                <Suspense fallback={<PropertyMapFrame areaLabel={areaLabel} embedUrl={null} expandUrl={viewOnMapsUrl} />}>
+                  <PropertyAreaMap areaLabel={areaLabel} expandUrl={viewOnMapsUrl} savedValue={savedMapValue} />
+                </Suspense>
                 {property.public_location_text ? (
                   <p className="mb-4 whitespace-pre-line text-[15.5px] leading-[1.7] text-public-body sm:text-base">
                     {property.public_location_text}
                   </p>
                 ) : null}
                 {locationFacts.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
+                  // Below md the area line and the highlights already say this.
+                  <div className="hidden grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid">
                     {locationFacts.map((fact) => (
                       <FactTile icon={fact.icon} key={fact.label} label={fact.label} />
                     ))}
                   </div>
                 ) : null}
-                {property.google_maps_url ? (
+                {viewOnMapsUrl ? (
                   <a
-                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-public-ink px-4 py-2.5 text-[14.5px] font-semibold text-public-ink outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
-                    href={property.google_maps_url}
+                    className="mt-4 hidden min-h-11 items-center gap-2 rounded-xl border border-public-ink px-4 py-2.5 md:inline-flex text-[14.5px] font-semibold text-public-ink outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
+                    href={viewOnMapsUrl}
                     rel="noopener noreferrer"
                     target="_blank"
                   >
@@ -421,12 +470,18 @@ export function PropertyDetailPage({
                   </a>
                 ) : null}
               </section>
-            </>
+            </div>
           ) : null}
 
-          {/* Mobile and tablet: the full stay card comes last, so it never pushes the
-              content down; the sticky enquiry bar covers quick enquiries until then. */}
-          <div className="lg:hidden">
+          {/* Below md: inline dates in place of the stay card, sharing its enquiry state. */}
+          <div className="max-md:order-6 md:hidden">
+            <Rule />
+            <PropertyMobileDatePicker acceptBookingRequests={property.accept_booking_requests} maxGuests={property.max_guests} />
+          </div>
+
+          {/* Tablet: the full stay card comes last, so it never pushes the content down;
+              the sticky enquiry bar covers quick enquiries until then. */}
+          <div className="hidden md:block lg:hidden">
             <Rule />
             <section aria-label="Ask us about this stay" id="enquire">
               {enquiryCard}

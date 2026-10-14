@@ -32,6 +32,7 @@ create table if not exists public.properties (
   short_location_line text,
   public_location_text text,
   google_maps_url text,
+  airbnb_listing_url text,
   tagline text,
   short_description text,
   full_description text,
@@ -253,7 +254,8 @@ select
   p.booking_enquiry_note,
   p.accept_booking_requests,
   p.seo_title,
-  p.seo_description
+  p.seo_description,
+  p.airbnb_listing_url
 from public.properties p
 where p.show_on_website
   and p.status = 'active'

@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useRef, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import type { PropertyGalleryImage } from "@/src/features/catalogue/public-property-detail-data";
 import { ShareButton } from "@/src/features/catalogue/share-button";
 import { cn } from "@/src/lib/utils/cn";
@@ -179,6 +179,7 @@ export function PropertyPhotoTour({
         <Dialog.Content
           aria-describedby={undefined}
           className="fixed inset-0 z-[80] overflow-y-auto overscroll-contain bg-white text-public-ink outline-none"
+          style={{ "--photo-tour-bar-height": "61px" } as CSSProperties}
           // The tour always opens at the top, whichever photo or button opened it, and
           // never scrolls to a photo or room. Initial focus goes to the Back button in
           // the sticky header (without scrolling) rather than anything lower down.
@@ -195,7 +196,7 @@ export function PropertyPhotoTour({
             returnFocusTo()?.focus({ preventScroll: true });
           }}
         >
-          <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-public-hairline bg-white/95 px-2 py-2 backdrop-blur sm:px-4">
+          <div className="sticky top-0 z-10 flex h-[var(--photo-tour-bar-height)] items-center justify-between gap-3 border-b border-public-hairline bg-white/95 px-2 py-2 backdrop-blur sm:px-4">
             <Dialog.Close className={cn(tourButton, "hover:bg-public-hover")} data-tour-initial-focus>
               <ChevronLeft aria-hidden="true" className="h-5 w-5 shrink-0" />
               <span>Back</span>
@@ -247,12 +248,12 @@ export function PropertyPhotoTour({
               {groups.map((group) => (
                 <section
                   aria-label={group.label || `${propertyName} photos`}
-                  className="scroll-mt-20 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-8"
+                  className="scroll-mt-[calc(var(--photo-tour-bar-height)+16px)] md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:items-start md:gap-8"
                   id={group.id}
                   key={group.id}
                 >
                   {group.label ? (
-                    <h3 className="mb-3 text-[17px] font-bold tracking-[-0.005em] md:mb-0 md:pt-1 md:text-[18px]">
+                    <h3 className="mb-3 text-[17px] font-bold tracking-[-0.005em] md:sticky md:top-[calc(var(--photo-tour-bar-height)+16px)] md:mb-0 md:self-start md:pt-1 md:text-[18px]">
                       {group.label}
                     </h3>
                   ) : null}

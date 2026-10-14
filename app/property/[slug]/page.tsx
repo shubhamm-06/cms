@@ -6,6 +6,7 @@ import { PublicFooter } from "@/components/home/public-footer";
 import { PublicHeader } from "@/components/home/public-header";
 import { PropertyDetailPage } from "@/src/features/catalogue/property-detail-page";
 import { PropertyMobileEnquiryBar } from "@/src/features/catalogue/property-mobile-enquiry-bar";
+import { PropertyEnquiryProvider } from "@/src/features/catalogue/property-enquiry-context";
 import { loadPublicPropertyDetail } from "@/src/features/catalogue/public-property-detail-data";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
 
@@ -79,7 +80,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
   return (
     <div className={`${propertyFont.variable} cms-homepage`}>
       <main className="min-h-screen bg-white font-sans text-public-ink antialiased">
-        <PublicHeader analyticsLocation="property_page" />
+        {/* Below md a found property shows its own back and share buttons over the photo
+            instead; `md:contents` keeps the header's sticky behaviour unchanged from md. */}
+        <div className={result.status === "found" ? "max-md:hidden md:contents" : "contents"}>
+          <PublicHeader analyticsLocation="property_page" />
+        </div>
 
         {result.status === "failed" ? (
           <div className="mx-auto max-w-[1180px] px-4 py-14 sm:px-6 sm:py-16 md:px-8">
@@ -94,17 +99,19 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             </div>
           </div>
         ) : (
-          <PropertyDetailPage gallery={result.gallery} property={result.property} />
-        )}
-
-        <PublicFooter analyticsLocation="property_page" homeAnchorPrefix="/" />
-        {result.status === "found" ? (
-          <PropertyMobileEnquiryBar
-            acceptBookingRequests={result.property.accept_booking_requests}
+          <PropertyEnquiryProvider
+            key={result.property.slug}
+            maxGuests={result.property.max_guests}
             propertyName={result.property.public_name || "Curated stay"}
             propertyUrl={`${siteOrigin}/property/${result.property.slug}`}
-          />
-        ) : null}
+          >
+            <PropertyDetailPage gallery={result.gallery} property={result.property} />
+            <PublicFooter analyticsLocation="property_page" homeAnchorPrefix="/" />
+            <PropertyMobileEnquiryBar acceptBookingRequests={result.property.accept_booking_requests} />
+          </PropertyEnquiryProvider>
+        )}
+
+        {result.status === "failed" ? <PublicFooter analyticsLocation="property_page" homeAnchorPrefix="/" /> : null}
       </main>
     </div>
   );

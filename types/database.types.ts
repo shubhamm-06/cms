@@ -51,6 +51,7 @@ export type Database = {
           short_location_line: string | null;
           public_location_text: string | null;
           google_maps_url: string | null;
+          airbnb_listing_url: string | null;
           tagline: string | null;
           short_description: string | null;
           full_description: string | null;
@@ -287,6 +288,7 @@ export type Database = {
           short_location_line: string | null;
           public_location_text: string | null;
           google_maps_url: string | null;
+          airbnb_listing_url: string | null;
           tagline: string | null;
           short_description: string | null;
           full_description: string | null;

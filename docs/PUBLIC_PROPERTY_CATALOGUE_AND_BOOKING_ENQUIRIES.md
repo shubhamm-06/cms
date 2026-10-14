@@ -206,6 +206,14 @@ seo_title text
 seo_description text
 ```
 
+Social proof (added manually later):
+
+```txt
+airbnb_listing_url text
+```
+
+An optional HTTPS Airbnb listing link (`https://www.airbnb.<domain>/rooms/<id>`), validated in `propertySchema` and edited in Admin -> Properties. It is a plain link: there is no Airbnb API, import or scraping.
+
 ### Added Property Constraints
 
 The live Supabase project now includes:
@@ -419,7 +427,8 @@ select
   p.starting_price, p.show_price, p.price_note,
   p.minimum_nights, p.check_in_time, p.check_out_time,
   p.booking_enquiry_note, p.accept_booking_requests,
-  p.seo_title, p.seo_description
+  p.seo_title, p.seo_description,
+  p.airbnb_listing_url
 from public.properties p
 where p.show_on_website
   and p.status = 'active'
@@ -497,13 +506,17 @@ The public-safe read source is live and wired in: `/booking` loads real publishe
 `/property/[slug]` completes this phase:
 
 - one server route resolves the slug, loads the property and its gallery through the public-safe detail/gallery views, and renders a server component; there is no new API route, no client-side data fetching and no service-role access;
-- the layout follows the `Curate My Stay — Property Detail Page` screen in `reference/booking.html`: back link, title block, gallery (a snap-scrolling carousel below `lg`, the 1 + 4 grid from `lg`), then a two-column body with a sticky 384px stay card from `lg`; below `lg` the card comes last in the content and a sticky enquiry bar offers WhatsApp and Call. Long content opens in a shared show-more dialog, and `Where you'll be` shows an area-only map searched by area and region, never `google_maps_url`;
-- all property content comes from Admin -> Properties. Only generic section headings and company-level copy (the `Managed by Curate My Stay` card and the enquiry policy line) are hard-coded, and empty optional fields hide their whole section;
+- the layout follows the `Curate My Stay — Property Detail Page` screen in `reference/booking.html`: back link, title block, gallery (a snap-scrolling carousel below `lg`, the 1 + 4 grid from `lg`), then a two-column body with a sticky 384px stay card from `lg`; below `lg` the card comes last in the content and a sticky enquiry bar offers WhatsApp and Call. Long content opens in a shared show-more dialog, and `Where you'll be` appears only when `google_maps_url` is saved and shows a keyless, pinless Google Maps embed using full-precision saved coordinates at zoom 15 built from it (see AI Project Context), falling back to the area text embed, then to a placeholder card, when no coordinates can be found;
+- all property content comes from Admin -> Properties. Only generic section headings and company-level copy (the enquiry policy line) are hard-coded, and empty optional fields hide their whole section;
 - gallery images use `property_images` data through the existing `getPropertyImageUrl()` helper with the cover first; legacy `image_url` is not used. Photos open a full-screen photo tour and lightbox (Radix Dialog, URL-synced with `?photos=1` and `?photo=N`) grouped into room sections inferred from `alt_text` and `sort_order` only, with no schema change; see AI Project Context for the room rules;
 - missing, unpublished and operationally inactive slugs are all absent from the views, so they produce the same `notFound()` result and the page never reveals that a private property exists. A real query failure returns a separate public error state and logs only the Supabase error code and message;
-- the stay card is display-only: price behind `show_price`, price note, minimum stay, check-in/check-out, the admin enquiry note, and a WhatsApp CTA built from the shared helper. When `accept_booking_requests` is false the CTA is replaced by a paused message. Selected dates and guests only shape the WhatsApp message; no totals, taxes, availability check or enquiry submission exist on this page.
+- the stay card is display-only: price behind `show_price`, price note, minimum stay, check-in/check-out, the admin enquiry note, and a WhatsApp CTA built from the shared helper. When `accept_booking_requests` is false the CTA is replaced by a paused message. Shared enquiry state requires valid dates for both the stay card and sticky bar and includes readable dates, calendar nights and guests in the WhatsApp message; no totals, taxes, availability check or enquiry submission exist on this page.
 
 Still outstanding for the wider feature: the separate booking-request system in Phase 6.
+
+Property detail refinements: the Managed by section and extra divider are removed. The admin save action resolves Google short links with the existing Google-only, five-second resolver and stores coordinate-bearing long URLs in `google_maps_url`. Failures keep the short link and show a warning to paste the full browser URL; no schema changes are needed. Existing short links still use cached render-time resolution, then the area-text map, then a placeholder. Only coordinate embeds show the actual property position; the approximate area-text map can show Google's place card.
+
+Both Share buttons use `share-public-page.ts`: immediate native Web Share (cancellation ignored), secure clipboard, legacy textarea copying on plain HTTP, then a selectable-link/WhatsApp popover. URLs prefer `NEXT_PUBLIC_SITE_URL` and otherwise keep the canonical property URL supplied by the server. Photo-tour room titles stick within their own section from `md`, below the shared top-bar-height offset; mobile titles remain static.
 
 ### Phase 6: Separate Booking Enquiries
 
@@ -529,3 +542,33 @@ Do not introduce:
 - booking-request effects on payouts;
 - direct anonymous inserts into `bookings`;
 - hard-coded property catalogue content.
+
+## Airbnb Listing Link
+
+`public.properties.airbnb_listing_url` and its column on `public_property_details` were added manually and are confirmed live. The view update that was applied (it appends one column; `create or replace view` keeps the existing columns, owner and grants):
+
+```sql
+create or replace view public.public_property_details
+with (security_invoker = false, security_barrier = true) as
+select
+  p.id, p.slug, p.public_name, p.public_property_type,
+  p.region, p.area, p.short_location_line,
+  p.public_location_text, p.google_maps_url,
+  p.tagline, p.short_description, p.full_description, p.promotional_badge,
+  p.bedrooms, p.beds, p.bathrooms, p.max_guests,
+  p.pool_type, p.distance_from_beach,
+  p.amenities, p.property_highlights, p.house_rules,
+  p.starting_price, p.show_price, p.price_note,
+  p.minimum_nights, p.check_in_time, p.check_out_time,
+  p.booking_enquiry_note, p.accept_booking_requests,
+  p.seo_title, p.seo_description,
+  p.airbnb_listing_url
+from public.properties p
+where p.show_on_website
+  and p.status = 'active'
+  and p.slug is not null;
+```
+
+`loadPublicPropertyDetail()` reads the column with the other detail fields.
+
+On the page, a valid link shows `See Our Guest Reviews & Airbnb Listing` (a new-tab link with `rel="noopener noreferrer"`) and, when enquiries are open, `Book Directly for a Better Rate` with the page's existing WhatsApp enquiry button. A blank or invalid value shows nothing, so a stay without a listing never implies it has Airbnb reviews.

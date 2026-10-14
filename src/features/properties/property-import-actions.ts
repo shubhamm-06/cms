@@ -31,6 +31,14 @@ const initialSummary: PropertyImportSummary = {
   totalRows: 0,
 };
 
+function existingSlugs(properties: Array<{ slug: string | null }> | null) {
+  return (properties || []).flatMap((property) => (property.slug ? [property.slug] : []));
+}
+
+function isSlugConflict(error: { code?: string; details?: string; message?: string }) {
+  return error.code === "23505" && `${error.message || ""} ${error.details || ""}`.toLowerCase().includes("slug");
+}
+
 function failure(message: string, rows: PropertyImportPreviewRow[] = [], summary: PropertyImportSummary = initialSummary): PropertyImportActionState {
   return {
     message,
@@ -62,7 +70,7 @@ export async function importPropertiesCsvAction(
   const supabase = await createClient();
   const [profilesResult, propertiesResult] = await Promise.all([
     supabase.from("profiles").select("id,email,role,status"),
-    supabase.from("properties").select("name"),
+    supabase.from("properties").select("name,slug"),
   ]);
 
   if (profilesResult.error || propertiesResult.error) return failure("Could not prepare the import. Try again.");
@@ -70,6 +78,7 @@ export async function importPropertiesCsvAction(
   const validation = validatePropertyImportCsv({
     csv,
     existingPropertyNames: (propertiesResult.data || []).map((property) => property.name),
+    existingPropertySlugs: existingSlugs(propertiesResult.data),
     owners: profilesResult.data || [],
   });
 
@@ -103,6 +112,33 @@ export async function importPropertiesCsvAction(
       code: inserted.error.code,
       rowsAttempted: validation.inserts.length,
     });
+
+    if (isSlugConflict(inserted.error)) {
+      // A slug was taken after validation (for example by a concurrent save). The batch insert is atomic, so
+      // nothing was created. Re-validate against fresh data so the offending row shows its own message.
+      const latest = await supabase.from("properties").select("name,slug");
+      if (!latest.error) {
+        const revalidated = validatePropertyImportCsv({
+          csv,
+          existingPropertyNames: (latest.data || []).map((property) => property.name),
+          existingPropertySlugs: existingSlugs(latest.data),
+          owners: profilesResult.data || [],
+        });
+        if (!revalidated.error && revalidated.summary.invalidRows > 0) {
+          return failure(
+            "A slug was taken while importing. No properties were created. Fix the highlighted rows and upload the CSV again.",
+            revalidated.rows,
+            revalidated.summary,
+          );
+        }
+      }
+      return failure(
+        "A slug in this CSV is already used by another property. No properties were created. Check the slug values and try again.",
+        validation.rows,
+        validation.summary,
+      );
+    }
+
     return failure("Import failed. No properties were created.", validation.rows, validation.summary);
   }
 

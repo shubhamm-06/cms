@@ -2,9 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { MAP_LOCATION_WARNING } from "@/src/lib/maps";
 
 const propertyNoticeMessages = {
   property_created: "Property created.",
+  property_created_map_warning: `Property created. ${MAP_LOCATION_WARNING}`,
   property_deleted: "Property deleted.",
   property_deleted_with_image_warning: "Property deleted, but some Storage images may need manual cleanup.",
   property_delete_blocked_dependency: "Property is still linked to records that cannot be cascaded yet.",
@@ -14,6 +16,7 @@ const propertyNoticeMessages = {
   property_save_failed: "Property could not be saved.",
   property_slug_taken: "That website slug is already in use. Choose a different one.",
   property_updated: "Property updated.",
+  property_updated_map_warning: `Property updated. ${MAP_LOCATION_WARNING}`,
   property_validation_failed: "Review the required property fields before saving.",
 } as const;
 
@@ -41,7 +44,7 @@ function isPropertyFailureNoticeCode(value: PropertyNoticeCode): value is Proper
 }
 
 function isPropertyWarningNoticeCode(value: PropertyNoticeCode) {
-  return value === "property_deleted_with_image_warning";
+  return value === "property_deleted_with_image_warning" || value === "property_created_map_warning" || value === "property_updated_map_warning";
 }
 
 export function PropertyNoticeToast({ notice }: { notice?: string }) {
