@@ -13,6 +13,7 @@ This is the starting point for developers and AI agents working on CurateMyStay.
 7. Task-specific documents:
    - [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md)
    - [Payout Logic](./PAYOUT_LOGIC.md)
+   - [Caching and Invalidation](./CACHING_AND_INVALIDATION.md)
    - [API Contracts](./API_CONTRACTS.md)
    - [Analytics Tracking](./ANALYTICS.md)
    - [Admin Operations Guide](./ADMIN_OPERATIONS_GUIDE.md)
@@ -38,6 +39,7 @@ The changelog intentionally preserves older states. Never use an old changelog e
 | --- | --- |
 | Understand the whole application | [AI Project Context](./AI_PROJECT_CONTEXT.md) |
 | Modify payout logic or workflow | [Payout Logic](./PAYOUT_LOGIC.md), then payout source files |
+| Modify data loading or mutation freshness | [Caching and Invalidation](./CACHING_AND_INVALIDATION.md) |
 | Modify the forecast calculator | [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md) |
 | Modify the public forecast funnel or APIs | [Owner Forecast Calculator](./OWNER_FORECAST_CALCULATOR.md) and [API Contracts](./API_CONTRACTS.md) |
 | Modify homepage tracking events | [Analytics Tracking](./ANALYTICS.md) |
@@ -59,6 +61,7 @@ The changelog intentionally preserves older states. Never use an old changelog e
 | `SUPABASE_SCHEMA.md` | Data model, constraints, ownership, and RLS responsibilities |
 | `OWNER_FORECAST_CALCULATOR.md` | Exact public forecast rules |
 | `PAYOUT_LOGIC.md` | Operational owner payout rules and lifecycle |
+| `CACHING_AND_INVALIDATION.md` | Read cache scope, TTL, mutation dependencies, security limits and open-session freshness |
 | `API_CONTRACTS.md` | Active public HTTP endpoints and response contracts |
 | `ANALYTICS.md` | GTM dataLayer event names, triggers, and privacy rules |
 | `ADMIN_OPERATIONS_GUIDE.md` | Practical admin workflows |

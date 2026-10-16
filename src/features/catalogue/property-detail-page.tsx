@@ -30,6 +30,7 @@ import type {
   PropertyGalleryImage,
 } from "@/src/features/catalogue/public-property-detail-data";
 import { extractIframeSrc, safeHttpUrl } from "@/src/lib/maps";
+import { getPropertySeo } from "@/src/lib/property-seo";
 import { formatMoney } from "@/src/lib/utils/money";
 import { isAirbnbListingUrl } from "@/src/lib/validators/properties";
 import { cn } from "@/src/lib/utils/cn";
@@ -37,10 +38,9 @@ import { cn } from "@/src/lib/utils/cn";
 /**
  * Public property detail layout for `/property/[slug]`.
  *
- * Every property-specific value here comes from Admin -> Properties through the
- * public-safe detail view. Only generic headings and company-level copy are in
- * code. The page checks no availability, calculates no totals and submits no
- * enquiry.
+ * Optional curated SEO copy overrides the title and About paragraph. Other
+ * property values come from the public-safe detail view. The page checks no
+ * availability, calculates no totals and submits no enquiry.
  *
  * Order: title (with Share), summary line and gallery; then capacity tiles,
  * highlight rows, about, amenities, stay details, things
@@ -191,6 +191,7 @@ export function PropertyDetailPage({
   gallery: PropertyGalleryImage[];
   property: PropertyDetail;
 }) {
+  const seo = getPropertySeo(property.slug);
   const name = property.public_name || "Curated stay";
   const pool = poolLabel(property.pool_type);
   const place = property.short_location_line || [property.area, property.region].filter(Boolean).join(", ");
@@ -267,7 +268,7 @@ export function PropertyDetailPage({
     !isRepeated(property.short_description, property.full_description) &&
     !isRepeated(property.short_description, property.tagline);
   const hasDescription =
-    showTagline || showShortDescription || Boolean(property.full_description?.trim());
+    Boolean(seo?.intro) || showTagline || showShortDescription || Boolean(property.full_description?.trim());
 
   const enquiryCard = (
     <PropertyEnquiryCard
@@ -297,7 +298,7 @@ export function PropertyDetailPage({
       <div className="relative z-10 order-2 -mx-4 -mt-6 mb-4 rounded-t-3xl bg-white px-4 pt-6 text-center sm:-mx-6 sm:px-6 md:order-none md:mx-0 md:mt-2 md:mb-5 md:rounded-none md:bg-transparent md:px-0 md:pt-0 md:text-left">
         <div className="flex items-start justify-center gap-3 md:justify-between">
           <h1 className="min-w-0 text-[26px] font-extrabold leading-[1.15] tracking-[-0.02em] text-public-ink [overflow-wrap:anywhere] sm:text-[32px]">
-            {name}
+            {seo?.h1 || name}
           </h1>
           {/* Below md, Share sits on the hero photo instead. */}
           <div className="hidden md:block">
@@ -325,7 +326,7 @@ export function PropertyDetailPage({
       </div>
 
       <div className="order-1 md:order-none">
-        <PropertyGallery images={gallery} propertyName={name} propertyUrl={propertyUrl} />
+        <PropertyGallery altBase={seo?.altBase} images={gallery} propertyName={name} propertyUrl={propertyUrl} />
       </div>
 
       <div className="order-3 md:order-none md:pt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_384px] lg:gap-14 lg:pt-10">
@@ -360,12 +361,37 @@ export function PropertyDetailPage({
                     ? `About this ${property.public_property_type.toLowerCase()}`
                     : "About this stay"
                 }
-                paragraphs={[
+                paragraphs={seo ? [seo.intro] : [
                   showShortDescription ? property.short_description?.trim() : null,
                   property.full_description?.trim() || null,
                 ].filter((text): text is string => Boolean(text))}
                 tagline={showTagline ? property.tagline : null}
               />
+              {seo ? (
+                <>
+                  <section aria-labelledby="property-quick-facts" className="mt-5 rounded-[14px] border border-public-hairline p-4 sm:p-5">
+                    <h3 className="mb-4 text-[17px] font-semibold leading-6 text-public-ink" id="property-quick-facts">Quick facts</h3>
+                    <dl className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+                      {seo.quickFacts.map(({ label, value }) => (
+                        <div className="min-w-0" key={label}>
+                          <dt className="text-[13px] font-semibold leading-5 text-public-muted">{label}</dt>
+                          <dd className="mt-1 text-[14.5px] leading-6 text-public-body [overflow-wrap:anywhere]">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </section>
+                  {seo.related ? (
+                    <p className="mt-4 text-[14.5px] leading-6 text-public-body">
+                      <Link
+                        className="rounded-sm font-medium underline underline-offset-4 outline-none hover:text-public-coral-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
+                        href={`/property/${seo.related.slug}`}
+                      >
+                        {seo.related.text}
+                      </Link>
+                    </p>
+                  ) : null}
+                </>
+              ) : null}
             </div>
           ) : null}
 

@@ -49,7 +49,7 @@ export default async function OwnerPayoutPage({
   const noticeParam = params.notice;
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
   await ensureOwnerPayoutForPreviousMonth();
-  const { bookings, expenses, payouts, profile, properties } = await getOwnerData();
+  const { bookings, expenses, payouts, profile, properties } = await getOwnerData(["bookings", "expenses", "payouts"]);
   const reviewWindowIsOpen = isPayoutReviewWindow();
   const payoutRows = payouts
     .slice()

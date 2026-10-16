@@ -43,7 +43,7 @@ export default async function PayoutsPage({
   const noticeParam = params.notice;
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
   await ensureAdminPayoutsForPreviousMonth();
-  const { bookings, expenses, payouts, profiles, properties, queries } = await getAdminData();
+  const { bookings, expenses, payouts, profiles, properties, queries } = await getAdminData(["bookings", "expenses", "payouts", "profiles", "properties", "queries"]);
   const ownerNames = new Map(profiles.map((profile) => [profile.id, profile.name || profile.email]));
   const queryByPayout = new Map(queries.filter((query) => query.payout_id).map((query) => [query.payout_id, query]));
   const payoutRows = payouts.map((payout) => ({

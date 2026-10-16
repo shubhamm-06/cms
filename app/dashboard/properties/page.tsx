@@ -19,7 +19,7 @@ export default async function PropertiesPage({
   const noticeParam = params.notice;
   const editId = Array.isArray(editParam) ? editParam[0] : editParam;
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
-  const { profiles, properties } = await getAdminData();
+  const { profiles, properties } = await getAdminData(["profiles", "properties"]);
   const propertyToEdit = editId ? properties.find((property) => property.id === editId) : undefined;
   const propertyImages = propertyToEdit ? await getPropertyImagesForAdmin(propertyToEdit.id) : [];
   const propertyFormId = `property-form-${propertyToEdit?.id || "new"}`;

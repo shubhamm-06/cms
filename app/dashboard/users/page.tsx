@@ -13,7 +13,7 @@ export default async function UsersPage({
   const params = await searchParams;
   const noticeParam = params.notice;
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
-  const { profiles } = await getAdminData();
+  const { profiles } = await getAdminData(["profiles"]);
   const pendingCount = profiles.filter((profile) => profile.status === "pending").length;
   const activeCount = profiles.filter((profile) => profile.status === "active").length;
   const inactiveCount = profiles.filter((profile) => profile.status === "inactive").length;

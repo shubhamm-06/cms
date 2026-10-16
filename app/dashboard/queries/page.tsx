@@ -24,7 +24,7 @@ export default async function QueriesPage({
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
   const errorParam = feedback.error;
   const error = Array.isArray(errorParam) ? errorParam[0] : errorParam;
-  const { profiles, properties, queries } = await getAdminData();
+  const { profiles, properties, queries } = await getAdminData(["profiles", "properties", "queries"]);
   const ownerNames = new Map(profiles.map((profile) => [profile.id, profile.name || profile.email]));
   const propertyNames = new Map(properties.map((property) => [property.id, property.name]));
   const queryRows = queries.map((query) => ({

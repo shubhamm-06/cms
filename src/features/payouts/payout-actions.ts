@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { invalidateBusinessData } from "@/src/features/shared/cache-invalidation";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/src/features/auth/auth-guards";
 import {
@@ -242,8 +242,7 @@ export async function approveOwnerPayoutAction(formData: FormData) {
     .maybeSingle();
   if (updated.error || !updated.data) redirect("/owner/payout?notice=owner_payout_action_failed");
 
-  revalidatePath("/owner/payout");
-  revalidatePath("/dashboard/payouts");
+  invalidateBusinessData("payouts");
   redirect("/owner/payout?notice=owner_payout_approved");
 }
 
@@ -285,6 +284,7 @@ export async function raisePayoutQueryAction(formData: FormData) {
   if (payoutUpdate.error || !payoutUpdate.data) {
     redirect("/owner/payout?notice=owner_payout_action_failed");
   }
+  invalidateBusinessData("payouts", "queries");
 
   const queryInsert = await supabase
     .from("owner_queries")
@@ -323,10 +323,7 @@ export async function raisePayoutQueryAction(formData: FormData) {
     queryType: "statement",
   });
 
-  revalidatePath("/owner/payout");
-  revalidatePath("/owner/queries");
-  revalidatePath("/dashboard/payouts");
-  revalidatePath("/dashboard/queries");
+  invalidateBusinessData("payouts", "queries");
   redirect("/owner/payout?notice=owner_payout_query_raised");
 }
 
@@ -350,7 +347,6 @@ export async function markPayoutPaidAction(formData: FormData) {
     .maybeSingle();
   if (updateResult.error || !updateResult.data) redirect("/dashboard/payouts?notice=admin_payout_update_failed");
 
-  revalidatePath("/dashboard/payouts");
-  revalidatePath("/owner/payout");
+  invalidateBusinessData("payouts");
   redirect("/dashboard/payouts?notice=admin_payout_marked_paid");
 }

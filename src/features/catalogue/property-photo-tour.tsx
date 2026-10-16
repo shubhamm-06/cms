@@ -62,13 +62,20 @@ export function buildTourGroups(photos: TourPhoto[]): TourGroup[] {
   }));
 }
 
-export function toTourPhotos(images: PropertyGalleryImage[], propertyName: string): TourPhoto[] {
+export function toTourPhotos(images: PropertyGalleryImage[], propertyName: string, altBase?: string): TourPhoto[] {
+  const usedSeoAlts = new Set<string>();
   return images.flatMap((image, position) => {
     const url = getPropertyImageUrl(image.storage_path);
     if (!url) return [];
     const { description, room, roomKey } = parsePhotoRoom(image.alt_text);
     // The room prefix is stripped so screen readers hear the description only.
-    const alt = description || (room ? `${room}, ${propertyName}` : `${propertyName} photo ${position + 1}`);
+    let alt = description || (room ? `${room}, ${propertyName}` : `${propertyName} photo ${position + 1}`);
+    if (altBase && position < 6) {
+      const label = description || room || `photo ${position + 1}`;
+      alt = `${altBase}, ${label}`;
+      if (usedSeoAlts.has(alt)) alt = `${alt}, photo ${position + 1}`;
+      usedSeoAlts.add(alt);
+    }
     return [{ ...image, alt, description, room, roomKey, url }];
   });
 }

@@ -18,7 +18,7 @@ export default async function ExpensesPage({
   const noticeParam = params.notice;
   const editId = Array.isArray(editParam) ? editParam[0] : editParam;
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
-  const { expenses, properties, settings } = await getAdminData();
+  const { expenses, properties, settings } = await getAdminData(["expenses", "properties", "settings"]);
   const expenseToEdit = editId ? expenses.find((expense) => expense.id === editId) : undefined;
   const categoryValue = settings.find((setting) => setting.key === "expense_categories")?.value;
   const expenseCategories = Array.isArray(categoryValue)

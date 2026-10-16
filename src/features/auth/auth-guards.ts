@@ -1,13 +1,14 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { createClient } from "@/src/lib/supabase/server";
 import type { AppProfile, UserRole } from "@/types/app.types";
 import { roleRedirectPath } from "@/src/features/auth/role-redirect";
 
-export async function getCurrentProfile(): Promise<AppProfile | null> {
+const readAuthProfile = cache(async () => {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return null;
+    return { user: null, profile: null };
   }
 
   const supabase = await createClient();
@@ -15,15 +16,23 @@ export async function getCurrentProfile(): Promise<AppProfile | null> {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return null;
+  if (!user) return { user: null, profile: null };
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .select("id,email,name,phone,role,status,avatar_url,is_protected")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (data) return data;
+  if (error) throw new Error("Account details could not be loaded.");
+  return { user, profile: data };
+});
+
+export async function getCurrentProfile(): Promise<AppProfile | null> {
+  const { user, profile } = await readAuthProfile();
+  if (!user) return null;
+  if (profile) return profile;
+  const supabase = await createClient();
 
   const email = user.email || "";
   const fallback = {

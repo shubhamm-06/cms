@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { invalidateBusinessData } from "@/src/features/shared/cache-invalidation";
 import { requireRole } from "@/src/features/auth/auth-guards";
 import {
   EXPENSE_IMPORT_MAX_BYTES,
@@ -127,9 +127,7 @@ export async function importExpensesCsvAction(
     return failure("Import failed. No expenses were created.", validation.rows, validation.summary);
   }
 
-  revalidatePath("/dashboard/expenses");
-  revalidatePath("/dashboard/pnl");
-  revalidatePath("/dashboard");
+  invalidateBusinessData("expenses");
 
   return {
     message: `${inserted.data?.length || 0} ${inserted.data?.length === 1 ? "expense" : "expenses"} imported.`,

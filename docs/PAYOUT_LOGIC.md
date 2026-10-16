@@ -92,10 +92,12 @@ Money calculations round to two decimals. TDS is fixed at 10% and is not editabl
 
 - Loading `/dashboard/payouts` processes all active owners for the previous month.
 - Loading `/owner/payout` processes only the authenticated owner.
+- Loading `/owner` also processes the authenticated owner's previous-month statement before its display reads.
 - Existing `draft` and `ready_for_review` rows may be recalculated.
 - Existing `approved`, `query_raised`, `resolved`, and `paid` rows are preserved.
 - There is no scheduler or background job; processing depends on page loads.
 - Database read failures stop processing instead of recalculating from incomplete inputs.
+- Processing and private financial display reads remain uncached. Booking/expense/property/payout/query Server Actions invalidate their dependent routes; render-time processing still runs before fresh reads and is never wrapped in persistent caching. See [Caching and Invalidation](./CACHING_AND_INVALIDATION.md).
 - Recalculation updates are status-qualified, so a stale page load cannot overwrite an owner-approved, queried, resolved, or paid row.
 - Concurrent insert conflicts are reloaded and treated as the same owner-month payout once the required database uniqueness index below is applied.
 

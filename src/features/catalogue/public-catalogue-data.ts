@@ -1,6 +1,9 @@
 import "server-only";
 
-import { createClient } from "@/src/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { connection } from "next/server";
+import { createPublicClient } from "@/src/lib/supabase/public";
+import { PUBLIC_DATA_TTL_SECONDS, PUBLIC_PROPERTIES_TAG, publicReadPeriod } from "@/src/features/shared/cache-policy";
 import type { Database } from "@/types/database.types";
 
 /**
@@ -26,8 +29,9 @@ export type CatalogueLoadResult = {
   properties: CatalogueProperty[];
 };
 
-export async function loadPublicCatalogue(): Promise<CatalogueLoadResult> {
-  const supabase = await createClient();
+const readCatalogue = unstable_cache(async (period: number) => {
+  void period; // Key-only argument: each minute requires a fresh, blocking read.
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("public_property_catalogue")
     .select(catalogueColumns)
@@ -38,8 +42,17 @@ export async function loadPublicCatalogue(): Promise<CatalogueLoadResult> {
   if (error) {
     // Safe technical context only; visitors see the generic catalogue error state.
     console.error("[booking] catalogue read failed", error.code, error.message);
-    return { failed: true, properties: [] };
+    throw new Error("Public catalogue read failed.");
   }
 
-  return { failed: false, properties: data };
+  return data;
+}, ["public-catalogue-v1", process.env.NEXT_PUBLIC_SUPABASE_URL || "unconfigured"], { tags: [PUBLIC_PROPERTIES_TAG], revalidate: PUBLIC_DATA_TTL_SECONDS });
+
+export async function loadPublicCatalogue(): Promise<CatalogueLoadResult> {
+  await connection();
+  try {
+    return { failed: false, properties: await readCatalogue(publicReadPeriod()) };
+  } catch {
+    return { failed: true, properties: [] };
+  }
 }

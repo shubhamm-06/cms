@@ -15,7 +15,7 @@ export default async function OwnerQueriesPage({
   const params = await searchParams;
   const noticeParam = params.notice;
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
-  const { profile, properties, queries } = await getOwnerData();
+  const { profile, properties, queries } = await getOwnerData(["queries"]);
   const propertyNames = new Map(properties.map((property) => [property.id, property.name]));
   const queryRows = queries.map((query) => ({
     ...query,

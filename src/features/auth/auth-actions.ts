@@ -5,6 +5,7 @@ import { createClient } from "@/src/lib/supabase/server";
 import { loginSchema, signupSchema } from "@/src/lib/validators/auth";
 import { roleRedirectPath } from "@/src/features/auth/role-redirect";
 import { getCurrentProfile } from "@/src/features/auth/auth-guards";
+import { invalidateBusinessData } from "@/src/features/shared/cache-invalidation";
 
 export type AuthState = {
   message?: string;
@@ -20,6 +21,7 @@ export async function loginAction(_state: AuthState, formData: FormData): Promis
   if (error) return { message: error.message };
 
   const profile = await getCurrentProfile();
+  invalidateBusinessData("profiles");
   redirect(roleRedirectPath(profile));
 }
 
@@ -41,7 +43,7 @@ export async function signupAction(_state: AuthState, formData: FormData): Promi
   if (error) return { message: error.message };
 
   if (data.user) {
-    await supabase.from("profiles").upsert({
+    const savedProfile = await supabase.from("profiles").upsert({
       id: data.user.id,
       email,
       name,
@@ -50,6 +52,7 @@ export async function signupAction(_state: AuthState, formData: FormData): Promi
       status: "pending",
       is_protected: false,
     });
+    if (!savedProfile.error) invalidateBusinessData("profiles");
   }
 
   redirect("/pending-approval");
@@ -71,5 +74,6 @@ export async function googleLoginAction() {
 export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  invalidateBusinessData("profiles");
   redirect("/login");
 }

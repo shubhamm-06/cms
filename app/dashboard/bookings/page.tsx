@@ -18,7 +18,7 @@ export default async function BookingsPage({
   const noticeParam = params.notice;
   const editId = Array.isArray(editParam) ? editParam[0] : editParam;
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
-  const { bookings, properties, settings } = await getAdminData();
+  const { bookings, properties, settings } = await getAdminData(["bookings", "properties", "settings"]);
   const bookingToEdit = editId ? bookings.find((booking) => booking.id === editId) : undefined;
   const propertyNames = new Map(properties.map((property) => [property.id, property.name]));
   const activeProperties = properties

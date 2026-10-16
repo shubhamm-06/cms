@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --no-warnings --test src/lib/utils/photo-rooms.test.ts src/lib/maps.test.ts src/features/catalogue/property-enquiry-message.test.ts src/features/catalogue/share-public-page.test.ts"
+    "test": "node --experimental-strip-types --no-warnings --test src/lib/utils/photo-rooms.test.ts src/lib/maps.test.ts src/features/catalogue/property-enquiry-message.test.ts src/features/catalogue/share-public-page.test.ts src/features/shared/cache-correctness.test.ts src/features/properties/property-image-optimization.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

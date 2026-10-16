@@ -821,3 +821,10 @@
 - `/property/[slug]` shows `See Our Guest Reviews & Airbnb Listing` with a new-tab, `noopener noreferrer` link to the listing, followed by `Book Directly for a Better Rate` using the existing WhatsApp enquiry button. It renders only for a valid link, so no stay implies reviews it does not have. No Airbnb API, scraping, package or table.
 - The `properties` column and its `public_property_details` view column were added manually in Supabase (SQL in the catalogue doc).
 - Follow-up: with the view column confirmed live, removed the temporary Postgres 42703 fallback; the detail page reads `airbnb_listing_url` in its normal single query.
+
+## Safe Read Caching and Mutation Freshness (2026-10-14)
+
+- Narrowed admin/owner loaders to each page's required datasets while preserving parallel reads, owner filters and response shapes. Auth/profile pure reads are request-memoized only; private RLS data and payout processing remain uncached, and failed financial reads fail closed.
+- Added a stateless anonymous client and 60-second, immediately invalidated Next data cache for public-safe catalogue/detail/gallery views. Minute keys and request rendering bound direct-edit staleness and prevent expired success fallback on read failure.
+- Centralized mutation dependency invalidation for operational saves/deletes, imports, user/account changes, payout/query actions and gallery changes, including confirmed partial writes before later failures. Preserved formulas, permissions, payout lifecycle, redirects and existing refresh behaviour.
+- Added focused offline loader/action tests and documented cache scope, mutation mapping, direct database edits and already-open session limitations. No schema, RLS, package or production configuration changes.

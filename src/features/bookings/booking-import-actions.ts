@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { invalidateBusinessData } from "@/src/features/shared/cache-invalidation";
 import { requireRole } from "@/src/features/auth/auth-guards";
 import {
   BOOKING_IMPORT_MAX_BYTES,
@@ -127,9 +127,7 @@ export async function importBookingsCsvAction(
     return failure("Import failed. No bookings were created.", validation.rows, validation.summary);
   }
 
-  revalidatePath("/dashboard/bookings");
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/pnl");
+  invalidateBusinessData("bookings");
 
   return {
     message: `${inserted.data?.length || 0} ${inserted.data?.length === 1 ? "booking" : "bookings"} imported.`,

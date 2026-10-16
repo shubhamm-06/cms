@@ -1,7 +1,10 @@
 import "server-only";
 
 import { cache } from "react";
-import { createClient } from "@/src/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { connection } from "next/server";
+import { createPublicClient } from "@/src/lib/supabase/public";
+import { PUBLIC_DATA_TTL_SECONDS, PUBLIC_PROPERTIES_TAG, publicReadPeriod } from "@/src/features/shared/cache-policy";
 import type { Database } from "@/types/database.types";
 
 /**
@@ -39,14 +42,11 @@ export type PropertyDetailLoadResult =
   | { status: "failed" };
 
 /**
- * Cached per request so `generateMetadata` and the page render share one pair of
- * queries instead of repeating them.
+ * Only public-safe rows persist between requests, with a bounded time key.
  */
-export const loadPublicPropertyDetail = cache(async function loadPublicPropertyDetail(
-  slug: string,
-): Promise<PropertyDetailLoadResult> {
-  const supabase = await createClient();
-
+const readDetail = unstable_cache(async (slug: string, period: number) => {
+  void period; // Included in the persistent cache key, not the database query.
+  const supabase = createPublicClient();
   const { data: property, error: detailError } = await supabase
     .from("public_property_details")
     .select(detailColumns)
@@ -56,17 +56,19 @@ export const loadPublicPropertyDetail = cache(async function loadPublicPropertyD
   if (detailError) {
     // Safe technical context only; visitors see the generic error state.
     console.error("[property] detail read failed", detailError.code, detailError.message);
-    return { status: "failed" };
+    throw new Error("Public property read failed.");
   }
 
-  // Missing, unpublished and inactive slugs are all simply absent from the view,
-  // so they are indistinguishable here and to the visitor.
-  if (!property) return { status: "notFound" };
+  return property;
+}, ["public-property-detail-v1", process.env.NEXT_PUBLIC_SUPABASE_URL || "unconfigured"], { tags: [PUBLIC_PROPERTIES_TAG], revalidate: PUBLIC_DATA_TTL_SECONDS });
 
+const readGallery = unstable_cache(async (propertyId: string, period: number) => {
+  void period;
+  const supabase = createPublicClient();
   const { data: gallery, error: galleryError } = await supabase
     .from("public_property_gallery")
     .select(galleryColumns)
-    .eq("property_id", property.id)
+    .eq("property_id", propertyId)
     .order("is_cover", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
@@ -75,8 +77,26 @@ export const loadPublicPropertyDetail = cache(async function loadPublicPropertyD
     // A gallery failure should not hide a published property, so the page falls
     // back to the no-images placeholder.
     console.error("[property] gallery read failed", galleryError.code, galleryError.message);
-    return { status: "found", property, gallery: [] };
+    throw new Error("Public gallery read failed.");
   }
 
-  return { status: "found", property, gallery };
+  return gallery;
+}, ["public-property-gallery-v1", process.env.NEXT_PUBLIC_SUPABASE_URL || "unconfigured"], { tags: [PUBLIC_PROPERTIES_TAG], revalidate: PUBLIC_DATA_TTL_SECONDS });
+
+export const loadPublicPropertyDetail = cache(async function loadPublicPropertyDetail(slug: string): Promise<PropertyDetailLoadResult> {
+  await connection();
+  const period = publicReadPeriod();
+  let property: PropertyDetail | null;
+  try {
+    property = await readDetail(slug, period);
+  } catch {
+    return { status: "failed" };
+  }
+  if (!property) return { status: "notFound" };
+  try {
+    return { status: "found", property, gallery: await readGallery(property.id, period) };
+  } catch {
+    // Preserve the existing gallery placeholder, but never cache a failed gallery as an empty one.
+    return { status: "found", property, gallery: [] };
+  }
 });

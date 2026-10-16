@@ -81,15 +81,17 @@ function HeroOverlayButtons({ propertyName, propertyUrl }: { propertyName: strin
 }
 
 export function PropertyGallery({
+  altBase,
   images,
   propertyName,
   propertyUrl,
 }: {
+  altBase?: string;
   images: PropertyGalleryImage[];
   propertyName: string;
   propertyUrl: string;
 }) {
-  const photos = useMemo(() => toTourPhotos(images, propertyName), [images, propertyName]);
+  const photos = useMemo(() => toTourPhotos(images, propertyName, altBase), [images, propertyName, altBase]);
   const groups = useMemo(() => buildTourGroups(photos), [photos]);
   const tour = usePhotoTourUrl(photos.length);
   const [activeSlide, setActiveSlide] = useState(0);

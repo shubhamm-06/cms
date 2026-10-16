@@ -8,6 +8,7 @@ import { PropertyDetailPage } from "@/src/features/catalogue/property-detail-pag
 import { PropertyMobileEnquiryBar } from "@/src/features/catalogue/property-mobile-enquiry-bar";
 import { PropertyEnquiryProvider } from "@/src/features/catalogue/property-enquiry-context";
 import { loadPublicPropertyDetail } from "@/src/features/catalogue/public-property-detail-data";
+import { getPropertySeo } from "@/src/lib/property-seo";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
 
 /**
@@ -43,18 +44,20 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
   }
 
   const { gallery, property } = result;
+  const seo = getPropertySeo(slug);
   const name = property.public_name || "Curated stay";
   const derivedTitle = `${name}${property.area ? `, ${property.area}` : ""} | Stays in Goa | CurateMyStay`;
   const description =
+    seo?.metaDescription ||
     property.seo_description?.trim() ||
     property.short_description?.trim() ||
     property.tagline?.trim() ||
     `${name} is a CurateMyStay-managed stay in Goa. Ask our team about dates and rates.`;
 
   const metadata = buildMarketingMetadata({
-    title: property.seo_title?.trim() || derivedTitle,
+    title: seo?.title || property.seo_title?.trim() || derivedTitle,
     description,
-    canonicalPath: `/property/${property.slug}`,
+    canonicalPath: seo ? new URL(`/property/${slug}`, siteOrigin).href : `/property/${property.slug}`,
   });
 
   // Prefer this property's cover photo for sharing; the bucket is public and the
@@ -62,7 +65,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
   const coverUrl = getPropertyImageUrl(gallery[0]?.storage_path);
   if (!coverUrl) return metadata;
 
-  const coverImage = { url: coverUrl, alt: gallery[0]?.alt_text || name };
+  const coverImage = { url: coverUrl, alt: seo?.altBase || gallery[0]?.alt_text || name };
 
   return {
     ...metadata,
@@ -77,8 +80,50 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
   if (result.status === "notFound") notFound();
 
+  const seo = result.status === "found" ? getPropertySeo(slug) : undefined;
+  const canonicalUrl = new URL(`/property/${slug}`, siteOrigin).href;
+  const jsonLd = seo && result.status === "found" ? {
+    "@context": "https://schema.org",
+    "@type": "VacationRental",
+    "@id": canonicalUrl,
+    url: canonicalUrl,
+    name: seo.h1,
+    description: seo.metaDescription,
+    image: result.gallery
+      .map((image) => getPropertyImageUrl(image.storage_path))
+      .filter((url): url is string => Boolean(url))
+      .map((url) => new URL(url, siteOrigin).href),
+    ...(seo.schema.registrationId ? { identifier: seo.schema.registrationId } : {}),
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: seo.schema.locality,
+      addressRegion: `${seo.schema.region}, Goa`,
+      addressCountry: "IN",
+    },
+    checkinTime: "14:00",
+    checkoutTime: "11:00",
+    brand: { "@type": "Organization", name: "CurateMyStay", url: siteOrigin },
+    containsPlace: {
+      "@type": "Accommodation",
+      additionalType: `https://schema.org/${seo.schema.type}`,
+      occupancy: { "@type": "QuantitativeValue", value: seo.schema.guests },
+      numberOfBedrooms: seo.schema.bedrooms,
+      numberOfBathroomsTotal: seo.schema.bathrooms,
+      petsAllowed: seo.schema.petsAllowed,
+      amenityFeature: seo.schema.amenities.map((name) => ({
+        "@type": "LocationFeatureSpecification", name, value: true,
+      })),
+    },
+  } : null;
+
   return (
     <div className={`${propertyFont.variable} cms-homepage`}>
+      {jsonLd ? (
+        <script
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+          type="application/ld+json"
+        />
+      ) : null}
       <main className="min-h-screen bg-white font-sans text-public-ink antialiased">
         {/* Below md a found property shows its own back and share buttons over the photo
             instead; `md:contents` keeps the header's sticky behaviour unchanged from md. */}

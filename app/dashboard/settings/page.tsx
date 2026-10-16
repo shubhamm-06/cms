@@ -14,7 +14,7 @@ export default async function SettingsPage({
   const notice = Array.isArray(noticeParam) ? noticeParam[0] : noticeParam;
   const errorParam = params.error;
   const error = Array.isArray(errorParam) ? errorParam[0] : errorParam;
-  const { settings } = await getAdminData();
+  const { settings } = await getAdminData(["settings"]);
 
   return (
     <div className="space-y-6">

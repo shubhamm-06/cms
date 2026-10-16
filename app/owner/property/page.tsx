@@ -59,7 +59,7 @@ function ShareCard({
 }
 
 export default async function OwnerPropertyPage() {
-  const { properties } = await getOwnerData();
+  const { properties } = await getOwnerData([]);
 
   return (
     <div className="space-y-6">

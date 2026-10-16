@@ -28,7 +28,7 @@ function FinancialMetric({
 }
 
 export default async function PnlPage() {
-  const { bookings, expenses, properties } = await getAdminData();
+  const { bookings, expenses, properties } = await getAdminData(["bookings", "expenses", "properties"]);
   const cmsExpenses = expenses.filter((expense) => expense.expense_for === "cms");
   const cmsExpenseTotal = cmsExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
   const rows = properties.map((property) => {

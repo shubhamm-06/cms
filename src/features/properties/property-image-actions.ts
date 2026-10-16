@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { invalidateBusinessData } from "@/src/features/shared/cache-invalidation";
 import { z } from "zod";
 import { requireRole } from "@/src/features/auth/auth-guards";
 import { createClient } from "@/src/lib/supabase/server";
@@ -85,7 +85,7 @@ export async function createPropertyImageMetadataAction(input: { propertyId: str
     return { message: "Image metadata could not be saved.", ok: false };
   }
 
-  revalidatePath("/dashboard/properties");
+  invalidateBusinessData("property_images");
   return { image: inserted.data, ok: true };
 }
 
@@ -115,7 +115,7 @@ export async function updatePropertyImageAltTextAction(input: { altText: string;
     return { message: "Alt text could not be saved.", ok: false };
   }
 
-  revalidatePath("/dashboard/properties");
+  invalidateBusinessData("property_images");
   return { image: updated.data, ok: true };
 }
 
@@ -154,6 +154,7 @@ export async function setPropertyImageCoverAction(input: { imageId: string; prop
       safeImageFailure("clear-cover", cleared.error, parsed.data);
       return { message: "Cover image could not be updated.", ok: false };
     }
+    invalidateBusinessData("property_images");
 
     const selected = await supabase
       .from("property_images")
@@ -175,7 +176,7 @@ export async function setPropertyImageCoverAction(input: { imageId: string; prop
     return { message: "Cover image was updated, but the gallery could not refresh.", ok: false };
   }
 
-  revalidatePath("/dashboard/properties");
+  invalidateBusinessData("property_images");
   return { images: images.data ?? [], ok: true };
 }
 
@@ -200,12 +201,13 @@ export async function movePropertyImageAction(input: { direction: "up" | "down";
 
   const reordered = [...ordered];
   [reordered[currentIndex], reordered[nextIndex]] = [reordered[nextIndex], reordered[currentIndex]];
-  const updates = await Promise.all(
+  const updates = await Promise.allSettled(
     reordered.map((image, index) => supabase.from("property_images").update({ sort_order: index }).eq("id", image.id).eq("property_id", parsed.data.propertyId)),
   );
-  const failed = updates.find((result) => result.error);
-  if (failed?.error) {
-    safeImageFailure("move", failed.error, parsed.data);
+  const failed = updates.find((result) => result.status === "rejected" || result.value.error);
+  if (updates.some((result) => result.status === "fulfilled" && !result.value.error)) invalidateBusinessData("property_images");
+  if (failed) {
+    safeImageFailure("move", failed.status === "rejected" ? failed.reason : failed.value.error, parsed.data);
     return { message: "Image order could not be updated.", ok: false };
   }
 
@@ -215,7 +217,6 @@ export async function movePropertyImageAction(input: { direction: "up" | "down";
     return { message: "Image order was updated, but the gallery could not refresh.", ok: false };
   }
 
-  revalidatePath("/dashboard/properties");
   return { images: refreshed.data ?? [], ok: true };
 }
 
@@ -242,6 +243,7 @@ export async function deletePropertyImageAction(input: { imageId: string; proper
     safeImageFailure("delete-metadata", deleted.error, parsed.data);
     return { message: "Image could not be deleted.", ok: false };
   }
+  invalidateBusinessData("property_images");
 
   const storageDelete = await supabase.storage.from("property-images").remove([image.data.storage_path]);
   const remaining = await getPropertyImages(supabase, parsed.data.propertyId);
@@ -268,7 +270,7 @@ export async function deletePropertyImageAction(input: { imageId: string; proper
     return { message: "Image metadata was removed, but the gallery could not refresh.", ok: true, warning: true };
   }
 
-  revalidatePath("/dashboard/properties");
+  invalidateBusinessData("property_images");
   if (storageDelete.error) {
     safeImageFailure("delete-storage", storageDelete.error, parsed.data);
     return { images: refreshed.data ?? [], message: "Image metadata was removed, but Storage cleanup needs attention.", ok: true, warning: true };

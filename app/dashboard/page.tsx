@@ -122,7 +122,7 @@ function ActivityRow({
 }
 
 export default async function AdminOverviewPage() {
-  const { bookings, expenses, profiles, properties } = await getAdminData();
+  const { bookings, expenses, profiles, properties } = await getAdminData(["profiles", "properties", "bookings", "expenses"]);
   const totalRevenue = bookings.reduce((sum, booking) => sum + Number(booking.total_amount), 0);
   const totalExpense = expenses
     .filter((expense) => expense.expense_for === "property")

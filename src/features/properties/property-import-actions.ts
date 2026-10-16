@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { invalidateBusinessData } from "@/src/features/shared/cache-invalidation";
 import { requireRole } from "@/src/features/auth/auth-guards";
 import {
   isCsvFileName,
@@ -142,8 +142,7 @@ export async function importPropertiesCsvAction(
     return failure("Import failed. No properties were created.", validation.rows, validation.summary);
   }
 
-  revalidatePath("/dashboard/properties");
-  revalidatePath("/dashboard");
+  invalidateBusinessData("properties");
 
   return {
     message: `${inserted.data?.length || 0} ${inserted.data?.length === 1 ? "property" : "properties"} imported.`,

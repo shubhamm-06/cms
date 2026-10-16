@@ -5,7 +5,7 @@ import { getOwnerData } from "@/src/features/shared/data";
 import { formatMoney } from "@/src/lib/utils/money";
 
 export default async function OwnerExpensesPage() {
-  const { expenses, properties } = await getOwnerData();
+  const { expenses, properties } = await getOwnerData(["expenses"]);
   const propertyNames = new Map(properties.map((property) => [property.id, property.name]));
   const expenseRows = expenses.map((expense) => ({
     ...expense,

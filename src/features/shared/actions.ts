@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { invalidateBusinessData } from "@/src/features/shared/cache-invalidation";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/src/lib/supabase/admin";
 import { createClient } from "@/src/lib/supabase/server";
@@ -113,7 +113,7 @@ export async function saveProfileAction(formData: FormData) {
   const supabase = await createClient();
   const result = await supabase.from("profiles").update(emptyToNull(parsed.data)).eq("id", profile.id);
   if (result.error) return;
-  revalidatePath(profile.role === "admin" ? "/dashboard/profile" : "/owner/profile");
+  invalidateBusinessData("profiles");
   if (profile.role === "admin") redirect("/dashboard/profile?notice=admin_profile_updated");
   if (profile.role === "owner") redirect("/owner/profile?notice=owner_profile_updated");
 }
@@ -129,7 +129,7 @@ export async function updateUserAction(formData: FormData) {
   const data = current.data && isProtectedAdmin(current.data) ? { ...values, role: "admin" as const, status: "active" as const } : values;
   const updated = await supabase.from("profiles").update(emptyToNull(data)).eq("id", id).select("id").maybeSingle();
   if (updated.error || !updated.data) redirect("/dashboard/users?notice=user_update_failed");
-  revalidatePath("/dashboard/users");
+  invalidateBusinessData("profiles");
   redirect("/dashboard/users?notice=user_updated");
 }
 
@@ -182,6 +182,7 @@ export async function deleteUserAction(formData: FormData) {
   // Auth admin delete can satisfy the foreign key.
   const profileDelete = await supabase.from("profiles").delete().eq("id", id).select("id").maybeSingle();
   if (profileDelete.error || !profileDelete.data) redirect("/dashboard/users?notice=user_delete_failed");
+  invalidateBusinessData("profiles");
 
   let authDelete: Awaited<ReturnType<typeof adminSupabase.auth.admin.deleteUser>>;
   try {
@@ -238,7 +239,6 @@ export async function deleteUserAction(formData: FormData) {
   const profileAfterDelete = await supabase.from("profiles").select("id").eq("id", id).maybeSingle();
   if (profileAfterDelete.error || profileAfterDelete.data) redirect("/dashboard/users?notice=user_delete_failed");
 
-  revalidatePath("/dashboard/users");
   redirect("/dashboard/users?notice=user_deleted");
 }
 
@@ -295,8 +295,7 @@ export async function savePropertyAction(formData: FormData) {
       redirect(propertySaveFailureUrl(mode, "", propertySaveFailureNotice(error)));
     }
   }
-  revalidatePath("/dashboard/properties");
-  revalidatePath("/dashboard");
+  invalidateBusinessData("properties");
   const notice = mode === "edit" ? "property_updated" : "property_created";
   redirect(`/dashboard/properties?notice=${notice}${mapLocation.warning ? "_map_warning" : ""}`);
 }
@@ -332,6 +331,7 @@ export async function deletePropertyAction(formData: FormData) {
     console.error("Property deletion returned no deleted row", { propertyId: id });
     redirect("/dashboard/properties?notice=property_delete_failed");
   }
+  invalidateBusinessData("properties");
 
   const afterDelete = await supabase.from("properties").select("id").eq("id", id).maybeSingle();
   if (afterDelete.error) {
@@ -358,8 +358,6 @@ export async function deletePropertyAction(formData: FormData) {
     }
   }
 
-  revalidatePath("/dashboard/properties");
-  revalidatePath("/dashboard");
   redirect(`/dashboard/properties?notice=${storageCleanupFailed ? "property_deleted_with_image_warning" : "property_deleted"}`);
 }
 
@@ -381,8 +379,7 @@ export async function saveBookingAction(formData: FormData) {
     const created = await supabase.from("bookings").insert(payload).select("id").maybeSingle();
     if (created.error || !created.data) redirect("/dashboard/bookings?notice=booking_save_failed");
   }
-  revalidatePath("/dashboard/bookings");
-  revalidatePath("/dashboard");
+  invalidateBusinessData("bookings");
   redirect(`/dashboard/bookings?notice=${id ? "booking_updated" : "booking_created"}`);
 }
 
@@ -398,13 +395,11 @@ export async function deleteBookingAction(formData: FormData) {
 
   const deleted = await supabase.from("bookings").delete().eq("id", id).select("id").maybeSingle();
   if (deleted.error || !deleted.data) redirect("/dashboard/bookings?notice=booking_delete_failed");
+  invalidateBusinessData("bookings");
 
   const afterDelete = await supabase.from("bookings").select("id").eq("id", id).maybeSingle();
   if (afterDelete.error || afterDelete.data) redirect("/dashboard/bookings?notice=booking_delete_failed");
 
-  revalidatePath("/dashboard/bookings");
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/pnl");
   redirect("/dashboard/bookings?notice=booking_deleted");
 }
 
@@ -428,8 +423,7 @@ export async function saveExpenseAction(formData: FormData) {
     const created = await supabase.from("expenses").insert(payload).select("id").maybeSingle();
     if (created.error || !created.data) redirect("/dashboard/expenses?notice=expense_save_failed");
   }
-  revalidatePath("/dashboard/expenses");
-  revalidatePath("/dashboard/pnl");
+  invalidateBusinessData("expenses");
   redirect(`/dashboard/expenses?notice=${id ? "expense_updated" : "expense_created"}`);
 }
 
@@ -445,11 +439,11 @@ export async function deleteExpenseAction(formData: FormData) {
 
   const deleted = await supabase.from("expenses").delete().eq("id", id).select("id").maybeSingle();
   if (deleted.error || !deleted.data) redirect("/dashboard/expenses?notice=expense_delete_failed");
+  invalidateBusinessData("expenses");
 
   const afterDelete = await supabase.from("expenses").select("id").eq("id", id).maybeSingle();
   if (afterDelete.error || afterDelete.data) redirect("/dashboard/expenses?notice=expense_delete_failed");
 
-  revalidatePath("/dashboard/expenses");
   redirect("/dashboard/expenses?notice=expense_deleted");
 }
 
@@ -469,6 +463,7 @@ export async function resolveQueryAction(formData: FormData) {
     .select("id")
     .maybeSingle();
   if (resolvedQuery.error || !resolvedQuery.data) redirect("/dashboard/queries?error=resolve-failed");
+  invalidateBusinessData("queries", "payouts");
 
   if (query.data?.payout_id) {
     const payoutUpdate = await supabase
@@ -494,9 +489,7 @@ export async function resolveQueryAction(formData: FormData) {
     }
   }
 
-  revalidatePath("/dashboard/queries");
-  revalidatePath("/dashboard/payouts");
-  revalidatePath("/owner/payout");
+  invalidateBusinessData("queries", "payouts");
   redirect("/dashboard/queries?notice=admin_query_resolved");
 }
 
@@ -528,6 +521,7 @@ export async function deleteOwnerQueryAction(formData: FormData) {
         .eq("id", payout.data.id)
         .eq("status", "query_raised");
       if (restored.error) redirect("/dashboard/queries?error=payout-restore-failed");
+      invalidateBusinessData("payouts");
       restoredPayout = { approved_at: payout.data.approved_at, id: payout.data.id };
     }
   }
@@ -550,10 +544,7 @@ export async function deleteOwnerQueryAction(formData: FormData) {
     redirect("/dashboard/queries?error=delete-failed");
   }
 
-  revalidatePath("/dashboard/queries");
-  revalidatePath("/dashboard/payouts");
-  revalidatePath("/owner/payout");
-  revalidatePath("/owner/queries");
+  invalidateBusinessData("queries", "payouts");
   redirect("/dashboard/queries?notice=admin_query_deleted");
 }
 
@@ -576,6 +567,7 @@ export async function createOwnerQueryAction(formData: FormData) {
   }
   const queryInsert = await supabase.from("owner_queries").insert({ owner_id: profile.id, property_id, message });
   if (queryInsert.error) return;
+  invalidateBusinessData("queries");
 
   await sendOwnerQueryAdminEmail({
     message,
@@ -586,7 +578,6 @@ export async function createOwnerQueryAction(formData: FormData) {
     queryType: "normal",
   });
 
-  revalidatePath("/owner/queries");
   redirect("/owner/queries?notice=owner_query_created");
 }
 
@@ -594,7 +585,7 @@ export async function saveSettingsAction(formData: FormData) {
   await requireRole("admin");
   const supabase = await createClient();
   const keys = ["booking_sources", "expense_categories", "concierge_options"];
-  const results = await Promise.all(
+  const results = await Promise.allSettled(
     keys.map((key) =>
       supabase.from("settings").upsert(
         {
@@ -608,7 +599,7 @@ export async function saveSettingsAction(formData: FormData) {
       ),
     ),
   );
-  if (results.some((result) => result.error)) redirect("/dashboard/settings?error=settings-save-failed");
-  revalidatePath("/dashboard/settings");
+  if (results.some((result) => result.status === "fulfilled" && !result.value.error)) invalidateBusinessData("settings");
+  if (results.some((result) => result.status === "rejected" || result.value.error)) redirect("/dashboard/settings?error=settings-save-failed");
   redirect("/dashboard/settings?notice=settings_updated");
 }
