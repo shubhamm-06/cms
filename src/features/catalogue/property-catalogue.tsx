@@ -65,12 +65,12 @@ function PanelField({
   value: string;
 }) {
   return (
-    <label className="relative block min-w-0 flex-1 cursor-pointer rounded-2xl px-4 py-2.5 transition hover:bg-[#f7f7f7] lg:rounded-full lg:px-[22px] lg:py-3.5">
-      <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#222222]">
+    <label className="relative block min-w-0 cursor-pointer bg-white px-3 py-2 transition hover:bg-[#f7f7f7] lg:flex-1 lg:rounded-full lg:bg-transparent lg:px-[22px] lg:py-3.5">
+      <span className="block truncate text-[11px] font-bold uppercase tracking-[0.06em] text-[#222222]">
         {label}
       </span>
       <select
-        className={`mt-0.5 w-full appearance-none truncate rounded-sm bg-transparent pr-6 text-[15px] leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a5f] ${
+        className={`mt-0.5 w-full min-w-0 appearance-none truncate rounded-sm bg-transparent pr-6 text-[15px] leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a5f] ${
           value ? "font-semibold text-[#222222]" : "font-normal text-[#b0b0b0]"
         }`}
         onChange={(event) => onChange(event.target.value)}
@@ -85,7 +85,7 @@ function PanelField({
       </select>
       <ChevronDown
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-3 right-4 h-4 w-4 text-[#717171] lg:bottom-4 lg:right-[22px]"
+        className="pointer-events-none absolute bottom-[14px] right-3 h-4 w-4 text-[#717171] lg:bottom-4 lg:right-[22px]"
       />
     </label>
   );
@@ -172,8 +172,10 @@ export function PropertyCatalogue({ properties }: { properties: CataloguePropert
   return (
     <div>
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 md:px-8">
-        <div className="mx-auto max-w-[980px] rounded-3xl border border-[#dddddd] bg-white p-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.14)] lg:rounded-full lg:p-1.5">
-          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:flex lg:items-center lg:gap-0">
+        <div className="mx-auto max-w-[980px] rounded-2xl border border-[#dddddd] bg-white p-2 shadow-[0_10px_30px_rgba(0,0,0,0.14)] lg:rounded-full lg:p-1.5">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-0">
+            {/* Below lg: a 2 x 2 grid of fields split by hairlines; from lg the fields join the single row. */}
+            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[#ebebeb] bg-[#ebebeb] lg:contents">
             <PanelField
               anyLabel="Anywhere in Goa"
               label="Region"
@@ -208,6 +210,7 @@ export function PropertyCatalogue({ properties }: { properties: CataloguePropert
               }))}
               value={filters.guests}
             />
+            </div>
             {/*
               `app/globals.css` sets an unlayered `a { color: inherit }`, which
               outranks Tailwind's layered `text-*` utilities and was rendering
@@ -216,7 +219,7 @@ export function PropertyCatalogue({ properties }: { properties: CataloguePropert
               follows it through `currentColor`.
             */}
             <a
-              className="mt-1 inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-[#ff5a5f] px-7 text-[15px] font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition hover:bg-[#e54b50] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 sm:col-span-2 lg:mt-0 lg:ml-2"
+              className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-xl bg-[#ff5a5f] px-7 text-[15px] font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition hover:bg-[#e54b50] focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2 lg:ml-2 lg:w-auto lg:rounded-full"
               href="#stays"
             >
               <span className="inline-flex items-center gap-2 text-white">
@@ -290,7 +293,7 @@ export function PropertyCatalogue({ properties }: { properties: CataloguePropert
                 </button>
               </div>
             ) : (
-              <div className="mt-7 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-7 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2">
                 {results.map((property) => (
                   <CataloguePropertyCard key={property.id} property={property} />
                 ))}

@@ -8,7 +8,7 @@ import { BookingWhyDirect } from "@/components/home/booking-why-direct";
 import { CalendlyPopupLoader } from "@/components/home/calendly-popup";
 import { FamilySection } from "@/components/home/family-section";
 import { PublicFooter } from "@/components/home/public-footer";
-import { PublicHeader } from "@/components/home/public-header";
+import { GuestHeader } from "@/components/home/guest-header";
 import { PropertyCatalogue } from "@/src/features/catalogue/property-catalogue";
 import { loadPublicCatalogue } from "@/src/features/catalogue/public-catalogue-data";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
@@ -36,7 +36,7 @@ export default async function BookingPage() {
     <div className={`${bookingFont.variable} cms-homepage`}>
       <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
         <CalendlyPopupLoader />
-        <PublicHeader analyticsLocation="booking_page" />
+        <GuestHeader page="booking" />
 
         <BookingHero
           imageAlt={leadProperty?.cover_alt_text}
@@ -58,7 +58,7 @@ export default async function BookingPage() {
             </div>
           </section>
         ) : (
-          <div className="relative z-10 -mt-12 lg:-mt-[40px]">
+          <div className="relative z-10 -mt-8 lg:-mt-[40px]">
             <PropertyCatalogue properties={catalogue.properties} />
           </div>
         )}

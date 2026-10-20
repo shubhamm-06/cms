@@ -10,6 +10,10 @@ import Image from "next/image";
  * resolves against the containing block's height, which percentage padding does
  * not, so this is the one property that scales with the photograph.
  *
+ * Blur: the photograph is softened by 2px on its own layer (the `Image`), scaled up slightly
+ * so the blurred edge stays outside the hero's `overflow-hidden` clip. The copy and the
+ * search panel are separate elements above it and stay sharp.
+ *
  * Sharpness: the photograph fills the viewport width, so `sizes="100vw"` lets
  * the browser request a source at least as wide as the screen. That only helps
  * when the file behind it is actually that large - see `heroFallbackImage`.
@@ -38,10 +42,10 @@ export function BookingHero({
   imageUrl?: string | null;
 }) {
   return (
-    <section className="relative h-[480px] w-full overflow-hidden sm:h-[560px] lg:h-[680px] xl:h-[720px]">
+    <section className="relative h-[400px] w-full overflow-hidden sm:h-[520px] lg:h-[680px] xl:h-[720px]">
       <Image
         alt={imageAlt || heroFallbackAlt}
-        className="object-cover"
+        className="scale-105 object-cover blur-[2px]"
         fill
         preload
         quality={85}
@@ -58,12 +62,11 @@ export function BookingHero({
       <div className="absolute inset-x-0 top-[30%] lg:top-[32%]">
         <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 md:px-8">
           <div className="max-w-[720px]">
-            <h1 className="text-[34px] font-extrabold leading-[1.04] tracking-[-0.025em] text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.3)] sm:text-[46px] lg:text-[60px] xl:text-[64px]">
+            <h1 className="text-balance text-[34px] font-extrabold leading-[1.04] tracking-[-0.025em] text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.3)] sm:text-[46px] lg:text-[60px] xl:text-[64px]">
               Stay in Goa. Properly.
             </h1>
-            <p className="mt-4 max-w-[700px] text-[16.5px] leading-[1.5] text-white/95 [text-shadow:0_1px_10px_rgba(0,0,0,0.32)] sm:mt-5 sm:text-[19px] lg:text-[22px]">
-              A small, hand-picked portfolio of villas, apartments and holiday homes, fully managed
-              by CurateMyStay.
+            <p className="mt-4 max-w-[34rem] text-pretty text-[16.5px] leading-[1.5] text-white/95 [text-shadow:0_1px_10px_rgba(0,0,0,0.32)] sm:mt-5 sm:text-[19px] lg:text-[22px]">
+              Hand-picked villas and apartments, personally managed by our team.
             </p>
           </div>
         </div>

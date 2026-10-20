@@ -3,7 +3,7 @@ import { Figtree } from "next/font/google";
 import { notFound } from "next/navigation";
 import { buildMarketingMetadata, siteOrigin } from "@/app/seo";
 import { PublicFooter } from "@/components/home/public-footer";
-import { PublicHeader } from "@/components/home/public-header";
+import { GuestHeader } from "@/components/home/guest-header";
 import { PropertyDetailPage } from "@/src/features/catalogue/property-detail-page";
 import { PropertyMobileEnquiryBar } from "@/src/features/catalogue/property-mobile-enquiry-bar";
 import { PropertyEnquiryProvider } from "@/src/features/catalogue/property-enquiry-context";
@@ -125,11 +125,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         />
       ) : null}
       <main className="min-h-screen bg-white font-sans text-public-ink antialiased">
-        {/* Below md a found property shows its own back and share buttons over the photo
-            instead; `md:contents` keeps the header's sticky behaviour unchanged from md. */}
-        <div className={result.status === "found" ? "max-md:hidden md:contents" : "contents"}>
-          <PublicHeader analyticsLocation="property_page" />
-        </div>
+        <GuestHeader page="property" propertyName={result.status === "found" ? result.property.public_name : null} />
 
         {result.status === "failed" ? (
           <div className="mx-auto max-w-[1180px] px-4 py-14 sm:px-6 sm:py-16 md:px-8">

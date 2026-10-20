@@ -54,7 +54,7 @@ function desktopSizes(index: number, side: number) {
   return "(min-width: 1024px) 245px, 100vw";
 }
 
-/** Round white buttons over the hero photo below md, where the site header is hidden. */
+/** Round white buttons over the hero photo below md. */
 const heroButton =
   "inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-public-ink shadow-[0_2px_8px_rgba(0,0,0,0.18)] outline-none focus-visible:ring-2 focus-visible:ring-public-coral";
 

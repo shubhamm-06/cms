@@ -828,3 +828,15 @@
 - Added a stateless anonymous client and 60-second, immediately invalidated Next data cache for public-safe catalogue/detail/gallery views. Minute keys and request rendering bound direct-edit staleness and prevent expired success fallback on read failure.
 - Centralized mutation dependency invalidation for operational saves/deletes, imports, user/account changes, payout/query actions and gallery changes, including confirmed partial writes before later failures. Preserved formulas, permissions, payout lifecycle, redirects and existing refresh behaviour.
 - Added focused offline loader/action tests and documented cache scope, mutation mapping, direct database edits and already-open session limitations. No schema, RLS, package or production configuration changes.
+
+## Guest Navbar for Booking and Property Pages (2026-10-19)
+
+- Added `GuestHeader` (`components/home/guest-header.tsx`) for `/booking` and `/property/[slug]` in place of the owner-focused `PublicHeader`: logo to `/booking`, `Explore Stays` (`All Stays` on a property page), `List Your Property` (existing `/property-management-goa`), the configured phone number as a `tel:` link and a coral `WhatsApp Us` button. Home, Property Management, the More menu, Owner Portal and Book a Call are not shown there.
+- Below `lg` the header shows the logo, a call icon, `WhatsApp` and a menu button that opens the two links in the existing Radix `ShowMoreDialog`. The property page header is now visible on phones too (the hero keeps its own back and share buttons).
+- The WhatsApp message is general on `/booking` and names the property on a property page (`guest-whatsapp-message.ts`, tested). It does not use the stay enquiry context, so the form keeps its dates and guests. No new package, route, schema or SQL; other routes keep `PublicHeader`.
+
+## Booking Page Refinement (2026-10-19)
+
+- `/booking` hero: the existing photograph is blurred 2px on its own layer, the supporting copy is shortened to `Hand-picked villas and apartments, personally managed by our team.`, and the hero is shorter on phones (400px).
+- Search panel: a compact 2 x 2 field grid with a full-width `Search` button below `lg`; the desktop pill is unchanged. Fields, filtering and reset behaviour are unchanged.
+- Property grid: one column on phones, two from `sm` (previously three on desktop), 3:2 image area. Each card with several photos has a swipe/arrow carousel (`CardImageCarousel`) fed by one batched `public_property_gallery` read; the card still opens its property. No schema, package or navbar change.

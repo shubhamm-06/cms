@@ -75,7 +75,8 @@ const publicNavigationLinks: PublicNavigationLink[] = [
   },
 ];
 
-function HeaderLogo() {
+/** `nameClassName` lets the guest header drop the brand name on very narrow phones. */
+export function HeaderLogo({ nameClassName = "" }: { nameClassName?: string }) {
   return (
     <span className="inline-flex min-w-0 items-center gap-3 sm:gap-3.5">
       <Image
@@ -85,7 +86,7 @@ function HeaderLogo() {
         src="/logo.png"
         width={56}
       />
-      <span className="min-w-0 whitespace-nowrap text-[15px] font-extrabold leading-none tracking-[-0.02em] text-[#222222] sm:text-[17px]">
+      <span className={`min-w-0 whitespace-nowrap text-[15px] font-extrabold leading-none tracking-[-0.02em] text-[#222222] sm:text-[17px] ${nameClassName}`}>
         Curate My Stay
       </span>
     </span>

@@ -78,7 +78,7 @@ export function PropertyMobileDatePicker({
   return (
     <section
       aria-labelledby="stay-dates-heading"
-      className="scroll-mt-4"
+      className="scroll-mt-20"
       data-stay-enquiry-card
       id={STAY_DATES_SECTION_ID}
     >

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Bath, BedDouble, Footprints, House, Users, Waves } from "lucide-react";
 import type { CatalogueProperty } from "@/src/features/catalogue/public-catalogue-data";
+import { CardImageCarousel } from "@/src/features/catalogue/card-image-carousel";
 import { formatMoney } from "@/src/lib/utils/money";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
 
@@ -27,7 +28,11 @@ function plural(count: number, singular: string) {
 }
 
 export function CataloguePropertyCard({ property }: { property: CatalogueProperty }) {
-  const coverUrl = getPropertyImageUrl(property.cover_storage_path);
+  const href = `/property/${property.slug}`;
+  const photos = property.images.filter((image) => getPropertyImageUrl(image.storage_path));
+  // Two columns from `sm`, in a container capped at 1180px: about 546px per card at most.
+  const singlePhotoUrl = photos.length === 1 ? getPropertyImageUrl(photos[0].storage_path) : null;
+  const imageSizes = "(min-width: 1180px) 546px, (min-width: 640px) 45vw, 92vw";
   const location = locationLine(property);
   const pool = poolLabel(property.pool_type);
   const name = property.public_name || "Curated stay";
@@ -47,21 +52,25 @@ export function CataloguePropertyCard({ property }: { property: CataloguePropert
 
   return (
     /*
-      The whole card navigates to the property, so the only link is the overlay
-      at the end of this article. Nothing inside it may become a link as well:
-      the covering anchor would nest, and the reachable-by-keyboard order would
-      duplicate. `View stay` is therefore presentational text that reacts to the
-      card's own hover state.
+      The whole card navigates to the property, so the only keyboard-reachable link
+      is the overlay at the end of this article. Nothing inside it may become a
+      focusable link as well: the covering anchor would nest, and the tab order
+      would duplicate. `View stay` is therefore presentational text that reacts to
+      the card's own hover state. The photo carousel needs to sit above the overlay
+      to receive swipes; its slides repeat the link without being focusable (see
+      `CardImageCarousel`).
     */
     <article className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#ebebeb] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition duration-200 hover:-translate-y-[3px] hover:border-[#e4d9d1] hover:shadow-[0_12px_28px_rgba(0,0,0,0.12)] has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-[#ff5a5f] has-[a:focus-visible]:ring-offset-2">
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#fbf1ec]">
-        {coverUrl ? (
+      <div className="relative aspect-[3/2] w-full overflow-hidden bg-[#fbf1ec]">
+        {photos.length > 1 ? (
+          <CardImageCarousel href={href} images={photos} name={name} sizes={imageSizes} />
+        ) : singlePhotoUrl ? (
           <Image
-            alt={property.cover_alt_text || name}
+            alt={photos[0].alt_text || name}
             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             fill
-            sizes="(min-width: 1024px) 370px, (min-width: 640px) 45vw, 92vw"
-            src={coverUrl}
+            sizes={imageSizes}
+            src={singlePhotoUrl}
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#fbf7f1] to-[#f1e0d7]">
@@ -72,7 +81,7 @@ export function CataloguePropertyCard({ property }: { property: CataloguePropert
           </div>
         )}
         {property.promotional_badge ? (
-          <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-[#ff5a5f] px-2.5 py-1 text-xs font-semibold leading-5 text-white shadow-[0_1px_3px_rgba(0,0,0,0.2)]">
+          <span className="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-[#ff5a5f] px-2.5 py-1 text-xs font-semibold leading-5 text-white shadow-[0_1px_3px_rgba(0,0,0,0.2)]">
             {property.promotional_badge}
           </span>
         ) : null}
@@ -153,7 +162,7 @@ export function CataloguePropertyCard({ property }: { property: CataloguePropert
         </div>
       </div>
 
-      <Link className="absolute inset-0 rounded-2xl outline-none" href={`/property/${property.slug}`}>
+      <Link className="absolute inset-0 rounded-2xl outline-none" href={href}>
         <span className="sr-only">{`View stay at ${name}`}</span>
       </Link>
     </article>
