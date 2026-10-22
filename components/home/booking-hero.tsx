@@ -1,22 +1,13 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 
 /**
  * Public `/booking` hero, built from the hero of the `Curate My Stay` booking
  * screen in `reference/booking.html`.
  *
- * Layout: the copy is positioned at a percentage of the hero's own height, so
- * it keeps landing in the upper third at every hero height instead of drifting
- * down as the section grows. Percentage `top` on an absolutely positioned child
- * resolves against the containing block's height, which percentage padding does
- * not, so this is the one property that scales with the photograph.
- *
- * Blur: the photograph is softened by 2px on its own layer (the `Image`), scaled up slightly
- * so the blurred edge stays outside the hero's `overflow-hidden` clip. The copy and the
- * search panel are separate elements above it and stay sharp.
- *
- * Sharpness: the photograph fills the viewport width, so `sizes="100vw"` lets
- * the browser request a source at least as wide as the screen. That only helps
- * when the file behind it is actually that large - see `heroFallbackImage`.
+ * The photograph and copy are intentionally kept in this small presentational
+ * component. The interactive search panel is supplied by the catalogue client
+ * component so its existing filter state stays in one place.
  */
 
 /**
@@ -35,41 +26,37 @@ const heroFallbackImage = "/homepage/varca-2.jpg";
 const heroFallbackAlt = "A pool at a CurateMyStay-managed property in Goa";
 
 export function BookingHero({
+  children,
   imageAlt,
   imageUrl,
 }: {
+  children: ReactNode;
   imageAlt?: string | null;
   imageUrl?: string | null;
 }) {
   return (
-    <section className="relative h-[400px] w-full overflow-hidden sm:h-[520px] lg:h-[680px] xl:h-[720px]">
+    <section className="relative mx-4 overflow-hidden rounded-[26px] sm:mx-6 md:mx-8 lg:mx-7 lg:min-h-[600px] xl:min-h-[620px]">
       <Image
         alt={imageAlt || heroFallbackAlt}
-        className="scale-105 object-cover blur-[2px]"
+        className="object-cover object-[center_58%]"
         fill
         preload
         quality={85}
-        sizes="100vw"
+        sizes="(max-width: 768px) 100vw, 1440px"
         src={imageUrl || heroFallbackImage}
       />
-      {/*
-        Directional scrim from the reference: darkest behind the left-aligned
-        copy, close to clear across the open right-hand side so the pool colour
-        and the planting keep their detail.
-      */}
-      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(20,12,8,0.66)_0%,rgba(20,12,8,0.28)_45%,rgba(20,12,8,0.40)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(18,12,9,0.72)_0%,rgba(18,12,9,0.42)_48%,rgba(18,12,9,0.56)_100%)]" />
 
-      <div className="absolute inset-x-0 top-[30%] lg:top-[32%]">
-        <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 md:px-8">
-          <div className="max-w-[720px]">
-            <h1 className="text-balance text-[34px] font-extrabold leading-[1.04] tracking-[-0.025em] text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.3)] sm:text-[46px] lg:text-[60px] xl:text-[64px]">
-              Stay in Goa. Properly.
-            </h1>
-            <p className="mt-4 max-w-[34rem] text-pretty text-[16.5px] leading-[1.5] text-white/95 [text-shadow:0_1px_10px_rgba(0,0,0,0.32)] sm:mt-5 sm:text-[19px] lg:text-[22px]">
-              Hand-picked villas and apartments, personally managed by our team.
-            </p>
-          </div>
+      <div className="relative z-10 mx-auto grid min-h-[680px] w-full max-w-[1240px] items-center gap-10 px-5 py-8 sm:px-8 sm:py-12 lg:min-h-[600px] lg:grid-cols-[minmax(0,1fr)_minmax(350px,420px)] lg:gap-14 lg:px-12 lg:py-14 xl:px-16">
+        <div className="max-w-[620px] self-center">
+          <h1 className="max-w-[12ch] text-balance text-[42px] font-extrabold leading-[0.98] tracking-[-0.04em] text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.3)] sm:text-[54px] lg:text-[64px] xl:text-[68px]">
+            Stay in Goa. Properly.
+          </h1>
+          <p className="mt-5 max-w-[31rem] text-pretty text-[17px] leading-[1.5] text-white/90 [text-shadow:0_1px_10px_rgba(0,0,0,0.32)] sm:text-[19px] lg:mt-6">
+            Hand-picked villas and apartments, personally managed by our team.
+          </p>
         </div>
+        <div className="w-full self-center">{children}</div>
       </div>
     </section>
   );
