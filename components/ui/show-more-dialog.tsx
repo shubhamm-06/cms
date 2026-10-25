@@ -1,9 +1,12 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { cn } from "@/src/lib/utils/cn";
+
+const subscribeToPortalContainer = () => () => {};
+const getPortalContainer = () => document.querySelector<HTMLElement>(".cms-homepage");
+const getServerPortalContainer = () => null;
 
 /**
  * Shared "show more" dialog for long public content: a bottom sheet below `sm`
@@ -33,16 +36,18 @@ export function ShowMoreDialog({
   title: string;
   trigger?: ReactNode;
 }) {
+  // Keep portalled content inside the page's existing Figtree font scope.
+  const portalContainer = useSyncExternalStore(subscribeToPortalContainer, getPortalContainer, getServerPortalContainer);
   return (
     <Dialog.Root onOpenChange={onOpenChange} open={open}>
       {trigger ? <Dialog.Trigger asChild>{trigger}</Dialog.Trigger> : null}
-      <Dialog.Portal>
+      <Dialog.Portal container={portalContainer}>
         <Dialog.Overlay className="fixed inset-0 z-[80] bg-public-ink/50" />
         <Dialog.Content
           // Radix links a Dialog.Description automatically; without one, opt out explicitly.
           {...(description ? {} : { "aria-describedby": undefined })}
           className={cn(
-            "fixed z-[80] flex flex-col bg-white text-public-ink shadow-[0_8px_28px_rgba(0,0,0,0.28)] outline-none",
+            "fixed z-[80] flex flex-col bg-white text-public-ink outline-none [font-family:var(--font-homepage,var(--font-sans))]",
             // Mobile: bottom sheet that slides up as it opens.
             "inset-x-0 bottom-0 max-h-[90dvh] rounded-t-[20px] pb-[env(safe-area-inset-bottom)] max-sm:transition-transform max-sm:duration-300 max-sm:ease-out max-sm:starting:translate-y-full motion-reduce:transition-none",
             // Desktop: centred modal.
@@ -52,9 +57,9 @@ export function ShowMoreDialog({
           <div className="flex items-center gap-3 border-b border-public-hairline px-4 py-3 sm:px-6 sm:py-4">
             <Dialog.Close
               aria-label="Close"
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-[#1f1f1d] focus-visible:ring-offset-2"
             >
-              <X aria-hidden="true" className="h-5 w-5" />
+              <svg aria-hidden="true" className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m6 6 12 12M6 18 18 6" strokeLinecap="round" /></svg>
             </Dialog.Close>
             <div className="min-w-0">
               <Dialog.Title className="truncate text-[18px] font-bold leading-tight tracking-[-0.01em] sm:text-[20px]">

@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState } from "react";
 import type { CatalogueImage } from "@/src/features/catalogue/public-catalogue-data";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
@@ -41,7 +40,7 @@ export function CardImageCarousel({
   }
 
   const arrow =
-    "absolute top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-public-ink shadow-[0_1px_6px_rgba(0,0,0,0.3)] outline-none transition-opacity focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-public-coral disabled:invisible md:inline-flex md:opacity-0 md:group-hover:opacity-100";
+    "absolute top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#e3e0d8] bg-white text-[#1f1f1d] outline-none transition-opacity focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[#1f1f1d] disabled:invisible md:inline-flex md:opacity-0 md:group-hover:opacity-100";
 
   return (
     <>
@@ -72,14 +71,11 @@ export function CardImageCarousel({
       </div>
 
       <button aria-label="Previous photo" className={`${arrow} left-3`} disabled={index === 0} onClick={() => goTo(index - 1)} type="button">
-        <ChevronLeft aria-hidden="true" className="h-5 w-5" />
+        <svg aria-hidden="true" className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m14 6-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       <button aria-label="Next photo" className={`${arrow} right-3`} disabled={index === last} onClick={() => goTo(index + 1)} type="button">
-        <ChevronRight aria-hidden="true" className="h-5 w-5" />
+        <svg aria-hidden="true" className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m10 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
-      <span className="pointer-events-none absolute bottom-3 right-3 z-10 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold leading-4 text-white">
-        {`${index + 1} / ${images.length}`}
-      </span>
     </>
   );
 }
