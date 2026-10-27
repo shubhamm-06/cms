@@ -46,8 +46,8 @@ export default async function BookingPage() {
           />
         </div>
 
-        <BookingGuestReviews />
         <BookingWhyDirect />
+        <BookingGuestReviews />
         <BookingGuestServices />
         <FamilySection />
 

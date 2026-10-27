@@ -12,24 +12,29 @@ import { parsePhoneNumberFromString } from "libphonenumber-js/min";
 import { FaWhatsapp } from "react-icons/fa6";
 import {
   ArrowRight,
+  Award,
   Banknote,
+  BedDouble,
   Building2,
   Calendar,
   Check,
   ChevronDown,
   Eye,
+  FileCheck2,
   FileText,
   LoaderCircle,
   MapPin,
   MessageCircle,
+  Quote,
   ShieldCheck,
   Sparkles,
+  Star,
   Target,
   TrendingUp,
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CalendlyPopupLoader, openCalendlyPopup } from "@/components/home/calendly-popup";
 import { PublicFooter } from "@/components/home/public-footer";
 import { PublicHeader } from "@/components/home/public-header";
@@ -38,14 +43,6 @@ import { trackDataLayerEvent, trackWhatsAppClick } from "@/src/lib/analytics";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
 import { FamilySection } from "@/components/home/family-section";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
-import { GuestHeader } from "@/components/home/guest-header";
-import { BookingGuestReviews } from "@/components/home/booking-guest-reviews";
-import { BookingWhyDirect } from "@/components/home/booking-why-direct";
-import { BookingGuestServices } from "@/components/home/booking-guest-services";
-import { ShowMoreDialog } from "@/components/ui/show-more-dialog";
-import { PropertyCatalogue } from "@/src/features/catalogue/property-catalogue";
-import type { CatalogueLoadResult } from "@/src/features/catalogue/public-catalogue-data";
-import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
 
 const photo = (name: string) => `/homepage/${name}`;
 const WHATSAPP_URL = getPublicWhatsAppUrl() || "#";
@@ -66,6 +63,28 @@ function trackForecastFormOpen(ctaLocation: string) {
     form_name: "owner_forecast",
   });
 }
+
+const carouselPhotos = [
+  "IMG_0524.jpg",
+  "IMG_0375.jpg",
+  "IMG_0532.jpg",
+  "IMG_0600.jpg",
+  "IMG_1541.jpg",
+  "IMG_1548.jpg",
+  "IMG_1569.jpg",
+  "IMG_1581.jpg",
+  "IMG_1941.jpg",
+  "IMG_2017.jpg",
+  "IMG_2023.jpg",
+  "IMG_2098.jpg",
+  "IMG_2161.jpg",
+  "IMG_2166.jpg",
+  "IMG_2173.jpg",
+  "IMG_2685.jpg",
+  "IMG_2687.jpg",
+  "IMG_2693.jpg",
+  "IMG_2708.jpg",
+];
 
 const locations = [
   "Panjim",
@@ -269,6 +288,154 @@ function Heading({
       <h2 className={`${eyebrow ? "mt-4" : ""} text-[28px] font-extrabold leading-[1.12] sm:text-4xl md:text-[44px] md:leading-[1.08]`}>{title}</h2>
       {lead ? <p className={`mt-4 max-w-2xl text-base leading-7 sm:mt-[18px] sm:text-[18px] sm:leading-[1.6] md:text-[19px] ${align === "center" ? "mx-auto" : ""} ${dark ? "text-white/70" : "text-[#717171]"}`}>{lead}</p> : null}
     </div>
+  );
+}
+
+function HeroCarousel() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % carouselPhotos.length);
+    }, 4000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative h-80 overflow-hidden rounded-[20px] bg-[#f7f7f7] shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:h-[min(70vh,540px)] sm:min-h-[380px] sm:rounded-[24px]">
+      {carouselPhotos.map((src, photoIndex) => (
+        <Image
+          alt={`Curate My Stay property ${photoIndex + 1}`}
+          className={`object-cover [filter:saturate(1.06)_contrast(1.03)_brightness(1.02)] transition-opacity duration-[1200ms] ease-in-out ${photoIndex === index ? "opacity-100" : "opacity-0"}`}
+          fill
+          key={src}
+          priority={photoIndex === 0}
+          sizes="(min-width: 1024px) 540px, 100vw"
+          src={photo(src)}
+        />
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+      <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+        {carouselPhotos.map((src, photoIndex) => (
+          <button
+            aria-label={`Show property photo ${photoIndex + 1}`}
+            className={`h-2 rounded-full border-0 bg-white p-0 transition-all duration-300 ${photoIndex === index ? "w-5 opacity-100" : "w-2 opacity-50"}`}
+            key={src}
+            onClick={() => setIndex(photoIndex)}
+            type="button"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Hero() {
+  return (
+    <Section className="overflow-hidden [&>div]:pb-16 [&>div]:pt-10 sm:[&>div]:py-14 md:[&>div]:pb-20 md:[&>div]:pt-14" id="top" tone="cream">
+      <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.02fr_0.98fr]">
+        <div className="min-w-0">
+          <Eyebrow>Goa - Short-term rental management</Eyebrow>
+          <h1 className="mt-4 max-w-3xl text-[34px] font-extrabold leading-[1.08] sm:mt-[18px] sm:text-[44px] lg:text-[60px] lg:leading-[1.04]">
+            Your Property. Professionally Managed. <br/> <span className="text-[#ff5a5f]">For Higher Returns.</span>
+          </h1>
+          <p className="mt-5 max-w-xl text-[17px] leading-7 text-[#484848] sm:mt-6 sm:text-xl sm:leading-[1.55] lg:text-[22px]">
+            We help Goa homeowners earn more through fully managed short-term rentals, with complete financial transparency.
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
+            <ButtonLink className="w-full sm:w-auto" onClick={() => trackCalendarClick("hero")} size="lg">
+              Book a discovery call <ArrowRight className="h-4 w-4" />
+            </ButtonLink>
+            <ButtonLink className="w-full sm:w-auto" href="#calculator" onClick={() => trackForecastFormOpen("hero")} size="lg" variant="secondary">
+              <FileText className="h-4 w-4" /> Get my custom pitch deck
+            </ButtonLink>
+          </div>
+          <div className="mt-[26px] flex flex-wrap gap-x-[22px] gap-y-3 text-[14.5px] font-semibold text-[#484848]">
+            <span className="inline-flex items-center gap-2"><Star className="h-[17px] w-[17px] fill-[#ff5a5f] text-[#ff5a5f]" /> 4.98 / 5 on Airbnb</span>
+            <span className="inline-flex items-center gap-2"><Award className="h-[17px] w-[17px] text-[#ff5a5f]" /> Superhost</span>
+            <span className="inline-flex items-center gap-2"><FileCheck2 className="h-[17px] w-[17px] text-[#ff5a5f]" /> Monthly P&L, owner-approved</span>
+          </div>
+          <p className="mt-4 text-[13.5px] font-medium text-[#717171]">No commitment. 30-min call. We&apos;ll tell you upfront if your property is a fit.</p>
+        </div>
+        <div className="relative min-w-0">
+          <HeroCarousel />
+          <div className="absolute -bottom-6 left-3 w-48 rounded-[16px] bg-white px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:left-4 sm:w-56 sm:rounded-[18px] sm:px-5 sm:py-4 md:-left-5">
+            <div className="text-[28px] font-extrabold leading-none tracking-[-0.02em]">150+</div>
+            <div className="mt-1 flex items-center gap-1 text-sm font-semibold text-[#484848]">
+              <Star className="h-4 w-4 fill-[#ff5a5f] text-[#ff5a5f]" /> 5-star reviews
+            </div>
+            <div className="my-2 h-px bg-[#ebebeb]" />
+            <div className="text-[22px] font-extrabold tracking-[-0.02em]">200+</div>
+            <div className="mt-0.5 text-[13px] font-semibold text-[#484848]">successful stays</div>
+          </div>
+          <div className="absolute right-3 top-3 rounded-full border border-[#dddddd] bg-white px-3 py-1.5 text-[13px] font-semibold shadow-sm sm:right-[18px] sm:top-[18px] sm:px-[13px]">
+            <Star className="mr-1 inline h-4 w-4 fill-[#ff5a5f] text-[#ff5a5f]" />
+            4.98 average
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function MathAnchor() {
+  const rows = [
+    ["ROI", "3-4%", "Upwards of 6%"],
+    ["Maintenance", "Tenant call, tenant terms", "Daily care, deep cleans, restocking"],
+    ["Condition over 12 months", "Wears down", "Hotel-grade"],
+    ["Control", "Locked in 11 months", "Block dates anytime, use it yourself"],
+    ["Vacancy risk", "1-2 month gaps", "Spread across 100+ guests / year"],
+    ["Seasonality", "Fixed rent regardless of demand", "Higher earnings during peak tourism months"],
+    ["Guest quality", "Single tenant dependency", "Verified guests & reviews"],
+  ];
+
+  return (
+    <Section id="math" tone="dark">
+      <Heading
+        dark
+        eyebrow="The math that changes everything"
+        lead="Most owners in Goa lease long-term and accept the rental yield they are given. Here is what the same property looks like under short-term rental management."
+        title="Same property. A different operating model."
+      />
+      <div className="mt-8 grid gap-3 md:hidden">
+        {rows.map(([label, ltr, cms]) => (
+          <div className="overflow-hidden rounded-2xl border border-white/10" key={label}>
+            <div className="bg-white/[0.06] px-4 py-3 text-sm font-extrabold text-white">{label}</div>
+            <div className="grid grid-cols-2">
+              <div className="min-w-0 border-r border-white/10 p-3">
+                <div className="text-[11px] font-extrabold uppercase text-white/45">Long-term</div>
+                <div className="mt-1 break-words text-[13px] leading-5 text-white/65">{ltr}</div>
+              </div>
+              <div className="min-w-0 bg-[#ff5a5f]/10 p-3">
+                <div className="text-[11px] font-extrabold uppercase text-[#e9aa4b]">With CMS</div>
+                <div className="mt-1 break-words text-[13px] font-bold leading-5 text-white">{cms}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-12 hidden rounded-[24px] border border-white/10 md:block">
+        <div className="grid min-w-[650px] grid-cols-[1.25fr_1fr_1.15fr]">
+          <div className="bg-white/[0.03] p-5" />
+          <div className="border-l border-white/10 bg-white/[0.03] p-5 text-xs font-extrabold uppercase tracking-[0.14em] text-white/60">Long-term rental</div>
+          <div className="border-l-2 border-[#ff5a5f] bg-[#ff5a5f]/15 p-5 text-xs font-extrabold uppercase tracking-[0.14em] text-[#e9aa4b]">Short-term with CMS</div>
+          {rows.map(([label, ltr, cms]) => (
+            <div className="contents" key={label}>
+              <div className="border-t border-white/10 p-5 text-sm font-bold text-white/85">{label}</div>
+              <div className="border-l border-t border-white/10 p-5 text-sm text-white/60">{ltr}</div>
+              <div className="border-l-2 border-t border-[#ff5a5f] bg-[#ff5a5f]/10 p-5 text-sm font-bold text-white">{cms}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mt-12 text-center">
+        <p className="mx-auto max-w-2xl text-2xl font-extrabold italic tracking-tight text-[#e9aa4b]">&quot;Same property. Different operating model. Better cash flow.&quot;</p>
+        <a className="mt-6 inline-flex items-center gap-2 border-b-2 border-[#ff5a5f] pb-1 text-base font-extrabold text-white" href="#calculator" onClick={() => trackForecastFormOpen("math_comparison")}>
+          See the full numbers for your property <ArrowRight className="h-4 w-4" />
+        </a>
+      </div>
+    </Section>
   );
 }
 
@@ -844,6 +1011,309 @@ function CalculatorSection({
   );
 }
 
+function Services() {
+  const cards: Array<{ icon: LucideIcon; items: string[]; title: string }> = [
+    {
+      icon: BedDouble,
+      items: ["Guest coordination: pre, in & post-stay", "Check-in & check-out (or self check-in)", "Housekeeping & deep cleans between stays", "Linen, toiletries & consumables restocking", "Minor repairs and on-call maintenance", "24/7 guest support by our team"],
+      title: "Property operations",
+    },
+    {
+      icon: TrendingUp,
+      items: ["Listed on Airbnb, Booking.com, MMT & direct", "Dynamic pricing tuned for Goa's seasons", "Calendar sync: no double-bookings, ever", "Guest screening & ID verification", "Photography, listing copy & review management", "Marketing pushes during low season"],
+      title: "Booking & revenue",
+    },
+    {
+      icon: ShieldCheck,
+      items: ["Tourism / homestay registration (in your name)", "Statistic Forma Reporting for every guest", "Fire NOC, trade license, GST registration", "House rules drafted, enforced, documented", "Damage recovery via deposits & AirCover", "Society & neighbour liaison"],
+      title: "Compliance and care",
+    },
+  ];
+
+  return (
+    <Section className="[&>div]:pt-14 md:[&>div]:pb-[104px]" id="services">
+      <Heading eyebrow="What we actually do" lead="End-to-end management. You stay informed; we handle execution." title="What you hand over. What we handle." />
+      <div className="mt-[52px] grid gap-[22px] lg:grid-cols-3">
+        {cards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <div className="h-full rounded-2xl border border-[#ebebeb] bg-white p-7 shadow-[0_1px_2px_rgba(0,0,0,0.06)]" key={card.title}>
+              <div className="mb-[18px] grid h-[52px] w-[52px] place-items-center rounded-[14px] bg-gradient-to-br from-[#e98363] via-[#e1914f] to-[#e9aa4b] text-white">
+                <Icon className="h-[26px] w-[26px]" />
+              </div>
+              <h3 className="text-[21px] font-extrabold tracking-[-0.01em]">{card.title}</h3>
+              <ul className="mt-4 grid gap-[11px]">
+                {card.items.map((item) => (
+                  <li className="flex items-start gap-2.5 text-[14.5px] leading-[1.45] text-[#484848]" key={item}>
+                    <Check className="mt-px h-[17px] w-[17px] shrink-0 text-[#ff5a5f]" /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mx-auto mt-10 max-w-2xl text-center text-xl font-bold italic text-[#ff5a5f] sm:mt-[52px] sm:text-2xl md:text-[26px]">&quot;You don&apos;t need to lift a finger. Unless you want to.&quot;</p>
+    </Section>
+  );
+}
+
+function StatsAndProof() {
+  return (
+    <Section id="proof" tone="cream">
+      <Heading
+        eyebrow="Track record & proof"
+        lead="We lead with real figures, not adjectives. Here's what the portfolio looks like today."
+        title="The numbers behind the promise."
+      />
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 md:mt-12 md:grid-cols-4 md:gap-5">
+        {[
+          ["4.98 / 5", "Airbnb rating across all listings"],
+          ["150+", "Five-star guest reviews"],
+          ["200+", "Successful stays delivered"],
+          ["Superhost", "11+ months running"],
+        ].map(([value, label]) => (
+          <div className="rounded-2xl border border-[#ebebeb] bg-white px-5 py-6 text-center shadow-sm sm:rounded-[24px] sm:px-6 sm:py-7" key={label}>
+            <div className="text-[34px] font-extrabold leading-none tracking-[-0.02em] text-[#ff5a5f] sm:text-[42px]">{value}</div>
+            <div className="mt-3 text-sm leading-5 text-[#484848]">{label}</div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-12 grid gap-14 sm:mt-16 sm:gap-18">
+        <CaseStudy
+          body="Rather than adapting a residential apartment for short-term rentals, this property was designed from day one with guests in mind. From workcation-friendly interiors and fully air-conditioned spaces to a furnished balcony, modern kitchen, pool access, and a central Panjim location, every element was optimized to maximize guest appeal and occupancy throughout the year."
+          chart={[
+            { m: "Nov '25", v: 1 },
+            { m: "Dec '25", v: 1.73 },
+            { m: "Jan '26", v: 1.38 },
+            { m: "Feb '26", v: 1.18 },
+            { m: "Mar '26", v: 1.16 },
+          ]}
+          eyebrow="Case study · Managed since November 2025"
+          photos={["panjim-1.jpg", "panjim-2.jpg", "panjim-3.jpg", "panjim-4.jpg"]}
+          stats={[
+            ["Average occupancy", "77%"],
+            ["Location average occupancy", "28.7%"],
+            ["Guest rating", "5 *"],
+            ["Expense ratio", "9.9%"],
+          ]}
+          subtitle="Modern 2 BHK Apartment in Panjim"
+          title="Designed for Short-Term Rentals from Day One"
+          viewHref="/case-studies#panjim"
+        />
+        <CaseStudy
+          body="When we took over this 3 BHK villa in Varca, the property was not operationally ready for the short-term rental market. We invested in setup, operational improvements, and guest-readiness during the first month. The investment was recovered the very next month, with revenue doubling shortly thereafter: transforming the villa into a high-performing holiday home just 700 metres from the beach."
+          chart={[
+            { m: "Oct '25", v: 1 },
+            { m: "Nov '25", v: 1.36 },
+            { m: "Dec '25", v: 2.11 },
+            { m: "Jan '26", v: 1.81 },
+            { m: "Feb '26", v: 1.29 },
+            { m: "Mar '26", v: 1.37 },
+          ]}
+          eyebrow="Case study · Managed since September 2025"
+          photos={["varca-1.jpg", "varca-2.jpg", "varca-3.jpg"]}
+          reverse
+          stats={[
+            ["Average occupancy", "65.4%"],
+            ["Location average occupancy", "31.2%"],
+            ["Guest rating", "4.95 *"],
+            ["Expense ratio", "15.5%"],
+          ]}
+          subtitle="Private 3 BHK Villa in Varca, South Goa"
+          title="From Underperforming Asset to Proven Performer"
+          viewHref="/case-studies#varca"
+        />
+      </div>
+      <Testimonials />
+    </Section>
+  );
+}
+
+function RampChart({ data }: { data: Array<{ m: string; v: number }> }) {
+  const width = 360;
+  const height = 130;
+  const pad = 8;
+  const max = Math.max(...data.map((point) => point.v));
+  const step = (width - pad * 2) / Math.max(1, data.length - 1);
+  const points = data.map((point, index) => [pad + index * step, height - pad - (point.v / max) * (height - pad - 22)] as const);
+  const line = points.map((point, index) => `${index ? "L" : "M"} ${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(" ");
+  const area = `${line} L ${points.at(-1)?.[0].toFixed(1)} ${height - pad} L ${points[0]?.[0].toFixed(1)} ${height - pad} Z`;
+
+  return (
+    <svg className="block w-full" viewBox={`0 0 ${width} ${height}`}>
+      <defs>
+        <linearGradient id="case-ramp-fill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#e98363" stopOpacity="0.28" />
+          <stop offset="1" stopColor="#e98363" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#case-ramp-fill)" />
+      <path d={line} fill="none" stroke="#ff5a5f" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+      {points.map((point, index) => {
+        const peak = data[index]?.v === max;
+        return <circle cx={point[0]} cy={point[1]} fill={peak ? "#ff5a5f" : "#ffffff"} key={data[index]?.m} r={peak ? 4.5 : 3} stroke="#ff5a5f" strokeWidth="2" />;
+      })}
+      {data.map((point, index) => (
+        <text fill="#b0b0b0" fontSize="9" fontWeight="600" key={point.m} textAnchor="middle" x={points[index]?.[0]} y={height - 1}>
+          {point.m}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+function CaseStudy({
+  body,
+  chart,
+  eyebrow,
+  photos,
+  reverse = false,
+  stats,
+  subtitle,
+  title,
+  viewHref,
+}: {
+  body: string;
+  chart: Array<{ m: string; v: number }>;
+  eyebrow: string;
+  photos: string[];
+  reverse?: boolean;
+  stats: Array<[string, string]>;
+  subtitle: string;
+  title: string;
+  viewHref: string;
+}) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (photos.length <= 1) return undefined;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % photos.length);
+    }, 4000);
+
+    return () => window.clearInterval(timer);
+  }, [photos]);
+
+  const imagePanel = (
+    <div className="relative h-[300px] overflow-hidden rounded-[20px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:h-[360px] lg:h-[min(56vh,440px)]">
+      {photos.map((src, photoIndex) => (
+        <Image
+          alt={title}
+          className={`object-cover transition-opacity duration-[1000ms] ease-in-out ${photoIndex === index ? "opacity-100" : "opacity-0"}`}
+          fill
+          key={src}
+          sizes="(min-width: 1024px) 520px, 100vw"
+          src={photo(src)}
+        />
+      ))}
+      {photos.length > 1 ? (
+        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+          {photos.map((src, photoIndex) => (
+            <button
+              aria-label={`Show ${title} photo ${photoIndex + 1}`}
+              className={`h-2 rounded-full border-0 bg-white p-0 transition-all duration-300 ${photoIndex === index ? "w-5 opacity-100" : "w-2 opacity-55"}`}
+              key={src}
+              onClick={() => setIndex(photoIndex)}
+              type="button"
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+
+  const copyPanel = (
+    <div className="min-w-0">
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h3 className="mt-4 text-[28px] font-extrabold leading-[1.12] tracking-[-0.02em] text-[#222222] sm:text-[32px]">{title}</h3>
+      <p className="mt-2 text-[17px] font-semibold text-[#717171]">{subtitle}</p>
+      <p className="mt-4 text-[15px] leading-7 text-[#484848] sm:text-[16.5px] sm:leading-[1.6]">{body}</p>
+      <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-[20px] border border-[#ebebeb] bg-[#ebebeb]">
+        {stats.map(([label, value], statIndex) => (
+          <div className="bg-white px-4 py-4 sm:px-[18px]" key={label}>
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#717171]">{label}</div>
+            <div className={`mt-1 text-[21px] font-extrabold tracking-[-0.01em] ${statIndex === stats.length - 1 ? "text-[#ff5a5f]" : "text-[#222222]"}`}>{value}</div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-5 rounded-[20px] border border-[#ebebeb] bg-white px-4 py-4 sm:px-[18px] sm:pb-3">
+        <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#717171]">Monthly revenue progression (first month = 1.0x)</div>
+        <RampChart data={chart} />
+      </div>
+      <a className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#dddddd] bg-white px-4 py-2.5 text-sm font-semibold text-[#222222] transition hover:bg-[#f7f7f7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5a5f] focus-visible:ring-offset-2" href={viewHref}>
+        View full case study <ArrowRight aria-hidden="true" className="h-4 w-4" />
+      </a>
+    </div>
+  );
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-[52px]">
+      {reverse ? (
+        <>
+          {copyPanel}
+          {imagePanel}
+        </>
+      ) : (
+        <>
+          {imagePanel}
+          {copyPanel}
+        </>
+      )}
+    </div>
+  );
+}
+
+function Testimonials() {
+  const items = [
+    {
+      initials: "AC",
+      prop: "Owner · Varca 3 BHK Villa",
+      q: "Aravind has been managing several of our rental properties and has been a dependable partner throughout. He is professional, responsive, and has a great attention to detail. He strives hard to ensure both great guest experience and adequate property care, making day-to-day hosting much easier.",
+      who: "Ayushi Chand",
+    },
+    {
+      initials: "SS",
+      prop: "Owner · Majorda 3 BHK Villa",
+      q: "Aravind has been an outstanding host. He is extremely honest, responsible, disciplined, and punctual in managing the Airbnb. The house is always kept clean, guests are well cared for, and he handles everything with great sincerity. Highly appreciated and fully trusted.",
+      who: "Sadhna S.",
+    },
+    {
+      initials: "VC",
+      prop: "Owner · Panjim 2 BHK Apartment",
+      q: "Working with Aravind has made hosting our property far more seamless and stress-free. He is proactive, communicates clearly, and genuinely cares about maintaining the home to a high standard. Guests have consistently had smooth experiences, and we have appreciated the level of reliability and transparency throughout.",
+      who: "Venu Chand",
+    },
+  ];
+
+  return (
+    <div className="mt-12 sm:mt-16">
+      <div className="grid gap-5 lg:grid-cols-3">
+        {items.map((item) => (
+          <figure className="flex h-full min-w-0 flex-col rounded-[20px] border border-[#ebebeb] bg-white p-5 shadow-sm sm:rounded-[24px] sm:p-[30px]" key={item.who}>
+            <Quote className="h-7 w-7 text-[#ff9295]" />
+            <blockquote className="mt-4 flex-1 text-[16px] italic leading-7 text-[#222222]">&quot;{item.q}&quot;</blockquote>
+            <figcaption className="mt-6 flex min-w-0 items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#e98363_0%,#e1914f_45%,#e9aa4b_100%)] text-sm font-extrabold text-white">
+                {item.initials}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-extrabold text-[#222222]">{item.who}</span>
+                <span className="block text-xs text-[#717171]">{item.prop}</span>
+              </span>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      <div className="mt-10 text-center">
+        <ButtonLink onClick={() => trackCalendarClick("testimonials")} size="lg">
+          Book a discovery call <ArrowRight className="h-4 w-4" />
+        </ButtonLink>
+      </div>
+    </div>
+  );
+}
+
 function Tiers() {
   const tiers = [
     {
@@ -973,6 +1443,10 @@ function Tiers() {
   );
 }
 
+function Team() {
+  return <FamilySection id="about" />;
+}
+
 function CollapsibleExtras() {
   const [openIndex, setOpenIndex] = useState(0);
   const sections = [
@@ -1034,6 +1508,65 @@ function CollapsibleExtras() {
             );
           })}
         </div>
+      </div>
+    </Section>
+  );
+}
+
+function RiskSection() {
+  const faqs = [
+    ["What if I lose control of my property?", "You retain 100% ownership. The Leave & License agreement is a standard legal instrument that creates no tenancy rights. You can exit after the lock-in with 2 months' notice. We never take a stake in the property itself."],
+    ["What if you inflate expenses?", "Every expense is itemised in your monthly P&L with a receipt or invoice attached. You approve the statement before any payout. You have audit access to the underlying receipts any time. If you disagree with anything, we discuss it before payment."],
+    ["What if guests damage my property?", "Every booking goes through ID verification and a security deposit. House rules are explicit and enforced, and property condition is photographed before and after every stay. Airbnb's Host Protection adds cover. Damages get a documented recovery plan within 48 hours."],
+    ["What happens during monsoon with no bookings?", "Monsoon is part of the Goa rental cycle, and we actively plan for it. We use dynamic pricing, flexible stay strategies, offline agents, third-party partners, and a strong repeat guest network to maintain occupancy through the season.\n\nWe also have a growing contact base of 200+ past guests and enquiries who often return during off-season months for longer stays at value pricing. At the same time, monsoon is used for preventive maintenance and upgrades so the property is fully peak-season ready."],
+    ["What if I want to use my own property?", "You get personal-use days every year (5-7 depending on tier), plus anything we mutually agree. Just give advance notice so we can block the dates. It's still your home."],
+    ["What if I'm not happy and want to exit?", "After the 6-8 month lock-in, either party can exit with 2 months' written notice. There are no hidden exit fees.\n\nThat said, Goa is a highly seasonal market, and properties typically perform best when evaluated across a full 12-month cycle. Staying through the full year gives a far more accurate picture of occupancy, cash flow, and overall returns."],
+    ["Is this fully legal? Do I need permissions?", "Yes. The tourism license / homestay registration goes in your name (we handle the paperwork). Statistic Forma Reporting is filed for every guest. The Leave & License agreement is the same instrument used across India for short-stay arrangements."],
+    ["What if you misrepresent earnings?", "Every OTA booking carries a complete platform paper trail, and revenue is fully verifiable from the platform records themselves. We also share supporting screenshots and booking-level details in the monthly P&L.\n\nFor offline or direct bookings, entries are backed by payment proofs, guest records, and internal invoices/logs; so all revenue remains trackable and transparent. There is no scenario where one number is shown internally and another exists on the actual booking source."],
+    ["What about TDS and tax compliance?", "We deduct 10% TDS on your share, deposit it with the government monthly, and share quarterly TDS filings ready for your CA. NRIs receive Form 16A on request. Your accountant gets everything they need."],
+    ["What if you can't fill the property?", "We share occupancy projections in your custom pitch deck before you sign. If actuals fall materially below projection for two consecutive months, we trigger a joint review: pricing, listing, or operations: at no cost."],
+  ];
+  const [openIndex, setOpenIndex] = useState(4);
+  const midpoint = Math.ceil(faqs.length / 2);
+  const columns = [faqs.slice(0, midpoint), faqs.slice(midpoint)];
+
+  return (
+    <Section id="risk" tone="cream">
+      <Heading
+        eyebrow="Risk & objections"
+        lead="We don't pretend property management is risk-free. Here's a frank list of what owners worry about, and exactly how each is handled."
+        title="What could go wrong. And what we've already done about it."
+      />
+      <div className="mt-12 grid gap-4 lg:grid-cols-2">
+        {columns.map((column, columnIndex) => (
+          <div className="grid gap-4" key={columnIndex}>
+            {column.map(([question, answer], index) => {
+              const absoluteIndex = columnIndex * midpoint + index;
+              const isOpen = openIndex === absoluteIndex;
+
+              return (
+                <div className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-colors ${isOpen ? "border-[#ff9295]" : "border-[#ebebeb]"}`} key={question}>
+                  <button
+                    aria-expanded={isOpen}
+                    className="flex w-full min-w-0 items-center gap-3 px-4 py-4 text-left sm:gap-4 sm:px-5 sm:py-5"
+                    onClick={() => setOpenIndex((current) => (current === absoluteIndex ? -1 : absoluteIndex))}
+                    type="button"
+                  >
+                    <span className="min-w-0 flex-1 break-words text-[15px] font-extrabold leading-6 text-[#222222] sm:text-base">{question}</span>
+                    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${isOpen ? "bg-[#ff5a5f] text-white rotate-180" : "bg-[#f7f7f7] text-[#484848]"}`}>
+                      <ChevronDown className="h-4 w-4" />
+                    </span>
+                  </button>
+                  <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                    <div className="overflow-hidden">
+                      <p className="px-4 pb-4 text-sm leading-6 whitespace-pre-line text-[#484848] sm:px-5 sm:pb-5">{answer}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </Section>
   );
@@ -1227,20 +1760,29 @@ function InvestmentInline() {
 
 function FinalCTA() {
   return (
-    <section aria-labelledby="closing-cta-title" className="bg-white" id="contact">
-      <div className="mx-auto max-w-[1280px] px-5 py-14 sm:px-8 lg:px-16 lg:py-24">
-        <div className="flex flex-col gap-7 rounded-3xl bg-[#1f1f1d] p-8 text-white lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:p-14">
-          <div className="max-w-[560px]">
-            <h2 id="closing-cta-title" className="text-[28px] font-bold leading-tight tracking-tight lg:text-4xl">Not sure which stay fits?<br />Message us.</h2>
-            <p className="mt-5 text-base leading-relaxed text-[#d8d3c9] lg:text-[17px]">Tell us your dates and group size. We will suggest the right place and send you a direct rate.</p>
-          </div>
-          <div className="flex shrink-0 flex-col items-start gap-2">
-            <a className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-public-coral-ink px-6 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white lg:w-auto" href={WHATSAPP_URL} onClick={() => trackWhatsappClick("footer_cta")} rel="noopener noreferrer" target="_blank"><span className="text-white">Message us on WhatsApp</span></a>
-            <a className="inline-flex min-h-11 items-center rounded-sm text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white" href="#stays"><span className="text-white">See all stays</span></a>
-          </div>
+    <Section id="contact" tone="dark">
+      <div className="mx-auto max-w-4xl text-center">
+        <h2 className="text-3xl font-extrabold leading-tight tracking-tight md:text-[50px]">
+          The math is simple. The execution is the hard part. <span className="text-[#e9aa4b]">We&apos;ve already done it.</span>
+        </h2>
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">Book a 30-minute discovery call. We will look at your property together, talk numbers, and tell you honestly whether short-term rental management is the right move for you. If it&apos;s not, we&apos;ll say so.</p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+          <ButtonLink className="w-full sm:w-auto" onClick={() => trackCalendarClick("footer_cta")} size="lg" variant="onDark">
+            <Calendar className="h-4 w-4" /> Book a discovery call
+          </ButtonLink>
+          <ButtonLink className="w-full sm:w-auto" href={WHATSAPP_URL} onClick={() => trackWhatsappClick("footer_cta")} size="lg" variant="outlineDark">
+            <MessageCircle className="h-4 w-4" /> WhatsApp us directly
+          </ButtonLink>
         </div>
       </div>
-    </section>
+      <div className="mx-auto mt-10 flex max-w-2xl flex-col gap-5 rounded-[20px] border border-white/10 bg-white/[0.05] p-5 sm:mt-12 sm:flex-row sm:items-center sm:gap-6 sm:rounded-[24px] sm:p-6 md:p-8">
+        <Image alt="Aravind" className="h-20 w-20 shrink-0 self-center rounded-[18px] object-cover object-top sm:h-24 sm:w-24 sm:self-auto sm:rounded-[20px]" height={96} src={photo("aravind.jpg")} width={96} />
+        <div className="min-w-0">
+          <div className="text-center text-lg font-extrabold text-white sm:text-left">Aravind <span className="block text-sm font-semibold text-white/50 sm:inline">: Founder, Curate My Stay</span></div>
+          <p className="mt-2 text-sm italic leading-6 text-white/70">&quot;Every property we take on is still personally overseen by me. That level of involvement is a big part of how we maintain consistency, trust, and attention to detail across every stay.&quot;</p>
+        </div>
+      </div>
+    </Section>
   );
 }
 
@@ -1766,44 +2308,22 @@ export function FaqPublicPage({ faqs }: { faqs: ProposalFaq[] }) {
   );
 }
 
-// Keep existing owner-resource URLs functional without adding sections to the guest homepage.
-function subscribeToHomeHash(callback: () => void) {
-  window.addEventListener("hashchange", callback);
-  return () => window.removeEventListener("hashchange", callback);
-}
-
-function getHomeResource() {
-  const hash = window.location.hash;
-  return ["#calculator", "#extras", "#tiers"].includes(hash) ? hash : "";
-}
-
-export function ReferenceHome({ catalogue }: { catalogue: CatalogueLoadResult }) {
-  const resource = useSyncExternalStore(subscribeToHomeHash, getHomeResource, () => "");
-  const leadProperty = catalogue.properties[0];
-
-  function closeResource(open: boolean) {
-    if (!open) {
-      window.history.replaceState(null, "", window.location.pathname + window.location.search);
-      window.dispatchEvent(new HashChangeEvent("hashchange"));
-    }
-  }
-
+export function ReferenceHome() {
   return (
-    <div className="min-h-screen bg-white text-[#1f1f1d] antialiased [font-family:var(--font-homepage)]" id="top">
+    <main className="min-h-screen bg-white font-sans text-[#222222] antialiased">
       <CalendlyPopupLoader />
-      <GuestHeader page="home" />
-      <main>
-        <PropertyCatalogue failed={catalogue.failed} heroImageAlt={leadProperty?.cover_alt_text} heroImageUrl={getPropertyImageUrl(leadProperty?.cover_storage_path)} properties={catalogue.properties} />
-        <BookingGuestReviews />
-        <BookingWhyDirect />
-        <BookingGuestServices />
-        <FamilySection id="about" />
-        <FinalCTA />
-      </main>
+      <PublicHeader />
+      <Hero />
+      <MathAnchor />
+      <CalculatorSection />
+      <Services />
+      <StatsAndProof />
+      <RiskSection />
+      <Tiers />
+      <Team />
+      <CollapsibleExtras />
+      <FinalCTA />
       <PublicFooter />
-      <ShowMoreDialog open={Boolean(resource)} onOpenChange={closeResource} title={resource === "#calculator" ? "ROI calculator" : resource === "#tiers" ? "Management tiers" : "Owner resources"}>
-        {resource === "#calculator" ? <CalculatorSection /> : resource === "#tiers" ? <Tiers /> : resource === "#extras" ? <CollapsibleExtras /> : null}
-      </ShowMoreDialog>
-    </div>
+    </main>
   );
 }

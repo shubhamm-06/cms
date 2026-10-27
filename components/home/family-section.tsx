@@ -1,39 +1,78 @@
 import Image from "next/image";
-import Link from "next/link";
-import { portfolioProof } from "@/components/home/case-studies-data";
+import { MapPin, Rocket, Target, type LucideIcon } from "lucide-react";
 
-// Existing managed-portfolio count, including homes outside the public catalogue.
-const managedPropertyCount = 5;
-const portfolioRating = portfolioProof[0].value.split(" / ")[0];
+/**
+ * The "Who we are" family section. Extracted from the homepage so `/` and
+ * `/booking` render the same approved copy and image from one place.
+ * The homepage passes `id="about"` to keep its existing anchor.
+ */
+
+const credentials: { body: string; icon: LucideIcon; title: string }[] = [
+  { icon: Rocket, title: "Founded 2025", body: "In active growth mode" },
+  { icon: MapPin, title: "Based in Goa", body: "Operational team on the ground" },
+  {
+    icon: Target,
+    title: "Cross-domain expertise",
+    body: "20+ yrs facility management (Dubai) · Investment advisory & Fortune 500 background",
+  },
+];
 
 export function FamilySection({ id }: { id?: string } = {}) {
   return (
-    <section aria-labelledby="family-title" className="bg-[#f5f1ea] text-[#1f1f1d] [font-family:var(--font-homepage)]" id={id}>
-      <div className="mx-auto max-w-[1280px] px-5 py-14 sm:px-8 lg:px-16 lg:py-24">
-        <div className="grid items-center gap-8 lg:grid-cols-[5fr_7fr] lg:gap-20">
-          <div className="relative h-[300px] overflow-hidden rounded-2xl lg:h-[500px]">
-            <Image alt="The Curate My Stay family team" className="object-cover" fill sizes="(min-width: 1280px) 447px, (min-width: 1024px) 40vw, calc(100vw - 40px)" src="/homepage/founder.jpg" />
+    <section className="bg-white text-[#222222]" id={id}>
+      <div className="mx-auto max-w-[1180px] px-4 py-12 sm:px-6 sm:py-16 md:px-8 md:py-[104px]">
+        <div className="grid items-start gap-10 sm:gap-14 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="mx-auto w-full max-w-[420px] overflow-hidden rounded-[24px] bg-[#f7f7f7] shadow-[0_6px_16px_rgba(0,0,0,0.12)] lg:mx-0">
+            <Image
+              alt="The Curate My Stay family"
+              className="block h-auto w-full"
+              height={1067}
+              sizes="(min-width: 1024px) 420px, calc(100vw - 2rem)"
+              src="/homepage/founder.jpg"
+              width={800}
+            />
           </div>
           <div>
-            <h2 id="family-title" className="text-3xl font-bold leading-tight tracking-tight lg:text-[40px]">A family-run approach to property management</h2>
-            <p className="mt-6 max-w-[560px] text-base leading-relaxed text-[#3b3b37] lg:text-[17px]">
-              Curate My Stay is a Goa-based property management firm run by a family with two complementary backgrounds: facility management and investment-side thinking. We currently manage {managedPropertyCount} properties and we are scaling deliberately.
+            <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#ff5a5f]">
+              Who we are
+            </div>
+            <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight md:text-[40px]">
+              A Family-Run Approach to Property Management
+            </h2>
+            <p className="mt-5 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">
+              Curate My Stay is a Goa-based property management firm run by a family with two
+              complementary backgrounds: facility management and investment-side thinking. We
+              currently manage 5 properties and we are scaling deliberately.
             </p>
-            <p className="mt-5 max-w-[560px] text-base leading-relaxed text-[#3b3b37] lg:text-[17px]">
-              Communication stays direct, operations stay hands-on, and every property is managed with long-term value in mind. It is how we built a {portfolioRating} rating. It is how we plan to scale.
+            <p className="mt-4 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">
+              We approach property management the way a wealth manager approaches a portfolio: every
+              property is an asset with an ROI, an operational P&amp;L, and a strategy attached to
+              it. That framing is what consistently delivers strong returns for our owners without
+              compromising the property itself.
             </p>
-            <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-[#d9d3c7] pt-6">
-              <div><dt className="text-2xl font-semibold lg:text-[28px]">2025</dt><dd className="mt-1 text-sm text-[#5c5c57]">Founded</dd></div>
-              <div><dt className="text-2xl font-semibold lg:text-[28px]">Goa</dt><dd className="mt-1 text-sm text-[#5c5c57]"><span className="hidden lg:inline">Where we are based</span><span className="lg:hidden">Based in</span></dd></div>
-              <div><dt className="text-2xl font-semibold lg:text-[28px]">{managedPropertyCount}</dt><dd className="mt-1 text-sm text-[#5c5c57]">Properties managed</dd></div>
-            </dl>
-          </div>
-        </div>
-        <div className="mt-12 grid gap-5 border-t border-[#d9d3c7] pt-8 lg:mt-16 lg:grid-cols-[5fr_7fr] lg:gap-20 lg:pt-10">
-          <h3 className="text-xl font-semibold lg:text-[22px]">Own a property in Goa?</h3>
-          <div>
-            <p className="max-w-[560px] text-base leading-relaxed text-[#3b3b37]">We manage it the way a wealth manager approaches a portfolio. Every property is an asset with an ROI, an operational P&amp;L and a strategy attached to it.</p>
-            <Link className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2" href="/property-management-goa">Learn about property management</Link>
+            <p className="mt-4 text-base leading-7 text-[#484848] sm:text-[16.5px] sm:leading-8">
+              Communication stays direct, operations stay hands-on, and every property is managed
+              with long-term value in mind.
+            </p>
+            <p className="mt-4 text-base font-semibold leading-7 text-[#222222] sm:text-[16.5px] sm:leading-8">
+              It is how we built a 4.98 rating. It is how we plan to scale.
+            </p>
+            <div className="mt-7 grid gap-4 sm:grid-cols-3">
+              {credentials.map((credential) => {
+                const Icon = credential.icon;
+
+                return (
+                  <div
+                    className="rounded-2xl border border-[#ebebeb] bg-[#fbf7f1] p-5"
+                    key={credential.title}
+                  >
+                    <Icon className="h-6 w-6 text-[#ff5a5f]" />
+                    <div className="mt-3 text-sm font-extrabold">{credential.title}</div>
+                    <div className="mt-1 text-xs leading-5 text-[#717171]">{credential.body}</div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

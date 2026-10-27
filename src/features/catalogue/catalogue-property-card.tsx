@@ -1,17 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, Bath, BedDouble, Footprints, House, Users, Waves } from "lucide-react";
 import type { CatalogueProperty } from "@/src/features/catalogue/public-catalogue-data";
 import { CardImageCarousel } from "@/src/features/catalogue/card-image-carousel";
 import { formatMoney } from "@/src/lib/utils/money";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
 
 function locationLine(property: CatalogueProperty) {
-  return property.short_location_line || [property.area, property.region].filter(Boolean).join(", ");
+  if (property.short_location_line) return property.short_location_line;
+
+  return [property.area, property.region].filter(Boolean).join(", ");
 }
 
+/**
+ * Admins store either "Private" or "Private pool", so only append the noun when
+ * it is missing. "None" is a real stored value that is not worth showing.
+ */
 function poolLabel(poolType: string | null) {
   const value = poolType?.trim();
   if (!value || /^none$/i.test(value)) return null;
+
   return /pool/i.test(value) ? value : `${value} pool`;
 }
 
@@ -22,40 +30,141 @@ function plural(count: number, singular: string) {
 export function CataloguePropertyCard({ property }: { property: CatalogueProperty }) {
   const href = `/property/${property.slug}`;
   const photos = property.images.filter((image) => getPropertyImageUrl(image.storage_path));
+  // Two columns from `sm`, in a container capped at 1180px: about 546px per card at most.
   const singlePhotoUrl = photos.length === 1 ? getPropertyImageUrl(photos[0].storage_path) : null;
-  const imageSizes = "(min-width: 1280px) 564px, (min-width: 1024px) calc((100vw - 152px) / 2), (min-width: 768px) 45vw, calc(100vw - 40px)";
+  const imageSizes = "(min-width: 1180px) 546px, (min-width: 640px) 45vw, 92vw";
+  const location = locationLine(property);
+  const pool = poolLabel(property.pool_type);
   const name = property.public_name || "Curated stay";
   const showPrice = property.show_price && property.starting_price != null;
-  const metadata = [locationLine(property), property.public_property_type, poolLabel(property.pool_type)].filter(Boolean).join(" \u00b7 ");
+
   const facts = [
-    property.max_guests != null ? plural(property.max_guests, "guest") : null,
-    property.bedrooms != null ? plural(property.bedrooms, "bedroom") : null,
-    property.bathrooms != null ? plural(property.bathrooms, "bath") : null,
-  ].filter(Boolean).join(" \u00b7 ");
+    property.max_guests != null
+      ? { icon: Users, label: plural(property.max_guests, "guest") }
+      : null,
+    property.bedrooms != null
+      ? { icon: BedDouble, label: plural(property.bedrooms, "bedroom") }
+      : null,
+    property.bathrooms != null
+      ? { icon: Bath, label: plural(property.bathrooms, "bath") }
+      : null,
+  ].filter((fact) => fact !== null);
 
   return (
-    <article className="group relative flex h-full min-w-0 flex-col text-[#1f1f1d] has-[a:focus-visible]:rounded-2xl has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-[#1f1f1d]">
-      <div className="relative h-[230px] w-full overflow-hidden rounded-2xl border border-[#e7e5df] bg-[#f1efe9] lg:h-[300px]">
-        {photos.length > 1 ? <CardImageCarousel href={href} images={photos} name={name} sizes={imageSizes} /> : singlePhotoUrl ? (
-          <Image alt={photos[0].alt_text || name} className="object-cover" fill sizes={imageSizes} src={singlePhotoUrl} />
-        ) : <div className="flex h-full items-center justify-center text-sm text-[#5c5c57]">Photos coming soon</div>}
-        {property.promotional_badge ? <span className="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-[#1f1f1d] px-3 py-1.5 text-[13px] font-semibold text-white">{property.promotional_badge}</span> : null}
-      </div>
-      <div className="flex flex-1 flex-col pt-4">
-        {metadata ? <p className="text-[13px] leading-5 text-[#5c5c57]">{metadata}</p> : null}
-        <h3 className="mt-1 text-xl font-semibold leading-snug tracking-tight [overflow-wrap:anywhere] lg:text-[21px]">{name}</h3>
-        {facts ? <p className="mt-1 text-[15px] leading-relaxed text-[#5c5c57]">{facts}</p> : null}
-        {property.distance_from_beach ? <p className="mt-1 text-sm leading-relaxed text-[#5c5c57]">{property.distance_from_beach}</p> : null}
-        <div className="mt-auto pt-4">
-          <div className="flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-[#e3e0d8] text-sm">
-            {showPrice ? <p>{`From ${formatMoney(property.starting_price)} / night`}</p> : null}
-            <span aria-hidden="true" className="ml-auto inline-flex min-h-11 items-center font-semibold underline decoration-1 underline-offset-4">View stay</span>
+    /*
+      The whole card navigates to the property, so the only keyboard-reachable link
+      is the overlay at the end of this article. Nothing inside it may become a
+      focusable link as well: the covering anchor would nest, and the tab order
+      would duplicate. `View stay` is therefore presentational text that reacts to
+      the card's own hover state. The photo carousel needs to sit above the overlay
+      to receive swipes; its slides repeat the link without being focusable (see
+      `CardImageCarousel`).
+    */
+    <article className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#ebebeb] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition duration-200 hover:-translate-y-[3px] hover:border-[#e4d9d1] hover:shadow-[0_12px_28px_rgba(0,0,0,0.12)] has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-[#ff5a5f] has-[a:focus-visible]:ring-offset-2">
+      <div className="relative aspect-[3/2] w-full overflow-hidden bg-[#fbf1ec]">
+        {photos.length > 1 ? (
+          <CardImageCarousel href={href} images={photos} name={name} sizes={imageSizes} />
+        ) : singlePhotoUrl ? (
+          <Image
+            alt={photos[0].alt_text || name}
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            fill
+            sizes={imageSizes}
+            src={singlePhotoUrl}
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#fbf7f1] to-[#f1e0d7]">
+            <House aria-hidden="true" className="h-8 w-8 text-[#c9a79a]" />
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#9a7770]">
+              Photos coming soon
+            </span>
           </div>
-          {property.price_note ? <p className="text-[13px] leading-5 text-[#5c5c57]">{property.price_note}</p> : null}
+        )}
+        {property.promotional_badge ? (
+          <span className="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-[#ff5a5f] px-2.5 py-1 text-xs font-semibold leading-5 text-white shadow-[0_1px_3px_rgba(0,0,0,0.2)]">
+            {property.promotional_badge}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-[18px]">
+        <h3 className="line-clamp-2 text-[17px] font-bold leading-[1.3] tracking-[-0.01em] text-[#222222] [overflow-wrap:anywhere]">
+          {name}
+        </h3>
+
+        {location ? (
+          <p className="mt-1 line-clamp-1 text-[13.5px] leading-5 text-[#717171]">{location}</p>
+        ) : null}
+
+        {property.public_property_type || pool ? (
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            {property.public_property_type ? (
+              <span className="max-w-full truncate rounded-full bg-[#fff1f1] px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-[0.08em] text-[#9e4347]">
+                {property.public_property_type}
+              </span>
+            ) : null}
+            {pool ? (
+              <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-[#eaf3f5] px-2.5 py-1 text-[11.5px] font-semibold text-[#2c6478]">
+                <Waves aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{pool}</span>
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
+        {facts.length > 0 ? (
+          <div className="mt-3 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-[13px] font-medium text-[#484848]">
+            {facts.map((fact) => {
+              const Icon = fact.icon;
+
+              return (
+                <span className="inline-flex items-center gap-1.5" key={fact.label}>
+                  <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-[#9a7770]" />
+                  {fact.label}
+                </span>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {property.distance_from_beach ? (
+          <p className="mt-2 inline-flex items-start gap-1.5 text-[12.5px] leading-5 text-[#717171]">
+            <Footprints aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="min-w-0">{property.distance_from_beach}</span>
+          </p>
+        ) : null}
+
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-3 border-t border-[#f2ede9] pt-3.5">
+          <div className="min-w-0">
+            {showPrice ? (
+              <>
+                <div className="text-[17px] font-extrabold leading-tight tracking-[-0.01em] text-[#222222]">
+                  {`From ${formatMoney(property.starting_price)}`}
+                </div>
+                <div className="text-[12.5px] leading-5 text-[#717171]">per night</div>
+              </>
+            ) : null}
+            {property.price_note ? (
+              <div className="mt-0.5 text-[11.5px] leading-4 text-[#717171]">
+                {property.price_note}
+              </div>
+            ) : null}
+          </div>
+          <span
+            aria-hidden="true"
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-[#e54b50] transition-colors group-hover:text-[#c63f44]"
+          >
+            <span className="border-b border-transparent pb-px transition-colors group-hover:border-current">
+              View stay
+            </span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </span>
         </div>
       </div>
-      {/* One keyboard link for the whole card; the carousel keeps its existing swipe links above it. */}
-      <Link className="absolute inset-0 rounded-2xl outline-none" href={href}><span className="sr-only">{`View stay at ${name}`}</span></Link>
+
+      <Link className="absolute inset-0 rounded-2xl outline-none" href={href}>
+        <span className="sr-only">{`View stay at ${name}`}</span>
+      </Link>
     </article>
   );
 }
