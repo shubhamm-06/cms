@@ -10,7 +10,6 @@ import { PublicFooter } from "@/components/home/public-footer";
 import { GuestHeader } from "@/components/home/guest-header";
 import { PropertyCatalogue } from "@/src/features/catalogue/property-catalogue";
 import { loadPublicCatalogue } from "@/src/features/catalogue/public-catalogue-data";
-import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
 
 const bookingFont = Figtree({
   display: "swap",
@@ -29,7 +28,6 @@ export const metadata: Metadata = {
 
 export default async function BookingPage() {
   const catalogue = await loadPublicCatalogue();
-  const leadProperty = catalogue.properties[0];
 
   return (
     <div className={`${bookingFont.variable} cms-homepage`}>
@@ -40,8 +38,8 @@ export default async function BookingPage() {
         <div className="relative z-10 pt-6 lg:pt-7">
           <PropertyCatalogue
             failed={catalogue.failed}
-            heroImageAlt={leadProperty?.cover_alt_text}
-            heroImageUrl={getPropertyImageUrl(leadProperty?.cover_storage_path)}
+            heroImageAlt="Sunlit living room with a cream sectional sofa and floor-to-ceiling windows"
+            heroImageUrl="/homepage/booking-hero.jpg"
             properties={catalogue.properties}
           />
         </div>

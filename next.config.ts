@@ -34,6 +34,7 @@ const nextConfig: NextConfig = {
      * every other image stays on the 75 default.
      */
     qualities: [75, 85],
+    formats: ["image/avif", "image/webp"],
     remotePatterns: supabaseImagePatterns(),
   },
 };

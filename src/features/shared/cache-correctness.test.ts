@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
@@ -31,19 +32,27 @@ function harness() {
   const reads: string[] = [];
   const paths: string[] = [];
   const tags: string[] = [];
+  const removedStorage: string[] = [];
+  const copiedStorage: Array<{ fromPath: string; toPath: string }> = [];
+  const uploadedStorage: string[] = [];
+  const storageFiles = new Set<string>();
   const entries = new Map<string, { tags: string[]; value: Promise<unknown> }>();
   let actor: string | null = ownerA;
   let now = Date.UTC(2026, 9, 14, 10, 0, 0);
   let failure: (table: string, operation: string, payload: Row | Row[] | undefined) => boolean = () => false;
+  let failureCode = "TEST_FAILURE";
 
   function from(table: string) {
     const filters: Array<(row: Row) => boolean> = [];
+    const ordering: Array<{ key: string; ascending: boolean }> = [];
     let operation = "read";
     let payload: Row | Row[] | undefined;
     let single = false;
     const query = {
-      select() { return query; }, order() { return query; },
+      select() { return query; },
+      order(key: string, options?: { ascending?: boolean }) { ordering.push({ key, ascending: options?.ascending !== false }); return query; },
       eq(key: string, value: unknown) { filters.push((row) => row[key] === value); return query; },
+      neq(key: string, value: unknown) { filters.push((row) => row[key] !== value); return query; },
       in(key: string, values: unknown[]) { filters.push((row) => values.includes(row[key])); return query; },
       update(value: Row) { operation = "update"; payload = value; return query; },
       upsert(value: Row) { operation = "upsert"; payload = value; return query; },
@@ -52,20 +61,61 @@ function harness() {
       maybeSingle() { single = true; return query; }, single() { single = true; return query; },
       then(onResolve: (value: unknown) => unknown, onReject: (reason: unknown) => unknown) {
         reads.push(table);
-        if (failure(table, operation, payload)) return Promise.resolve({ data: null, error: { code: "TEST_FAILURE" } }).then(onResolve, onReject);
+        if (failure(table, operation, payload)) return Promise.resolve({ data: null, error: { code: failureCode } }).then(onResolve, onReject);
         let rows = (tables[table] || []).filter((row) => filters.every((filter) => filter(row)));
+        rows.sort((left, right) => {
+          for (const { key, ascending } of ordering) {
+            if (left[key] === right[key]) continue;
+            return (String(left[key]) < String(right[key]) ? -1 : 1) * (ascending ? 1 : -1);
+          }
+          return 0;
+        });
         if (operation === "update") rows.forEach((row) => Object.assign(row, payload));
-        if (operation === "delete") tables[table] = tables[table].filter((row) => !rows.includes(row));
+        if (operation === "delete") {
+          tables[table] = tables[table].filter((row) => !rows.includes(row));
+          if (table === "properties") tables.property_images = tables.property_images.filter((image) => !rows.some((property) => property.id === image.property_id));
+        }
         if (operation === "insert" || operation === "upsert") {
-          rows = (Array.isArray(payload) ? payload : [payload]).map((value) => ({ id: imageId, ...value }));
+          rows = (Array.isArray(payload) ? payload : [payload]).map((value) => ({ id: table === "property_images" ? randomUUID() : imageId, ...value }));
+          if (table === "property_images") {
+            const images = [...tables.property_images, ...rows];
+            const paths = images.map((image) => image.storage_path);
+            const covers = images.filter((image) => image.is_cover).map((image) => image.property_id);
+            if (new Set(paths).size !== paths.length || new Set(covers).size !== covers.length) {
+              return Promise.resolve({ data: null, error: { code: "23505" } }).then(onResolve, onReject);
+            }
+          }
           tables[table].push(...rows);
         }
-        return Promise.resolve({ data: single ? rows[0] || null : rows, error: null }).then(onResolve, onReject);
+        const snapshots = rows.map((row) => ({ ...row }));
+        return Promise.resolve({ data: single ? snapshots[0] || null : snapshots, error: null }).then(onResolve, onReject);
       },
     };
     return query;
   }
-  const client = { from, auth: { getUser: async () => ({ data: { user: actor ? { id: actor, email: "owner@example.test", user_metadata: {} } : null } }) } };
+  const client = {
+    from,
+    storage: { from: () => ({
+      copy: async (fromPath: string, toPath: string) => {
+        copiedStorage.push({ fromPath, toPath });
+        if (failure("storage", "copy", { fromPath, toPath })) return { error: { code: failureCode } };
+        storageFiles.add(toPath);
+        return { data: { path: toPath }, error: null };
+      },
+      upload: async (path: string) => {
+        uploadedStorage.push(path);
+        storageFiles.add(path);
+        return { error: null };
+      },
+      remove: async (paths: string[]) => {
+        removedStorage.push(...paths);
+        if (failure("storage", "remove", { paths })) return { error: { code: failureCode } };
+        paths.forEach((path) => storageFiles.delete(path));
+        return { error: null };
+      },
+    }) },
+    auth: { getUser: async () => ({ data: { user: actor ? { id: actor, email: "owner@example.test", user_metadata: {} } : null } }) },
+  };
   const modules = new Map<string, Record<string, unknown>>();
   const nextCache = {
     unstable_cache(fn: (...args: unknown[]) => Promise<unknown>, keyParts: string[], options: { tags: string[] }) {
@@ -101,16 +151,211 @@ function harness() {
       if (name === "@/src/lib/supabase/public") return { createPublicClient: () => client };
       if (name === "@/src/lib/supabase/admin") return { createAdminClient: () => { throw new Error("Auth admin is not used in these tests"); } };
       if (name === "@/src/features/queries/owner-query-email") return { sendOwnerQueryAdminEmail: async () => undefined };
+      // Downloader security/content validation has its own real-module tests.
+      if (name === "@/src/features/properties/property-image-link") return { fetchPropertyImageLink: async () => ({ bytes: Buffer.from([0xff, 0xd8, 0xff]), extension: "jpg", contentType: "image/jpeg" }) };
       if (name.startsWith("@/")) return load(`${name.slice(2)}.ts`);
       return requirePackage(name);
     }
     const output = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
     class Clock extends Date { static now() { return now; } }
-    runInNewContext(output, { require: localRequire, exports: testModule.exports, module: testModule, Date: Clock, console: { error() {}, warn() {} }, process: { env: { NEXT_PUBLIC_SUPABASE_URL: "https://project.example.test", NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-public-key" } }, URL, FormData, TextEncoder, AbortController, setTimeout, clearTimeout, fetch: () => { throw new Error("Network must not be used in offline tests"); } }, { filename });
+    runInNewContext(output, { require: localRequire, exports: testModule.exports, module: testModule, Date: Clock, console: { error() {}, warn() {} }, process: { env: { NEXT_PUBLIC_SUPABASE_URL: "https://project.example.test", NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-public-key" } }, URL, FormData, TextEncoder, AbortController, crypto: { randomUUID }, setTimeout, clearTimeout, fetch: () => { throw new Error("Network must not be used in offline tests"); } }, { filename });
     return testModule.exports;
   }
-  return { load, tables, reads, paths, tags, actor: (id: string | null) => { actor = id; }, fail: (fn: typeof failure) => { failure = fn; }, advance: () => { now += 60000; } };
+  return { load, tables, reads, paths, tags, removedStorage, copiedStorage, uploadedStorage, storageFiles, actor: (id: string | null) => { actor = id; }, fail: (fn: typeof failure, code = "TEST_FAILURE") => { failure = fn; failureCode = code; }, advance: () => { now += 60000; } };
 }
+
+test("drag reorder moves across several positions without changing cover or room alt text", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  h.tables.property_images = [
+    { id: imageId, property_id: propertyId, sort_order: 0, is_cover: true, alt_text: "Bedroom | Bed" },
+    { id: "middle", property_id: propertyId, sort_order: 1, is_cover: false },
+    { id: "last", property_id: propertyId, sort_order: 2, is_cover: false },
+  ];
+  const actions = h.load("src/features/properties/property-image-actions.ts");
+  const result = await actions.movePropertyImageAction({ imageId, propertyId, toIndex: 2 });
+  assert.equal(result.ok, true);
+  assert.equal(result.images.map((image: Row) => image.id).join(","), `middle,last,${imageId}`);
+  assert.equal(h.tables.property_images[0].is_cover, true);
+  assert.equal(h.tables.property_images[0].alt_text, "Bedroom | Bed");
+  const fallback = await actions.movePropertyImageAction({ imageId, propertyId, direction: "up" });
+  assert.equal(fallback.ok, true);
+  assert.equal(h.tables.property_images[0].sort_order, 1);
+});
+
+test("a partial reorder failure restores original sort values", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  h.tables.property_images = [{ id: imageId, property_id: propertyId, sort_order: 0 }, { id: "other", property_id: propertyId, sort_order: 1 }];
+  let updates = 0;
+  h.fail((table, operation) => table === "property_images" && operation === "update" && ++updates === 2);
+  const result = await h.load("src/features/properties/property-image-actions.ts").movePropertyImageAction({ imageId, propertyId, toIndex: 1 });
+  assert.equal(result.ok, false);
+  assert.equal(h.tables.property_images.map((image) => image.sort_order).join(","), "0,1");
+});
+
+test("library reuse copies to a unique owned path, preserving alt text and the existing cover", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  const sourceId = "66666666-6666-4666-8666-666666666666";
+  h.tables.property_images = [
+    { id: imageId, property_id: propertyId, sort_order: 5, is_cover: true, storage_path: "cover.jpg" },
+    { id: sourceId, property_id: "another-property", sort_order: 0, is_cover: true, storage_path: "shared.jpg", alt_text: "Pool | Sunset" },
+  ];
+  const result = await h.load("src/features/properties/property-image-actions.ts").reusePropertyImagesAction({ propertyId, imageIds: [sourceId] });
+  assert.equal(result.ok, true);
+  const added = result.images[0];
+  assert.match(added.storage_path, new RegExp(`^${propertyId}/[0-9a-f-]{36}\\.jpg$`));
+  assert.equal(added.alt_text, "Pool | Sunset");
+  assert.equal(added.sort_order, 6);
+  assert.equal(added.is_cover, false);
+  assert.equal(h.tables.property_images.filter((image) => image.storage_path === "shared.jpg").length, 1);
+  assert.equal(h.copiedStorage[0].fromPath, "shared.jpg");
+  assert.equal(h.copiedStorage[0].toPath, added.storage_path);
+  assert.equal(h.uploadedStorage.length, 0);
+  assert.equal(h.removedStorage.length, 0);
+});
+
+test("a failed library row insert removes the copy and leaves source rows unchanged", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  h.tables.property_images = [{ id: imageId, property_id: "another-property", storage_path: "shared.jpg" }];
+  h.fail((table, operation) => table === "property_images" && operation === "insert", "23505");
+  const result = await h.load("src/features/properties/property-image-actions.ts").reusePropertyImagesAction({ propertyId, imageIds: [imageId] });
+  assert.equal(result.ok, false);
+  assert.match(result.message, /could not be saved/);
+  assert.equal(h.tables.property_images.length, 1);
+  assert.deepEqual(h.removedStorage, h.copiedStorage.map((copy) => copy.toPath));
+  assert.equal(h.storageFiles.size, 0);
+});
+
+test("deleting an image removes its own file and leaves the other property's copy intact", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  const otherId = "66666666-6666-4666-8666-666666666666";
+  h.tables.property_images = [
+    { id: imageId, property_id: propertyId, storage_path: "original.jpg", is_cover: false },
+    { id: otherId, property_id: ownerB, storage_path: "copy.jpg", is_cover: false },
+  ];
+  h.storageFiles.add("original.jpg"); h.storageFiles.add("copy.jpg");
+  const actions = h.load("src/features/properties/property-image-actions.ts");
+  assert.equal((await actions.deletePropertyImageAction({ imageId, propertyId })).ok, true);
+  assert.deepEqual(h.removedStorage, ["original.jpg"]);
+  assert.equal(h.tables.property_images[0].storage_path, "copy.jpg");
+  assert.equal(h.storageFiles.has("copy.jpg"), true);
+  assert.equal((await actions.deletePropertyImageAction({ imageId: otherId, propertyId: ownerB })).ok, true);
+  assert.deepEqual(h.removedStorage, ["original.jpg", "copy.jpg"]);
+});
+
+test("a copy failure inserts no rows and removes any earlier successful copies", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  const otherId = "66666666-6666-4666-8666-666666666666";
+  h.tables.property_images = [
+    { id: imageId, property_id: ownerB, storage_path: "original.jpg" },
+    { id: otherId, property_id: ownerB, storage_path: "original.webp" },
+  ];
+  let copies = 0;
+  h.fail((table, operation) => table === "storage" && operation === "copy" && ++copies === 2);
+  const result = await h.load("src/features/properties/property-image-actions.ts").reusePropertyImagesAction({ propertyId, imageIds: [imageId, otherId] });
+  assert.equal(result.ok, false);
+  assert.match(result.message, /could not be copied/);
+  assert.equal(h.tables.property_images.length, 2);
+  assert.equal(h.removedStorage[0], h.copiedStorage[0].toPath);
+  assert.equal(h.removedStorage.length, 1);
+  assert.equal(h.storageFiles.size, 0);
+});
+
+test("whole-property deletion removes owned files and leaves the other property's copy intact", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  h.tables.properties.push({ id: ownerB, name: "Second property" });
+  const path = `${propertyId}/${imageId}.jpg`;
+  const copyPath = `${ownerB}/${imageId}.jpg`;
+  h.tables.property_images = [
+    { id: imageId, property_id: propertyId, storage_path: path },
+    { id: "copy-reference", property_id: ownerB, storage_path: copyPath },
+  ];
+  h.storageFiles.add(path); h.storageFiles.add(copyPath);
+  const actions = h.load("src/features/shared/actions.ts");
+  const form = new FormData(); form.set("id", propertyId);
+  await assert.rejects(actions.deletePropertyAction(form), /notice=property_deleted$/);
+  assert.deepEqual(h.removedStorage, [path]);
+  assert.equal(h.storageFiles.has(copyPath), true);
+  form.set("id", ownerB);
+  await assert.rejects(actions.deletePropertyAction(form), /notice=property_deleted$/);
+  assert.deepEqual(h.removedStorage, [path, copyPath]);
+});
+
+test("copying into an empty property sets only the first image as cover and preserves selection order", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  const otherId = "66666666-6666-4666-8666-666666666666";
+  h.tables.property_images = [
+    { id: imageId, property_id: ownerB, storage_path: "first.png", alt_text: "Pool | Day" },
+    { id: otherId, property_id: ownerB, storage_path: "second.webp", alt_text: "Bedroom | Bed" },
+  ];
+  const actions = h.load("src/features/properties/property-image-actions.ts");
+  const result = await actions.reusePropertyImagesAction({ propertyId, imageIds: [otherId, imageId] });
+  assert.equal(result.ok, true);
+  assert.equal(result.images[0].is_cover, true);
+  assert.equal(result.images[1].is_cover, false);
+  assert.equal(result.images[0].sort_order, 0);
+  assert.equal(result.images[1].sort_order, 1);
+  assert.equal(result.images[0].alt_text, "Bedroom | Bed");
+  assert.match(result.images[0].storage_path, /\.webp$/);
+  assert.match(result.images[1].storage_path, /\.png$/);
+  const again = await actions.reusePropertyImagesAction({ propertyId, imageIds: [imageId] });
+  assert.equal(again.ok, true);
+  assert.equal(again.images[0].is_cover, false);
+  assert.equal(again.images[0].sort_order, 2);
+  assert.notEqual(again.images[0].storage_path, result.images[1].storage_path);
+});
+
+test("library additions stay non-cover when a nonempty property has no cover", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  const otherId = "66666666-6666-4666-8666-666666666666";
+  h.tables.property_images = [
+    { id: imageId, property_id: propertyId, storage_path: "existing.jpg", sort_order: 3, is_cover: false },
+    { id: otherId, property_id: ownerB, storage_path: "source.jpg" },
+  ];
+  const result = await h.load("src/features/properties/property-image-actions.ts").reusePropertyImagesAction({ propertyId, imageIds: [otherId] });
+  assert.equal(result.ok, true);
+  assert.equal(result.images[0].is_cover, false);
+  assert.equal(result.images[0].sort_order, 4);
+});
+
+test("a first-copy failure inserts nothing, and cleanup failures are reported inline", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  h.tables.property_images = [{ id: imageId, property_id: ownerB, storage_path: "source.jpg" }];
+  const actions = h.load("src/features/properties/property-image-actions.ts");
+  h.fail((table, operation) => table === "storage" && operation === "copy");
+  let result = await actions.reusePropertyImagesAction({ propertyId, imageIds: [imageId] });
+  assert.equal(result.ok, false);
+  assert.equal(h.tables.property_images.length, 1);
+  assert.equal(h.removedStorage.length, 0);
+  h.fail((table, operation) => (table === "property_images" && operation === "insert") || (table === "storage" && operation === "remove"));
+  result = await actions.reusePropertyImagesAction({ propertyId, imageIds: [imageId] });
+  assert.equal(result.ok, false);
+  assert.match(result.message, /cleanup needs attention/);
+});
+
+test("link additions use a new path every time and remove the upload on metadata failure", async () => {
+  const h = harness(); h.tables.profiles[0].role = "admin";
+  const actions = h.load("src/features/properties/property-image-actions.ts");
+  const first = await actions.addPropertyImageLinkAction({ propertyId, url: "https://example.com/photo.jpg" });
+  const second = await actions.addPropertyImageLinkAction({ propertyId, url: "https://example.com/photo.jpg" });
+  assert.equal(first.ok, true); assert.equal(second.ok, true);
+  assert.notEqual(first.image.storage_path, second.image.storage_path);
+  assert.equal(first.image.is_cover, true); assert.equal(second.image.is_cover, false);
+  assert.match(first.image.storage_path, new RegExp(`^${propertyId}/[0-9a-f-]{36}\\.jpg$`));
+  h.fail((table, operation) => table === "property_images" && operation === "insert");
+  const failed = await actions.addPropertyImageLinkAction({ propertyId, url: "https://example.com/photo.jpg" });
+  assert.equal(failed.ok, false);
+  assert.equal(h.tables.property_images.length, 2);
+  assert.equal(h.removedStorage[0], h.uploadedStorage[2]);
+  assert.equal(h.storageFiles.size, 2);
+});
+
+test("new image actions reject non-admin sessions before image reads", async () => {
+  const h = harness(); const actions = h.load("src/features/properties/property-image-actions.ts");
+  await assert.rejects(actions.reusePropertyImagesAction({ propertyId, imageIds: [imageId] }), /REDIRECT \/owner/);
+  await assert.rejects(actions.listPropertyImageLibraryAction({ propertyId, search: "", offset: 0 }), /REDIRECT \/owner/);
+  await assert.rejects(actions.addPropertyImageLinkAction({ propertyId, url: "https://example.com/image.jpg" }), /REDIRECT \/owner/);
+  assert.ok(!h.reads.includes("property_images"));
+});
 
 test("page-specific admin loading skips unrelated tables without changing return shapes", async () => {
   const h = harness(); h.tables.profiles[0].role = "admin";

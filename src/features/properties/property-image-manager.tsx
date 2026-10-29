@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { ImagePlus, Loader2, MoveDown, MoveUp, Save, Star, Tag, Trash2 } from "lucide-react";
+import { GripVertical, ImagePlus, Loader2, MoveDown, MoveUp, Save, Star, Tag, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -13,6 +13,7 @@ import {
   updatePropertyImageAltTextAction,
 } from "@/src/features/properties/property-image-actions";
 import { optimizePropertyImage } from "@/src/features/properties/property-image-optimization";
+import { PropertyImageLibraryDialog, PropertyImageLinkDialog } from "@/src/features/properties/property-image-add-dialogs";
 import { createClient } from "@/src/lib/supabase/client";
 import { applyRoomPrefix, parsePhotoRoom, ROOM_SUGGESTIONS, tourRoomOrder } from "@/src/lib/utils/photo-rooms";
 import type { Database } from "@/types/database.types";
@@ -57,10 +58,12 @@ function DeleteImageDialog({
   image,
   onDeleted,
   propertyId,
+  disabled,
 }: {
   image: PropertyImage;
   onDeleted: (images: PropertyImage[]) => void;
   propertyId: string;
+  disabled: boolean;
 }) {
   const [pending, setPending] = useState(false);
 
@@ -80,7 +83,7 @@ function DeleteImageDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button aria-label="Delete image" size="icon" type="button" variant="danger">
+        <Button aria-label="Delete image" disabled={disabled} size="icon" type="button" variant="danger">
           <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
@@ -109,6 +112,11 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
   const [uploadProgress, setUploadProgress] = useState<{ completed: number; stage: "optimizing" | "uploading"; total: number } | null>(null);
   const [savingAltId, setSavingAltId] = useState<string | null>(null);
   const [movingImageId, setMovingImageId] = useState<string | null>(null);
+  const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [reorderError, setReorderError] = useState("");
+  const reorderPending = useRef(false);
+  const dragImage = useRef<string | null>(null);
   const [coverImageId, setCoverImageId] = useState<string | null>(null);
   const [altValues, setAltValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(initialImages.map((image) => [image.id, image.alt_text || ""])),
@@ -135,6 +143,11 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
       ...current,
       ...Object.fromEntries(nextImages.map((image) => [image.id, image.alt_text || ""])),
     }));
+  }
+
+  function appendImages(nextImages: PropertyImage[]) {
+    setImages((current) => sortImages([...current, ...nextImages]));
+    setAltValues((current) => ({ ...current, ...Object.fromEntries(nextImages.map((image) => [image.id, image.alt_text || ""])) }));
   }
 
   async function handleUpload(files: FileList | null) {
@@ -256,10 +269,9 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
     }
     setImages((current) => current.map((currentImage) => (currentImage.id === image.id ? result.image : currentImage)));
     setAltValues((current) => ({ ...current, [image.id]: result.image.alt_text || "" }));
-    // A link is saved as text only: photos come from uploads, never from a URL, and alt text is
-    // shown publicly as the caption. Warn instead of blocking so nothing is lost.
+    // Alt text is shown publicly as the caption, including accidental links.
     if (/https?:\/\/|^www\./i.test(result.image.alt_text || "")) {
-      toast.warning("Alt text saved, but it looks like a link. Photos are added by upload, and alt text is shown as the photo caption, so describe the photo instead.");
+      toast.warning("Alt text saved, but it looks like a link. Use Add from link to add a photo; describe the photo in alt text.");
       return;
     }
     toast.success("Alt text saved.");
@@ -278,19 +290,39 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
     toast.success("Cover image updated.");
   }
 
-  async function moveImage(image: PropertyImage, direction: "up" | "down") {
+  async function moveImage(image: PropertyImage, destination: "up" | "down" | number) {
+    if (reorderPending.current) return;
+    const previous = sortImages(images);
+    const fromIndex = previous.findIndex((candidate) => candidate.id === image.id);
+    const toIndex = typeof destination === "number" ? destination : fromIndex + (destination === "up" ? -1 : 1);
+    if (fromIndex < 0 || toIndex < 0 || toIndex >= previous.length || fromIndex === toIndex) return;
+    const reordered = [...previous];
+    reordered.splice(toIndex, 0, reordered.splice(fromIndex, 1)[0]);
+    reorderPending.current = true;
     setMovingImageId(image.id);
-    const result = await movePropertyImageAction({ direction, imageId: image.id, propertyId: activePropertyId });
-    setMovingImageId(null);
-    if (!result.ok || !result.images) {
-      toast.error(result.message);
-      return;
+    setReorderError("");
+    setImages(reordered.map((candidate, index) => ({ ...candidate, sort_order: index })));
+    try {
+      const move = typeof destination === "number" ? { toIndex } : { direction: destination };
+      const result = await movePropertyImageAction({ ...move, imageId: image.id, propertyId: activePropertyId });
+      if (!result.ok || !result.images) throw new Error(result.message || "Image order could not be saved.");
+      const orders = new Map(result.images.map((candidate) => [candidate.id, candidate.sort_order]));
+      setImages((current) => sortImages(current.map((candidate) => ({ ...candidate, sort_order: orders.get(candidate.id) ?? candidate.sort_order }))));
+    } catch (error) {
+      const orders = new Map(previous.map((candidate) => [candidate.id, candidate.sort_order]));
+      setImages((current) => sortImages(current.map((candidate) => ({ ...candidate, sort_order: orders.get(candidate.id) ?? candidate.sort_order }))));
+      const message = error instanceof Error ? error.message : "Image order could not be saved. Try again.";
+      setReorderError(message);
+      toast.error(message);
+    } finally {
+      setMovingImageId(null);
+      reorderPending.current = false;
     }
-    replaceImages(result.images);
   }
 
   const orderedImages = sortImages(images);
   const galleryImages = displayImages(images);
+  const reorderDisabled = Boolean(movingImageId || isUploading || coverImageId || savingAltId || isBulkSaving);
   // Live preview of the public tour order: admin photo order plus the alt text as typed, saved or not.
   const tourOrder = tourRoomOrder(orderedImages.map((image) => ({ ...image, alt_text: altValues[image.id] ?? image.alt_text })));
 
@@ -304,21 +336,23 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
           </div>
           <p className="mt-1 text-sm leading-6 text-[var(--muted)]">Upload JPEG, PNG, or WebP images up to 10 MB each. The gallery stores Storage paths, not public URLs.</p>
         </div>
-        <div>
+        <div className="flex flex-wrap gap-2">
           <input
             accept="image/jpeg,image/png,image/webp"
             aria-label="Upload property images"
             className="sr-only"
-            disabled={isUploading}
+            disabled={isUploading || Boolean(movingImageId)}
             multiple
             onChange={(event) => void handleUpload(event.target.files)}
             ref={fileInputRef}
             type="file"
           />
-          <Button disabled={isUploading} onClick={() => fileInputRef.current?.click()} type="button" variant="primary">
+          <Button disabled={isUploading || Boolean(movingImageId)} onClick={() => fileInputRef.current?.click()} type="button" variant="primary">
             {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
             {isUploading ? "Processing..." : "Upload images"}
           </Button>
+          <PropertyImageLibraryDialog disabled={reorderDisabled} onAdded={appendImages} propertyId={activePropertyId} />
+          <PropertyImageLinkDialog disabled={reorderDisabled} onAdded={appendImages} propertyId={activePropertyId} />
         </div>
       </div>
 
@@ -340,9 +374,10 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
           {tourOrder.length > 0
             ? tourOrder.join(", ")
             : "no room sections yet (fewer than two rooms detected), so the public tour shows one plain grid in this photo order."}
-          <span className="block text-xs">Follows the order set with the up and down arrows; the cover has no special place in the tour. Updates as you reorder photos or edit a room prefix; alt text changes go public once saved.</span>
+          <span className="block text-xs">Drag photo thumbnails or use the up and down arrows to set tour order. The cover stays first in this grid and has no special place in the tour. Updates as you reorder photos or edit a room prefix; alt text changes go public once saved.</span>
         </p>
       ) : null}
+      {reorderError ? <p className="mt-3 text-sm text-red-700" role="alert">{reorderError}</p> : null}
 
       {!images.length ? (
         <div className="mt-5 rounded-lg border border-dashed border-[var(--border-strong)] bg-white/70 p-6 text-sm leading-6 text-[var(--muted)]">
@@ -391,9 +426,39 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
             const detected = parsePhotoRoom(altValues[image.id]);
 
             return (
-              <article className="overflow-hidden rounded-xl border border-[var(--border)] bg-white" key={image.id}>
-                <div className="relative aspect-[4/3] bg-[var(--surface-2)]">
-                  <img alt={image.alt_text || "Property gallery image"} className="h-full w-full object-cover" src={getPublicImageUrl(image.storage_path)} />
+              <article
+                className={`overflow-hidden rounded-xl border border-[var(--border)] bg-white ${dropTargetId === image.id ? "ring-2 ring-[var(--brand)]" : ""} ${draggedImageId === image.id ? "opacity-50" : ""}`}
+                key={image.id}
+                onDragOver={(event) => {
+                  if (!dragImage.current || reorderDisabled) return;
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                  setDropTargetId(image.id);
+                }}
+                onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropTargetId(null); }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  const source = orderedImages.find((candidate) => candidate.id === dragImage.current);
+                  dragImage.current = null;
+                  setDraggedImageId(null);
+                  setDropTargetId(null);
+                  if (source && !reorderDisabled) void moveImage(source, orderIndex);
+                }}
+              >
+                <div
+                  className={`relative aspect-[4/3] bg-[var(--surface-2)] ${reorderDisabled ? "" : "cursor-grab active:cursor-grabbing"}`}
+                  draggable={!reorderDisabled}
+                  onDragStart={(event) => {
+                    if ((event.target as HTMLElement).closest("label")) { event.preventDefault(); return; }
+                    dragImage.current = image.id;
+                    setDraggedImageId(image.id);
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.setData("text/plain", image.id);
+                  }}
+                  onDragEnd={() => { dragImage.current = null; setDraggedImageId(null); setDropTargetId(null); }}
+                >
+                  <img alt={image.alt_text || "Property gallery image"} className="h-full w-full object-cover" draggable={false} src={getPublicImageUrl(image.storage_path)} />
+                  <span aria-hidden="true" className="absolute bottom-3 left-3 flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 text-xs font-semibold"><GripVertical className="h-4 w-4" />{orderIndex + 1}</span>
                   {image.is_cover ? <Badge className="absolute left-3 top-3" tone="brand"><Star className="h-3.5 w-3.5" />Cover</Badge> : null}
                   <label className="absolute right-3 top-3 inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-md bg-white/95 px-2 py-1 text-xs font-semibold shadow-sm">
                     <input
@@ -452,21 +517,21 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
                       {isSavingAlt ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                       {isSavingAlt ? "Saving..." : "Save alt"}
                     </Button>
-                    <Button disabled={image.is_cover || isUpdatingCover} onClick={() => void setCover(image)} size="sm" type="button" variant="secondary">
+                    <Button disabled={image.is_cover || isUpdatingCover || Boolean(movingImageId)} onClick={() => void setCover(image)} size="sm" type="button" variant="secondary">
                       {isUpdatingCover ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
                       {image.is_cover ? "Cover" : "Make cover"}
                     </Button>
                   </div>
                   <div className="flex items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
                     <div className="flex gap-2">
-                      <Button aria-label="Move image up" disabled={isMoving || orderIndex === 0} onClick={() => void moveImage(image, "up")} size="icon" type="button" variant="secondary">
+                      <Button aria-label="Move image up" disabled={reorderDisabled || orderIndex === 0} onClick={() => void moveImage(image, "up")} size="icon" type="button" variant="secondary">
                         {isMoving ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoveUp className="h-4 w-4" />}
                       </Button>
-                      <Button aria-label="Move image down" disabled={isMoving || orderIndex === orderedImages.length - 1} onClick={() => void moveImage(image, "down")} size="icon" type="button" variant="secondary">
+                      <Button aria-label="Move image down" disabled={reorderDisabled || orderIndex === orderedImages.length - 1} onClick={() => void moveImage(image, "down")} size="icon" type="button" variant="secondary">
                         {isMoving ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoveDown className="h-4 w-4" />}
                       </Button>
                     </div>
-                    <DeleteImageDialog image={image} onDeleted={replaceImages} propertyId={activePropertyId} />
+                    <DeleteImageDialog disabled={reorderDisabled} image={image} onDeleted={replaceImages} propertyId={activePropertyId} />
                   </div>
                 </div>
               </article>
