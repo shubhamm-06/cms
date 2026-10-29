@@ -1,5 +1,24 @@
 # Changelog
 
+## Booking Hero Mobile and Tablet Layout
+
+- Made the `/booking` hero photo-first below `lg`: the card fills the first screen under the header (`min-h-[calc(100svh-105px)]`, 16px gap below), and the headline (44px, split as `Stay in Goa.` / `Properly.`), copy, two full-width CTAs and centred trust line sit at its bottom with 12/24/10/16px spacing and 24px bottom padding. The phone embed is no longer in the hero below `lg`.
+- Below `lg` the desktop scrim is replaced by a transparent-to-70%-black bottom gradient behind the text, so the top of the photo is neither dimmed nor blurred; the photo uses `object-[45%_center]` there so the windows fill the upper half.
+- Added `BookingWhatsAppDemo`, a `lg:hidden` cream card (`bg-public-cream`) between the hero and the listing with `Book in one WhatsApp chat`, `Send your dates, get a direct price, pay by UPI. Done.` and the embed at `min(78vw,300px)` (320px from `md`).
+- Mounted only one embed per device. Chrome does not lazy-load `display:none` iframes, so CSS hiding alone loaded both embeds everywhere (measured); each iframe now renders after hydration at its own breakpoint inside a CSS-sized box, so there is no layout shift.
+- The floating WhatsApp button below `md` now stays hidden while either the hero or the demo card is in view, and fades back once both are out of view.
+- `Check out properties` still lands on `#stays`, below the demo card.
+- Verified at 360x740, 375x812, 390x844, 412x915 and 768x1024 (hero ends 16px above the fold, no overflow, full phone in the demo card) and at 1024x768, 1280x800, 1366x768 and 1920x900, where hero, phone and text geometry are identical to before and the demo card is not displayed.
+
+## Booking Hero First-Screen Fit
+
+- Sized the `/booking` hero card to the viewport from `lg`: `h-[calc(100svh-121px)]` (73px sticky header, 28px top margin, 20px bottom gap), clamped to `min-h-[560px]` and `max-h-[900px]`. The whole card, both bottom corners included, now fits below the header without scrolling at 1366x768, 1440x900, 1536x864, 1920x900 and 1920x1080 (at 1920x1080 the 900px cap leaves a 79px gap below). Below `lg` it stays auto height and stacked as before.
+- Sized the phone embed by height from `lg`, `clamp(480px,calc(100svh-201px),820px)`, so it is the card less 40px above and below and its width comes from `aspect-[500/1024]`. The fixed 300px/340px widths are gone. It is now 277-400px wide on laptops and desktops, vertically centred with equal space, and flush with the right edge of the same content container as the heading (column gap 56px minimum). Phones and tablets keep the 260px width.
+- Changed the embed aspect ratio from `560/1080` to `500/1024` for the updated embed. `public/cms-whatsapp-demo/` was not edited.
+- Hid the floating WhatsApp button below `md` while the `/booking` hero is in view (an `IntersectionObserver` on the section's `data-hides-floating-whatsapp` marker), since the hero has its own `Chat on WhatsApp` button. It fades back in over 200ms once the hero scrolls out of view. From `md` it behaves as before.
+- Replaced the `/booking` meta description with `Hand-picked villas and apartments in Goa, personally managed by our team. Book directly on WhatsApp for a better rate than Airbnb.` (130 characters).
+- Left the hero photograph, its source, quality, sizes, `object-cover` and `center 58%` focal point, and the overlay unchanged; the room stays in view at the shortest supported height.
+
 ## Booking Hero WhatsApp Embed
 
 - Removed the `Find your stay` search card from the `/booking` hero. It was used only there, so its `PanelField` select, the `Search Stays` button and the region, guests and date filter state that only it could set were deleted from `PropertyCatalogue`. The bedrooms and pool pills above the grid are unchanged. Filters were never read from URL search params, so there was no query-param logic to keep.

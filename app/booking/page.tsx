@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { buildMarketingMetadata } from "@/app/seo";
-import { BookingHero } from "@/components/home/booking-hero";
+import { BookingHero, BookingWhatsAppDemo } from "@/components/home/booking-hero";
 import { BookingGuestReviews } from "@/components/home/booking-guest-reviews";
 import { BookingGuestServices } from "@/components/home/booking-guest-services";
 import { BookingWhyDirect } from "@/components/home/booking-why-direct";
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   ...buildMarketingMetadata({
     title: "Stays in Goa | CurateMyStay",
     description:
-      "Browse villas, apartments and holiday homes in Goa managed by CurateMyStay. Filter by region, area, property type, guests, bedrooms and pool.",
+      "Hand-picked villas and apartments in Goa, personally managed by our team. Book directly on WhatsApp for a better rate than Airbnb.",
     canonicalPath: "/booking",
   }),
 };
@@ -41,6 +41,7 @@ export default async function BookingPage() {
             imageAlt="Sunlit living room with a cream sectional sofa and floor-to-ceiling windows"
             imageUrl="/homepage/booking-hero.jpg"
           />
+          <BookingWhatsAppDemo />
           <PropertyCatalogue failed={catalogue.failed} properties={catalogue.properties} />
         </div>
 
