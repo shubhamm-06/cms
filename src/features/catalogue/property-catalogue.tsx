@@ -1,27 +1,21 @@
 "use client";
 
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
-import { BookingHero } from "@/components/home/booking-hero";
+import { bookingStaysSectionId } from "@/components/home/booking-hero";
 import { CataloguePropertyCard } from "@/src/features/catalogue/catalogue-property-card";
 import type { CatalogueProperty } from "@/src/features/catalogue/public-catalogue-data";
 
 type Filters = {
   bedrooms: string;
-  date: string;
-  guests: string;
   poolType: string;
-  region: string;
 };
 
 type Option = { label: string; value: string };
 
 const noFilters: Filters = {
   bedrooms: "",
-  date: "",
-  guests: "",
   poolType: "",
-  region: "",
 };
 
 /** Distinct, sorted, non-empty values for one text column. */
@@ -39,62 +33,13 @@ function numberOptions(properties: CatalogueProperty[], read: (p: CataloguePrope
 }
 
 function matchesFilters(property: CatalogueProperty, filters: Filters) {
-  if (filters.region && property.region !== filters.region) return false;
   if (filters.poolType && property.pool_type !== filters.poolType) return false;
-  if (filters.guests && (property.max_guests ?? 0) < Number(filters.guests)) return false;
   if (filters.bedrooms && (property.bedrooms ?? 0) < Number(filters.bedrooms)) return false;
 
   return true;
 }
 
-/** One row in the glass hero search panel. */
-function PanelField({
-  anyLabel,
-  label,
-  onChange,
-  options,
-  value,
-}: {
-  anyLabel: string;
-  label: string;
-  onChange: (value: string) => void;
-  options: Option[];
-  value: string;
-}) {
-  return (
-    <label className="relative block min-w-0 cursor-pointer rounded-2xl border border-white/15 bg-white/[0.09] px-4 py-3 transition-colors hover:bg-white/[0.14] focus-within:border-white/40 focus-within:ring-2 focus-within:ring-white/20">
-      <span className="block truncate text-[11px] font-bold uppercase tracking-[0.08em] text-white/65">
-        {label}
-      </span>
-      <select
-        className={`mt-1 min-h-6 w-full min-w-0 appearance-none truncate bg-transparent pr-7 text-[15px] leading-6 outline-none ${
-          value ? "font-semibold text-white" : "font-normal text-white/75"
-        }`}
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      >
-        <option style={{ backgroundColor: "#ffffff", color: "#222222" }} value="">
-          {anyLabel}
-        </option>
-        {options.map((option) => (
-          <option
-            key={option.value}
-            style={{ backgroundColor: "#ffffff", color: "#222222" }}
-            value={option.value}
-          >
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-4 right-4 h-4 w-4 text-white/70"
-      />
-    </label>
-  );
-}
-
-/** Compact pill select used by the secondary filter row under the panel. */
+/** Compact pill select used by the filter row above the listing. */
 function PillField({
   anyLabel,
   label,
@@ -137,20 +82,14 @@ function PillField({
 
 export function PropertyCatalogue({
   failed = false,
-  heroImageAlt,
-  heroImageUrl,
   properties,
 }: {
   failed?: boolean;
-  heroImageAlt?: string | null;
-  heroImageUrl?: string | null;
   properties: CatalogueProperty[];
 }) {
   const [filters, setFilters] = useState<Filters>(noFilters);
 
-  const regions = useMemo(() => textOptions(properties, (p) => p.region), [properties]);
   const poolTypes = useMemo(() => textOptions(properties, (p) => p.pool_type), [properties]);
-  const guestCounts = useMemo(() => numberOptions(properties, (p) => p.max_guests), [properties]);
   const bedroomCounts = useMemo(() => numberOptions(properties, (p) => p.bedrooms), [properties]);
 
   const results = useMemo(
@@ -165,66 +104,10 @@ export function PropertyCatalogue({
     setFilters((current) => ({ ...current, [key]: value }));
   }
 
-  const searchPanel = (
-    <div className="rounded-[24px] border border-white/20 bg-[#1b1715]/[0.86] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.24)] backdrop-blur-md sm:p-5">
-      <div className="flex items-center gap-2 text-white">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
-          <Search aria-hidden="true" className="h-4 w-4 text-white/85" />
-        </span>
-        <h2 className="text-[21px] font-semibold tracking-[-0.02em]">Find your stay</h2>
-      </div>
-      <div className="mt-5 grid gap-2.5">
-        <PanelField
-          anyLabel="Select region"
-          label="Region"
-          onChange={(value) => updateFilter("region", value)}
-          options={regions.map((region) => ({ label: region, value: region }))}
-          value={filters.region}
-        />
-        <PanelField
-          anyLabel="Select guests"
-          label="Guests"
-          onChange={(value) => updateFilter("guests", value)}
-          options={guestCounts.map((count) => ({
-            label: `${count}+ ${count === 1 ? "guest" : "guests"}`,
-            value: String(count),
-          }))}
-          value={filters.guests}
-        />
-        <label className="relative block min-w-0 rounded-2xl border border-white/15 bg-white/[0.09] px-4 py-3 transition-colors hover:bg-white/[0.14] focus-within:border-white/40 focus-within:ring-2 focus-within:ring-white/20">
-          <span className="block truncate text-[11px] font-bold uppercase tracking-[0.08em] text-white/65">
-            Date
-          </span>
-          <input
-            aria-label="Date"
-            className={`mt-1 min-h-6 w-full min-w-0 bg-transparent text-[15px] leading-6 outline-none ${
-              filters.date ? "font-semibold text-white" : "font-normal text-white/75"
-            }`}
-            onChange={(event) => updateFilter("date", event.target.value)}
-            style={{ colorScheme: "dark" }}
-            type="date"
-            value={filters.date}
-          />
-        </label>
-      </div>
-      <a
-        className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-public-coral px-5 text-[15px] font-semibold text-white shadow-[0_8px_20px_rgba(255,90,95,0.2)] outline-none transition hover:bg-public-coral-hover active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 focus-visible:ring-offset-[#1b1715]"
-        href="#stays"
-      >
-        <span className="inline-flex items-center gap-2 text-white">
-          <Search aria-hidden="true" className="h-[18px] w-[18px]" />
-          Search Stays
-        </span>
-      </a>
-    </div>
-  );
-
   return (
     <div>
-      <BookingHero imageAlt={heroImageAlt} imageUrl={heroImageUrl}>{searchPanel}</BookingHero>
-
       {failed ? (
-        <section className="bg-white">
+        <section className="scroll-mt-20 bg-white lg:scroll-mt-24" id={bookingStaysSectionId}>
           <div className="mx-auto max-w-[1180px] px-4 py-14 sm:px-6 sm:py-16 md:px-8">
             <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-[#e2d5cd] bg-[#fbf7f1] px-6 py-12 text-center">
               <h2 className="text-[19px] font-bold tracking-[-0.01em] text-[#222222]">
@@ -239,8 +122,8 @@ export function PropertyCatalogue({
         </section>
       ) : (
         <div
-          className="mx-auto max-w-[1180px] px-4 pb-2 pt-12 sm:px-6 sm:pb-4 sm:pt-14 md:px-8 lg:pt-16"
-          id="stays"
+          className="mx-auto max-w-[1180px] scroll-mt-20 px-4 pb-2 pt-12 sm:px-6 sm:pb-4 sm:pt-14 md:px-8 lg:scroll-mt-24 lg:pt-16"
+          id={bookingStaysSectionId}
         >
           {hasProperties ? (
           <>

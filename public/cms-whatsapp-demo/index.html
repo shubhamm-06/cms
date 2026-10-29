@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CurateMyStay WhatsApp booking demo</title>
+<style>
+@font-face{font-family:CMSInter;font-weight:400;font-display:swap;src:url(assets/fonts/inter-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:CMSInter;font-weight:400;font-display:swap;src:url(assets/fonts/inter-latin-ext-400-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:CMSInter;font-weight:500;font-display:swap;src:url(assets/fonts/inter-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:CMSInter;font-weight:500;font-display:swap;src:url(assets/fonts/inter-latin-ext-500-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:CMSInter;font-weight:600;font-display:swap;src:url(assets/fonts/inter-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:CMSInter;font-weight:600;font-display:swap;src:url(assets/fonts/inter-latin-ext-600-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:CMSInter;font-weight:700;font-display:swap;src:url(assets/fonts/inter-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:CMSInter;font-weight:700;font-display:swap;src:url(assets/fonts/inter-latin-ext-700-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:CMSFigtree;font-weight:700;font-display:swap;src:url(assets/fonts/figtree-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:CMSFigtree;font-weight:700;font-display:swap;src:url(assets/fonts/figtree-latin-ext-700-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:CMSFigtree;font-weight:800;font-display:swap;src:url(assets/fonts/figtree-latin-800-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:CMSFigtree;font-weight:800;font-display:swap;src:url(assets/fonts/figtree-latin-ext-800-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+:root{--teal:#0E5E5B;--save:#13864A;--coral:#F2555A;--wa:#1DAA61;--wa-out:#D9FDD3;--wa-ink:#111B21;--wa-mut:#667781;--link:#027EB5}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent}
+#stage{position:absolute;left:50%;top:50%;width:560px;height:1080px;margin:-540px 0 0 -280px;transform-origin:50% 50%}
+#phoneWrap{position:absolute;left:45px;top:38px;width:470px;height:980px}
+#phoneShadow{position:absolute;left:40px;right:40px;bottom:-18px;height:50px;border-radius:50%;background:rgba(16,42,43,.22);filter:blur(22px)}
+.phone{position:absolute;inset:0;border-radius:68px;background:#0c0e0f;padding:13px;
+  box-shadow:0 40px 80px -40px rgba(16,42,43,.45),inset 0 0 0 2px #2c3032,inset 0 0 0 5px #0c0e0f,inset 0 0 0 6px #3a3f42}
+.screen{position:relative;width:444px;height:954px;border-radius:55px;overflow:hidden;background:#fff;font-family:CMSInter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--wa-ink)}
+.island{position:absolute;top:12px;left:50%;width:122px;height:35px;margin-left:-61px;border-radius:20px;background:#000;z-index:60}
+.status{position:absolute;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:6px 34px 0 46px;z-index:55;font-size:16px;font-weight:600;background:#fff}
+.status .r{display:flex;gap:7px;align-items:center}
+.wahead{position:absolute;top:52px;left:0;right:0;height:64px;display:flex;align-items:center;gap:10px;padding:0 14px 0 10px;background:#fff;border-bottom:1px solid #EFEAE2;z-index:20}
+.wahead .av{width:42px;height:42px;border-radius:50%;background:url(assets/owner.jpg) center/cover}
+.wahead .nm{font-size:17px;font-weight:600;line-height:1.15}
+.wahead .st{font-size:13px;color:var(--wa-mut);height:17px;position:relative}
+.wahead .st span{position:absolute;left:0;top:0;white-space:nowrap}
+.wahead .st .typ{color:var(--wa)}
+.wahead .icons{margin-left:auto;display:flex;gap:22px;align-items:center}
+.wall{position:absolute;top:116px;left:0;right:0;bottom:0;background:#F5F1EB url(assets/wallpaper.jpg) center/cover}
+#vp{position:absolute;top:116px;left:0;right:0;height:768px;overflow:hidden}
+#content{position:relative;padding:12px 12px 0}
+.datechip{display:table;margin:2px auto 12px;background:#fff;font-size:12.5px;font-weight:500;color:#54656F;padding:5px 12px;border-radius:8px;box-shadow:0 1px .5px rgba(11,20,26,.13)}
+.msg{display:flex;margin-bottom:6px;will-change:transform,opacity}
+.msg.out{justify-content:flex-end}
+.msg.gap{margin-top:10px}
+.b{position:relative;max-width:350px;padding:7px 9px 8px 10px;border-radius:10px;font-size:16px;line-height:1.36;box-shadow:0 1px .5px rgba(11,20,26,.13);background:#fff}
+.out .b{background:var(--wa-out)}
+.tail.in .b{border-top-left-radius:0}
+.tail.out .b{border-top-right-radius:0}
+.tail.in .b:before{content:"";position:absolute;left:-8px;top:0;border-right:9px solid #fff;border-bottom:12px solid transparent}
+.tail.out .b:before{content:"";position:absolute;right:-8px;top:0;border-left:9px solid var(--wa-out);border-bottom:12px solid transparent}
+.sp{display:inline-block;width:62px}
+.out .sp{width:82px}
+.meta{position:absolute;right:8px;bottom:4px;font-size:11px;color:var(--wa-mut);display:flex;align-items:center;gap:3px;white-space:nowrap}
+.lnk{color:var(--link);word-break:break-all}
+/* link preview */
+.lp{margin:-3px -5px 7px -6px;border-radius:7px;overflow:hidden;background:#CFEBC8}
+.lp img{display:block;width:100%;height:150px;object-fit:cover}
+.lp .lt{padding:8px 10px 9px}
+.lp .t{font-size:14px;font-weight:600;line-height:1.3}
+.lp .d{font-size:12.5px;color:#54656F;margin-top:2px;line-height:1.3}
+.lp .u{font-size:12px;color:#7C8C84;margin-top:3px}
+.typing{position:absolute;left:12px;background:#fff;border-radius:0 10px 10px 10px;padding:13px 15px;display:flex;gap:5px;box-shadow:0 1px .5px rgba(11,20,26,.13)}
+.typing:before{content:"";position:absolute;left:-8px;top:0;border-right:9px solid #fff;border-bottom:12px solid transparent}
+.typing i{width:8px;height:8px;border-radius:50%;background:#8696A0;display:block}
+/* quote */
+.quote{background:#F6F8F7;border-radius:8px;padding:11px 12px 12px;margin:2px 0 7px;width:300px}
+.quote .qt{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+.quote .qr{display:flex;justify-content:space-between;align-items:baseline;font-size:14.5px;color:#54656F;padding:3px 0}
+.quote .qr s{color:#8696A0;text-decoration-color:var(--coral);text-decoration-thickness:2px}
+.quote .qr .off{display:inline-block;margin-left:6px;font-size:11.5px;font-weight:700;color:#fff;background:var(--coral);border-radius:5px;padding:1px 6px;vertical-align:1px}
+.quote .qr.big{font-size:16px;color:var(--wa-ink);font-weight:600}
+.quote .qr.big b{font-size:21px}
+.quote .qs{display:inline-block;margin-top:7px;background:rgba(19,134,74,.12);color:var(--save);font-weight:700;font-size:13.5px;padding:5px 10px;border-radius:999px}
+/* pay card */
+.payc{background:#F6F8F7;border-radius:8px;padding:12px;margin:2px 0 7px;width:300px}
+.payc .pl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#54656F;display:flex;align-items:center;gap:6px}
+.payc .pa{font-size:30px;font-weight:700;margin:4px 0 2px;letter-spacing:-.01em}
+.payc .pt{font-size:13.5px;color:#54656F}
+#payBtn{position:relative;margin-top:11px;height:42px;border-radius:10px;background:var(--teal);color:#fff;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+/* receipt */
+.doc{width:316px;margin:1px 0 6px;border-radius:8px;overflow:hidden;background:#F0F2F1}
+.rc{position:relative;background:#fff;margin:8px 8px 0;border-radius:6px 6px 0 0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.rc-head{background:var(--teal);color:#fff;font-weight:700;font-size:14.5px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-family:CMSFigtree,CMSInter,system-ui,sans-serif}
+.rc-head small{margin-left:auto;font-weight:500;font-size:11px;opacity:.8;letter-spacing:.04em}
+.rc-body{padding:8px 12px 10px}
+.rc-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:4px 0;border-bottom:1px dashed #E4E7E6}
+.rc-row:last-child{border-bottom:0}
+.rc-row span{color:#7A8786;white-space:nowrap}
+.rc-row b{font-weight:600;text-align:right}
+.rc-row.tot b{font-size:14.5px;color:var(--save)}
+.stamp{position:absolute;left:104px;bottom:8px;border:3px solid var(--save);color:var(--save);font-weight:800;font-size:22px;letter-spacing:.12em;padding:2px 10px;border-radius:8px;
+  font-family:CMSFigtree,CMSInter,system-ui,sans-serif;background:rgba(255,255,255,.75)}
+.dfile{display:flex;align-items:center;gap:10px;padding:10px}
+.dfile .pdf{width:30px;height:36px;border-radius:4px;background:#E2504B;color:#fff;font-size:9px;font-weight:800;display:grid;place-items:center;flex:none}
+.dfile .fn{font-size:13.5px;font-weight:500;line-height:1.25}
+.dfile .fs{font-size:11.5px;color:var(--wa-mut)}
+/* input */
+#inbar{position:absolute;left:8px;right:8px;bottom:12px;display:flex;align-items:flex-end;gap:7px;z-index:25}
+#inpill{flex:1;min-height:50px;background:#fff;border-radius:25px;display:flex;align-items:flex-end;padding:0 14px 0 12px;gap:10px;box-shadow:0 1px .5px rgba(11,20,26,.13)}
+#inpill .ico{height:50px;display:flex;align-items:center;flex:none}
+#intext{flex:1;padding:14px 0;font-size:16px;line-height:1.36;white-space:pre-wrap;word-break:break-word;color:var(--wa-ink);min-height:50px}
+#intext.ph{color:#8696A0}
+.caret{display:inline-block;width:2px;height:19px;background:var(--wa);vertical-align:-4px;margin-left:1px}
+#sendBtn{position:relative;width:50px;height:50px;border-radius:50%;background:var(--wa);display:grid;place-items:center;flex:none;overflow:hidden}
+#sendBtn svg{position:absolute}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);pointer-events:none}
+/* pay sheet */
+#dim{position:absolute;inset:0;background:rgba(11,20,26,.42);z-index:40}
+#sheet{position:absolute;left:0;right:0;bottom:0;height:470px;background:#fff;border-radius:28px 28px 0 0;z-index:41;padding:12px 26px 0;text-align:center}
+#sheet .grab{width:44px;height:5px;border-radius:3px;background:#D9DDDC;margin:0 auto 22px}
+#sheet .lab{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7A8786}
+#sheet .amt{font-size:46px;font-weight:700;letter-spacing:-.02em;margin-top:14px}
+#sheet .to{font-size:15.5px;color:#54656F;margin-top:6px}
+#sheet .ok{font-size:21px;font-weight:700;color:var(--save);margin-top:14px}
+#sheet .ref{display:inline-block;margin-top:14px;font-size:13px;color:#54656F;background:#F3F5F4;border-radius:8px;padding:7px 12px}
+#touch{position:absolute;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(255,255,255,.55);border:2.5px solid rgba(255,255,255,.95);
+  box-shadow:0 4px 18px rgba(0,0,0,.28);z-index:100;pointer-events:none}
+#touchR{position:absolute;border-radius:50%;border:3px solid rgba(255,255,255,.9);z-index:99;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="phoneWrap">
+    <div id="phoneShadow"></div>
+    <div class="phone">
+      <div class="screen" id="screen">
+        <div class="island"></div>
+        <div class="status"><span>4:17</span>
+          <span class="r">
+            <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#111"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="#111"/><rect x="10" y="3" width="3" height="9" rx="1" fill="#111"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#111"/></svg>
+            <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 11.5 6 9a3.5 3.5 0 0 1 5 0zM3.6 6.6a7 7 0 0 1 9.8 0l-1.5 1.5a5 5 0 0 0-6.8 0zM1.2 4.2a10.4 10.4 0 0 1 14.6 0l-1.5 1.5a8.3 8.3 0 0 0-11.6 0z" fill="#111"/></svg>
+            <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="#111" opacity=".4" fill="none"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#111"/><rect x="24.5" y="4.5" width="2" height="4" rx="1" fill="#111" opacity=".4"/></svg>
+          </span></div>
+
+        <div class="wahead">
+          <svg width="22" height="22" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="#111B21" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="av"></div>
+          <div><div class="nm">CurateMyStay</div><div class="st"><span id="stOn">online</span><span id="stTy" class="typ">typing…</span></div></div>
+          <div class="icons">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="6.5" width="13" height="11" rx="2.5" stroke="#111B21" stroke-width="1.9"/><path d="M15.5 10.5 21 7.5v9l-5.5-3z" stroke="#111B21" stroke-width="1.9" stroke-linejoin="round"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 3.5h3.5l1.8 4.6-2.3 1.5a11 11 0 0 0 5.4 5.4l1.5-2.3 4.6 1.8V18a2.5 2.5 0 0 1-2.7 2.5A16.5 16.5 0 0 1 3.5 6.2 2.5 2.5 0 0 1 5 3.5z" stroke="#111B21" stroke-width="1.9" stroke-linejoin="round"/></svg>
+            <svg width="6" height="22" viewBox="0 0 6 22"><circle cx="3" cy="4" r="2" fill="#111B21"/><circle cx="3" cy="11" r="2" fill="#111B21"/><circle cx="3" cy="18" r="2" fill="#111B21"/></svg>
+          </div>
+        </div>
+        <div class="wall"></div>
+
+        <div id="vp"><div id="content">
+          <div class="datechip">Today</div>
+
+          <div class="msg out tail" data-t="m1"><div class="b" style="width:350px">
+            <div class="lp"><img src="assets/villa.jpg" alt=""><div class="lt">
+              <div class="t">3BHK Villa near Varca Beach, South Goa</div>
+              <div class="d">Villa in Varca · 8 guests · 3 bedrooms · Shared pool</div>
+              <div class="u">curatemystay.net</div></div></div>
+            Hi, I'd like to ask about 3 BHK Villa in Varca with Pool, 700 m from the Beach. Check-in: 18 Nov 2026, Check-out: 21 Nov 2026 (3 nights), Guests: 2.<br><br>Property: <span class="lnk">https://www.curatemystay.net/property/3bhk-villa-varca-pool-south-goa</span><span class="sp"></span><span class="meta">4:17 pm <svg class="tk" width="17" height="11" viewBox="0 0 17 11"><path d="M1 6l3 3 6.5-7.5M7 8.5l1 .8L14.5 1.5" stroke="#8696A0" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
+
+          <div class="msg in tail gap" data-t="in1"><div class="b">Hi! Yes, the villa is available from 18 to 21 Nov. Here’s your direct price:<span class="sp"></span><span class="meta">4:18 pm</span></div></div>
+
+          <div class="msg in" data-t="in2"><div class="b">
+            <div class="quote"><div class="qt">Direct price · 3 nights · 2 guests</div>
+              <div class="qr"><span>Airbnb price</span><s>₹18,000</s></div>
+              <div class="qr big"><span>Book direct <span class="off">10% OFF</span></span><b>₹16,200</b></div>
+              <span class="qs">You save ₹1,800</span></div>
+            Same villa, better rate when you book with us directly.<span class="sp"></span><span class="meta">4:18 pm</span></div></div>
+
+          <div class="msg out tail gap" data-t="out2"><div class="b">Great, let’s book it!<span class="sp"></span><span class="meta">4:19 pm <svg class="tk" width="17" height="11" viewBox="0 0 17 11"><path d="M1 6l3 3 6.5-7.5M7 8.5l1 .8L14.5 1.5" stroke="#8696A0" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
+
+          <div class="msg in tail gap" data-t="in3"><div class="b">
+            <div class="payc"><div class="pl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2.5" stroke="#54656F" stroke-width="2"/><path d="M3 10h18" stroke="#54656F" stroke-width="2"/></svg>UPI payment request</div>
+              <div class="pa">₹16,200</div><div class="pt">Pay to CurateMyStay · 3 nights</div>
+              <div id="payBtn">Pay ₹16,200<div class="ripple" id="payRip"></div></div></div>
+            Pay to confirm your booking.<span class="sp"></span><span class="meta">4:19 pm</span></div></div>
+
+          <div class="msg out tail gap" data-t="out3"><div class="b">Done! Paid ₹16,200 via UPI.<span class="sp"></span><span class="meta">4:20 pm <svg class="tk" width="17" height="11" viewBox="0 0 17 11"><path d="M1 6l3 3 6.5-7.5M7 8.5l1 .8L14.5 1.5" stroke="#8696A0" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
+
+          <div class="msg in tail gap" data-t="in4"><div class="b" style="padding:3px 3px 8px">
+            <div class="doc">
+              <div class="rc">
+                <div class="rc-head"><svg width="17" height="17" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#fff"/><path d="M7.5 12.5l3 3 6-6.5" stroke="#0E5E5B" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Booking Confirmed<small>RECEIPT</small></div>
+                <div class="rc-body">
+                  <div class="rc-row"><span>Booking ID</span><b>CMS-2611-0418</b></div>
+                  <div class="rc-row"><span>Property</span><b>3BHK Villa, Varca</b></div>
+                  <div class="rc-row"><span>Check-in</span><b>Wed, 18 Nov 2026</b></div>
+                  <div class="rc-row"><span>Check-out</span><b>Sat, 21 Nov 2026</b></div>
+                  <div class="rc-row"><span>Guests</span><b>2</b></div>
+                  <div class="rc-row tot"><span>Amount paid</span><b>₹16,200</b></div>
+                </div>
+                <div class="stamp" id="stamp">PAID</div>
+              </div>
+              <div class="dfile"><div class="pdf">PDF</div><div><div class="fn">Booking_Receipt_CMS-2611-0418.pdf</div><div class="fs">1 page · PDF · 84 kB</div></div></div>
+            </div>
+            <div style="padding:0 6px">Payment received. You’re all booked!<span class="sp"></span><span class="meta" style="right:10px">4:20 pm</span></div></div></div>
+
+          <div class="msg in" data-t="in5"><div class="b">Check-in details will reach you a day before arrival. See you in Goa!<span class="sp"></span><span class="meta">4:20 pm</span></div></div>
+        </div>
+        <div class="typing" id="typing"><i></i><i></i><i></i></div>
+        </div>
+
+        <div id="inbar">
+          <div id="inpill">
+            <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#54656F" stroke-width="1.8"/><circle cx="9" cy="10" r="1.2" fill="#54656F"/><circle cx="15" cy="10" r="1.2" fill="#54656F"/><path d="M8 14.5a4.5 4.5 0 0 0 8 0" stroke="#54656F" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+            <div id="intext"></div>
+            <div class="ico" style="gap:16px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16.5 7.5 9 15a2 2 0 0 0 2.8 2.8l8-8a4 4 0 0 0-5.6-5.6l-8.2 8.2a6 6 0 0 0 8.5 8.5L20 15.5" stroke="#54656F" stroke-width="1.8" stroke-linecap="round"/></svg><svg id="camI" width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M3 8.5a2 2 0 0 1 2-2h2.5L9 4.5h6l1.5 2H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#54656F" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.6" stroke="#54656F" stroke-width="1.8"/></svg></div>
+          </div>
+          <div id="sendBtn">
+            <svg id="icSend" width="24" height="24" viewBox="0 0 24 24"><path d="M3.4 20.4 21 12 3.4 3.6l.1 6.5L15 12 3.5 13.9z" fill="#fff"/></svg>
+            <svg id="icMic" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="8.5" y="3" width="7" height="12" rx="3.5" fill="#fff"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            <div class="ripple" id="sendRip"></div>
+          </div>
+        </div>
+
+        <div id="dim"></div>
+        <div id="sheet">
+          <div class="grab"></div>
+          <div class="lab">UPI · Payment</div>
+          <svg id="chk" width="92" height="92" viewBox="0 0 92 92" style="display:block;margin:22px auto 0">
+            <circle cx="46" cy="46" r="42" fill="#E7F4EC"/>
+            <circle id="chkC" cx="46" cy="46" r="40" stroke="#13864A" stroke-width="5" fill="none" stroke-dasharray="251.3" transform="rotate(-90 46 46)" stroke-linecap="round"/>
+            <path id="chkP" d="M28 47l12 12 24-26" stroke="#13864A" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="56"/>
+          </svg>
+          <div class="ok">Payment successful</div>
+          <div class="amt">₹16,200</div>
+          <div class="to">Paid to CurateMyStay</div>
+          <div class="ref">UPI Ref 4021 8836 7712</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="touch"></div><div id="touchR"></div>
+</div>
+
+<script>
+const DUR=27;
+const $=s=>document.querySelector(s);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const P=(t,s,d)=>clamp((t-s)/d);
+const eo=x=>1-Math.pow(1-x,3);
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const bo=x=>{const c1=1.5,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+const L=(a,b,x)=>a+(b-a)*x;
+
+const T={
+  send1:2.5, m1:2.6, read1:3.4,
+  typ1:[3.9,5.0], in1:5.0, typ2:[5.6,6.8], in2:6.8,
+  type2:[9.1,10.0], send2:10.35, out2:10.45, read2:11.0,
+  typ3:[11.3,12.4], in3:12.4, tapPay:14.0, sheetUp:14.25, chkDraw:14.6, sheetDown:15.9,
+  type3:[16.4,17.4], send3:17.75, out3:17.85, read3:18.4,
+  typ4:[18.7,19.9], in4:19.9, stamp:20.8, typ5:[21.7,22.7], in5:22.7
+};
+const msgTimes={m1:T.m1,in1:T.in1,in2:T.in2,out2:T.out2,in3:T.in3,out3:T.out3,in4:T.in4,in5:T.in5};
+const readTimes={m1:T.read1,out2:T.read2,out3:T.read3};
+const typingWins=[T.typ1,T.typ2,T.typ3,T.typ4,T.typ5];
+const M1TXT="Hi, I'd like to ask about 3 BHK Villa in Varca with Pool, 700 m from the Beach. Check-in: 18 Nov 2026, Check-out: 21 Nov 2026 (3 nights), Guests: 2.\n\nProperty: https://www.curatemystay.net/property/3bhk-villa-varca-pool-south-goa";
+const OUT2="Great, let’s book it!";
+const OUT3="Done! Paid ₹16,200 via UPI.";
+
+let msgs=[],events=[],VPH=768,chipBottom=0;
+function measure(){
+  const dc=$('.datechip'); chipBottom=dc.offsetTop+dc.offsetHeight;
+  msgs=[...document.querySelectorAll('.msg')].map(el=>({el,key:el.dataset.t,t:msgTimes[el.dataset.t],bottom:el.offsetTop+el.offsetHeight}));
+  const ev=[];
+  msgs.forEach(m=>ev.push({t:m.t,kind:'msg',m}));
+  typingWins.forEach(w=>ev.push({t:w[0],kind:'typ'}));
+  ev.sort((a,b)=>a.t-b.t);
+  let lastBottom=chipBottom;
+  events=ev.map(e=>{let b; if(e.kind==='msg'){b=e.m.bottom;lastBottom=b;} else b=lastBottom+58; return {t:e.t,target:Math.max(0,b+16-VPH)};});
+}
+function scrollAt(t){let s=0,prev=0;for(const e of events){s+=eio(P(t,e.t,.45))*(e.target-prev);prev=e.target;}return s;}
+function lastBottomAt(t){let b=chipBottom;for(const m of msgs) if(t>=m.t) b=m.bottom;return b;}
+function ripple(el,t,tap,size){
+  const p=P(t,tap,.6);
+  if(t<tap||p>=1){el.style.opacity=0;return;}
+  const r=L(10,size,eo(p));
+  el.style.width=el.style.height=r*2+'px';el.style.left=`calc(50% - ${r}px)`;el.style.top=`calc(50% - ${r}px)`;el.style.opacity=(1-p)*.9;
+}
+function press(el,t,tap){
+  const d=t-tap;let s=1;
+  if(d>-.12&&d<0) s=L(1,.94,(d+.12)/.12); else if(d>=0&&d<.3) s=L(.94,1,bo(d/.3));
+  el.style.transform=`scale(${s})`;
+}
+
+function render(t){
+  $('#phoneWrap').style.transform=`translateY(${Math.sin(t*2*Math.PI/DUR*3)*4}px)`;
+
+  const typingNow=typingWins.some(w=>t>=w[0]&&t<w[1]);
+  $('#stTy').style.opacity=typingNow?1:0;$('#stOn').style.opacity=typingNow?0:1;
+
+  for(const m of msgs){
+    if(t<m.t){m.el.style.opacity=0;continue;}
+    const p=P(t,m.t,.38);
+    m.el.style.opacity=eo(P(t,m.t,.2));
+    m.el.style.transformOrigin=m.el.classList.contains('out')?'right bottom':'left bottom';
+    m.el.style.transform=`translateY(${(1-eo(p))*14}px) scale(${L(.92,1,bo(p))})`;
+    const tk=m.el.querySelector('.tk');
+    if(tk) tk.querySelectorAll('path').forEach(pp=>pp.setAttribute('stroke',t>=readTimes[m.key]?'#53BDEB':'#8696A0'));
+  }
+  $('#content').style.transform=`translateY(${-scrollAt(t)}px)`;
+
+  let tw=null;for(const w of typingWins) if(t>=w[0]-.05&&t<w[1]+.05) tw=w;
+  const ty=$('#typing');
+  if(tw){
+    ty.style.opacity=Math.min(eo(P(t,tw[0],.25)),1-P(t,tw[1]-.12,.12));
+    ty.style.top=(lastBottomAt(tw[0])+10)+'px';
+    ty.style.transformOrigin='left top';ty.style.transform=`scale(${L(.8,1,eo(P(t,tw[0],.25)))})`;
+    ty.querySelectorAll('i').forEach((d,i)=>{const s=Math.max(0,Math.sin(t*8-i*.9));d.style.transform=`translateY(${-s*4}px)`;d.style.opacity=.5+s*.5;});
+  } else ty.style.opacity=0;
+
+  const sp=P(t,T.stamp,.35);
+  $('#stamp').style.opacity=t<T.stamp?0:eo(P(t,T.stamp,.12));
+  $('#stamp').style.transform=`rotate(-14deg) scale(${L(2.2,1,bo(sp))})`;
+
+  // input
+  let txt='',caret=false;
+  if(t<T.send1) txt=M1TXT;
+  else if(t>=T.type2[0]&&t<T.send2){txt=OUT2.slice(0,Math.floor(OUT2.length*P(t,T.type2[0],T.type2[1]-T.type2[0])));caret=true;}
+  else if(t>=T.type3[0]&&t<T.send3){txt=OUT3.slice(0,Math.floor(OUT3.length*P(t,T.type3[0],T.type3[1]-T.type3[0])));caret=true;}
+  const it=$('#intext');
+  if(txt){it.classList.remove('ph');it.textContent=txt;
+    if(caret){const c=document.createElement('span');c.className='caret';it.appendChild(c);}}
+  else{it.classList.add('ph');it.textContent='Message';}
+  $('#camI').style.display=txt?'none':'block';
+  $('#icSend').style.opacity=txt?1:0;$('#icMic').style.opacity=txt?0:1;
+  const sendTap=[T.send1,T.send2,T.send3].find(s=>t>=s-.15&&t<s+.6)||-99;
+  press($('#sendBtn'),t,sendTap);ripple($('#sendRip'),t,sendTap,40);
+  if(sendTap>0&&t>=sendTap&&t<sendTap+.3){$('#icSend').style.opacity=1;$('#icMic').style.opacity=0;}
+
+  press($('#payBtn'),t,T.tapPay);ripple($('#payRip'),t,T.tapPay,200);
+
+  const su=eo(P(t,T.sheetUp,.45)),sd=eio(P(t,T.sheetDown,.4)),sv=Math.max(0,su-sd);
+  $('#dim').style.opacity=sv;$('#dim').style.visibility=sv>0?'visible':'hidden';
+  $('#sheet').style.transform=`translateY(${(1-su+sd)*110}%)`;$('#sheet').style.visibility=sv>0?'visible':'hidden';
+  $('#chkC').style.strokeDashoffset=251.3*(1-eio(P(t,T.chkDraw,.5)));
+  $('#chkP').style.strokeDashoffset=56*(1-eo(P(t,T.chkDraw+.35,.3)));
+  $('#sheet .ok').style.opacity=P(t,T.chkDraw+.45,.35);
+  $('#chk').style.transform=`scale(${L(.85,1,bo(P(t,T.chkDraw,.5)))})`;
+
+  const taps=[[T.send1,'#sendBtn'],[T.send2,'#sendBtn'],[T.tapPay,'#payBtn'],[T.send3,'#sendBtn']];
+  const tc=$('#touch'),tr=$('#touchR');let shown=false;
+  for(const [tt,sel] of taps){
+    if(t>=tt-.55&&t<tt+.5){
+      const r=$(sel).getBoundingClientRect(),sr=$('#stage').getBoundingClientRect();
+      const x=(r.left-sr.left+r.width/2)/SCALE+(sel==='#payBtn'?40:0),y=(r.top-sr.top+r.height/2)/SCALE;
+      const a=Math.min(eo(P(t,tt-.55,.25)),1-P(t,tt+.25,.25));
+      const ps=t<tt?L(1,.82,P(t,tt-.15,.15)):L(.82,1,P(t,tt,.2));
+      tc.style.left=x+'px';tc.style.top=(y+(1-eo(P(t,tt-.55,.4)))*40)+'px';tc.style.opacity=a;tc.style.transform=`scale(${ps})`;
+      const rp=P(t,tt,.5),rr=L(25,56,eo(rp));
+      tr.style.width=tr.style.height=rr*2+'px';tr.style.left=(x-rr)+'px';tr.style.top=(y-rr)+'px';tr.style.opacity=t>=tt?(1-rp)*.9:0;
+      shown=true;break;
+    }
+  }
+  if(!shown){tc.style.opacity=0;tr.style.opacity=0;}
+
+  $('#stage').style.opacity=1-Math.max(1-P(t,0,.45),P(t,DUR-.6,.6));
+}
+let SCALE=1;
+function fit(){
+  SCALE=Math.min(innerWidth/560,innerHeight/1080);
+  $('#stage').style.transform=`scale(${SCALE})`;
+}
+addEventListener('resize',fit);fit();
+
+const fontsReady=Promise.all([
+  ...[400,500,600,700].map(w=>document.fonts.load(`${w} 16px CMSInter`,'Hi ₹')),
+  ...[700,800].map(w=>document.fonts.load(`${w} 16px CMSFigtree`,'Hi ₹'))
+]).catch(()=>{});
+const imgReady=Promise.all([...document.images].map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r})));
+
+Promise.all([fontsReady,imgReady]).then(()=>{
+  measure();
+  // Reduced motion: show a single finished frame, no animation.
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){render(22.2);return;}
+  // Play in real time; pause while scrolled out of view or tab hidden.
+  let t=0,last=null,visible=true;
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(es=>{visible=es[0].isIntersecting;}).observe(document.documentElement);
+  }
+  (function loop(now){
+    if(last!==null&&visible&&!document.hidden) t=(t+Math.min(.1,(now-last)/1000))%DUR;
+    last=now; render(t); requestAnimationFrame(loop);
+  })(performance.now());
+});
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { buildMarketingMetadata } from "@/app/seo";
+import { BookingHero } from "@/components/home/booking-hero";
 import { BookingGuestReviews } from "@/components/home/booking-guest-reviews";
 import { BookingGuestServices } from "@/components/home/booking-guest-services";
 import { BookingWhyDirect } from "@/components/home/booking-why-direct";
@@ -36,12 +37,11 @@ export default async function BookingPage() {
         <GuestHeader page="booking" />
 
         <div className="relative z-10 pt-6 lg:pt-7">
-          <PropertyCatalogue
-            failed={catalogue.failed}
-            heroImageAlt="Sunlit living room with a cream sectional sofa and floor-to-ceiling windows"
-            heroImageUrl="/homepage/booking-hero.jpg"
-            properties={catalogue.properties}
+          <BookingHero
+            imageAlt="Sunlit living room with a cream sectional sofa and floor-to-ceiling windows"
+            imageUrl="/homepage/booking-hero.jpg"
           />
+          <PropertyCatalogue failed={catalogue.failed} properties={catalogue.properties} />
         </div>
 
         <BookingWhyDirect />

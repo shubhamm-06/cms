@@ -1,13 +1,23 @@
+"use client";
+
 import Image from "next/image";
-import type { ReactNode } from "react";
+import type { MouseEvent } from "react";
+import { ArrowRight, Check } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa6";
+import { buildGuestHeaderWhatsAppMessage } from "@/src/features/catalogue/guest-whatsapp-message";
+import { trackWhatsAppClick } from "@/src/lib/analytics";
+import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
 /**
  * Public `/booking` hero, built from the hero of the `Curate My Stay` booking
  * screen in `reference/booking.html`.
  *
- * The photograph and copy are intentionally kept in this small presentational
- * component. The interactive search panel is supplied by the catalogue client
- * component so its existing filter state stays in one place.
+ * Left: heading, copy, the two CTAs and one trust line. Right (below on phones):
+ * the self-contained WhatsApp booking animation in `public/cms-whatsapp-demo/`,
+ * which draws its own phone frame and scales it to fit the iframe. The iframe is
+ * sized from its 560:1080 aspect ratio and the hero padding keeps the whole phone
+ * inside the card at every width. The unlayered `a { color: inherit }` in
+ * `app/globals.css` outranks Tailwind's `text-*`, so link colours sit on inner spans.
  */
 
 /**
@@ -25,15 +35,31 @@ import type { ReactNode } from "react";
 const heroFallbackImage = "/homepage/varca-2.jpg";
 const heroFallbackAlt = "A pool at a CurateMyStay-managed property in Goa";
 
+/** Id of the property listing section that "Check out properties" scrolls to. */
+export const bookingStaysSectionId = "stays";
+
+const ctaButton =
+  "inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-xl px-6 outline-none transition sm:w-auto active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1b1715]";
+
+function scrollToStays(event: MouseEvent<HTMLAnchorElement>) {
+  const target = document.getElementById(bookingStaysSectionId);
+  if (!target) return;
+
+  event.preventDefault();
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  window.history.replaceState(null, "", `#${bookingStaysSectionId}`);
+}
+
 export function BookingHero({
-  children,
   imageAlt,
   imageUrl,
 }: {
-  children: ReactNode;
   imageAlt?: string | null;
   imageUrl?: string | null;
 }) {
+  const whatsappUrl = getPublicWhatsAppUrl(buildGuestHeaderWhatsAppMessage());
+
   return (
     <section className="relative mx-4 overflow-hidden rounded-[26px] sm:mx-6 md:mx-8 lg:mx-7 lg:min-h-[600px] xl:min-h-[620px]">
       <Image
@@ -47,7 +73,7 @@ export function BookingHero({
       />
       <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(18,12,9,0.72)_0%,rgba(18,12,9,0.42)_48%,rgba(18,12,9,0.56)_100%)]" />
 
-      <div className="relative z-10 mx-auto grid min-h-[680px] w-full max-w-[1240px] items-center gap-10 px-5 py-8 sm:px-8 sm:py-12 lg:min-h-[600px] lg:grid-cols-[minmax(0,1fr)_minmax(350px,420px)] lg:gap-14 lg:px-12 lg:py-14 xl:px-16">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-10 pt-12 sm:px-8 sm:pb-12 sm:pt-16 lg:min-h-[600px] lg:grid-cols-[minmax(0,1fr)_minmax(350px,420px)] lg:gap-14 lg:px-12 lg:py-14 xl:min-h-[620px] xl:px-16">
         <div className="max-w-[620px] self-center">
           <h1 className="max-w-[12ch] text-balance text-[42px] font-extrabold leading-[0.98] tracking-[-0.04em] text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.3)] sm:text-[54px] lg:text-[64px] xl:text-[68px]">
             Stay in Goa. Properly.
@@ -55,8 +81,52 @@ export function BookingHero({
           <p className="mt-5 max-w-[31rem] text-pretty text-[17px] leading-[1.5] text-white/90 [text-shadow:0_1px_10px_rgba(0,0,0,0.32)] sm:text-[19px] lg:mt-6">
             Hand-picked villas and apartments, personally managed by our team.
           </p>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <a
+              className={`${ctaButton} bg-public-coral shadow-[0_8px_20px_rgba(255,90,95,0.25)] hover:bg-public-coral-hover`}
+              href={`#${bookingStaysSectionId}`}
+              onClick={scrollToStays}
+            >
+              <span className="inline-flex items-center gap-2 whitespace-nowrap text-[15px] font-bold text-white">
+                Check out properties
+                <ArrowRight aria-hidden="true" className="h-[18px] w-[18px]" />
+              </span>
+            </a>
+            {whatsappUrl ? (
+              <a
+                className={`${ctaButton} bg-white hover:bg-[#f7f7f7]`}
+                href={whatsappUrl}
+                onClick={() => trackWhatsAppClick("booking_hero")}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span className="inline-flex items-center gap-2 whitespace-nowrap text-[15px] font-semibold text-public-ink">
+                  <FaWhatsapp aria-hidden="true" className="h-5 w-5 text-[#25D366]" />
+                  Chat on WhatsApp
+                </span>
+              </a>
+            ) : null}
+          </div>
+
+          <p className="mt-6 flex items-center gap-2.5 text-[16px] font-medium text-white [text-shadow:0_1px_10px_rgba(0,0,0,0.32)] sm:text-[17px]">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#25D366]">
+              <Check aria-hidden="true" className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+            </span>
+            Better rate than Airbnb
+          </p>
         </div>
-        <div className="w-full self-center">{children}</div>
+
+        <div className="flex justify-center self-center">
+          <iframe
+            aria-hidden="true"
+            className="pointer-events-none aspect-[560/1080] w-[260px] max-w-full border-0 bg-transparent lg:w-[300px] xl:w-[340px]"
+            loading="lazy"
+            src="/cms-whatsapp-demo/index.html"
+            tabIndex={-1}
+            title="How booking on WhatsApp works"
+          />
+        </div>
       </div>
     </section>
   );

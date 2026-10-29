@@ -260,6 +260,7 @@ floating_whatsapp
 property_page_enquiry_card
 property_page_managed_by
 property_page_mobile_bar
+booking_hero
 ```
 
 ### Example Event Payload

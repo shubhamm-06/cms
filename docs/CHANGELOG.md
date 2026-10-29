@@ -1,5 +1,16 @@
 # Changelog
 
+## Booking Hero WhatsApp Embed
+
+- Removed the `Find your stay` search card from the `/booking` hero. It was used only there, so its `PanelField` select, the `Search Stays` button and the region, guests and date filter state that only it could set were deleted from `PropertyCatalogue`. The bedrooms and pool pills above the grid are unchanged. Filters were never read from URL search params, so there was no query-param logic to keep.
+- `app/booking/page.tsx` now renders `BookingHero` directly above `PropertyCatalogue`; the hero no longer takes children and `PropertyCatalogue` no longer takes hero image props.
+- Kept the hero card itself as it was: photo, `110deg` scrim, `rounded-[26px]`, outer margins, heading, supporting copy and their typography.
+- Added two CTAs under the copy: coral `Check out properties` with a right arrow, which smooth-scrolls to `#stays` (instant under reduced motion), and white `Chat on WhatsApp` with a WhatsApp-green icon, built from the header's `getPublicWhatsAppUrl(buildGuestHeaderWhatsAppMessage())` and tracked as `whatsapp_click` with the new `cta_location: booking_hero`. Both are 52px, side by side from `sm` (wrapping when the column is narrow, as at 1024px) and full width on phones.
+- Added one trust line, `Better rate than Airbnb`, with a green circle and white check.
+- Embedded `public/cms-whatsapp-demo/index.html` where the search card was, as a decorative lazy iframe (`aspect-[560/1080]`, 260/300/340px wide below `lg`/at `lg`/at `xl`). The embed folder itself was not modified.
+- Gave the listing section `scroll-mt-20 lg:scroll-mt-24` so the sticky header does not cover it after the scroll. The mobile hero no longer has a fixed 680px minimum; it grows to fit the stacked phone.
+- Verified at 375, 768, 1024, 1280 and 1920px: the phone stays inside the hero with at least 40px clearance, text and phone never overlap, there is no horizontal overflow, the scroll lands below the header and the WhatsApp link carries the guest message. At 375px the fixed floating WhatsApp button crosses the phone's right edge while the phone scrolls past it; from 768px it does not.
+
 ## Public Navbar Phone Number
 
 - Added a direct-call link to the shared `PublicHeader`, placed in the right-hand group as `phone, Owner Portal, Book a Call`. It is a standalone navigation item and is deliberately not in the `More` dropdown; both existing actions are unchanged.
