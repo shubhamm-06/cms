@@ -1,5 +1,9 @@
 # Changelog
 
+## Proof-Point Figures Update
+
+- Updated the two proof-point figures sitewide: `200+` successful stays delivered is now `300+` and `150+` five-star guest reviews is now `230+` (homepage hero card and stats row, case-study stats, `/property-management`, `/about` meta description). Copy only; no data, schema or styling changes.
+
 ## Booking Hero Mobile and Tablet Layout
 
 - Made the `/booking` hero photo-first below `lg`: the card fills the first screen under the header (`min-h-[calc(100svh-105px)]`, 16px gap below), and the headline (44px, split as `Stay in Goa.` / `Properly.`), copy, two full-width CTAs and centred trust line sit at its bottom with 12/24/10/16px spacing and 24px bottom padding. The phone embed is no longer in the hero below `lg`.

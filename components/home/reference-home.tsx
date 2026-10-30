@@ -361,12 +361,12 @@ function Hero() {
         <div className="relative min-w-0">
           <HeroCarousel />
           <div className="absolute -bottom-6 left-3 w-48 rounded-[16px] bg-white px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:left-4 sm:w-56 sm:rounded-[18px] sm:px-5 sm:py-4 md:-left-5">
-            <div className="text-[28px] font-extrabold leading-none tracking-[-0.02em]">150+</div>
+            <div className="text-[28px] font-extrabold leading-none tracking-[-0.02em]">230+</div>
             <div className="mt-1 flex items-center gap-1 text-sm font-semibold text-[#484848]">
               <Star className="h-4 w-4 fill-[#ff5a5f] text-[#ff5a5f]" /> 5-star reviews
             </div>
             <div className="my-2 h-px bg-[#ebebeb]" />
-            <div className="text-[22px] font-extrabold tracking-[-0.02em]">200+</div>
+            <div className="text-[22px] font-extrabold tracking-[-0.02em]">300+</div>
             <div className="mt-0.5 text-[13px] font-semibold text-[#484848]">successful stays</div>
           </div>
           <div className="absolute right-3 top-3 rounded-full border border-[#dddddd] bg-white px-3 py-1.5 text-[13px] font-semibold shadow-sm sm:right-[18px] sm:top-[18px] sm:px-[13px]">
@@ -1069,8 +1069,8 @@ function StatsAndProof() {
       <div className="mt-10 grid gap-4 sm:grid-cols-2 md:mt-12 md:grid-cols-4 md:gap-5">
         {[
           ["4.98 / 5", "Airbnb rating across all listings"],
-          ["150+", "Five-star guest reviews"],
-          ["200+", "Successful stays delivered"],
+          ["230+", "Five-star guest reviews"],
+          ["300+", "Successful stays delivered"],
           ["Superhost", "11+ months running"],
         ].map(([value, label]) => (
           <div className="rounded-2xl border border-[#ebebeb] bg-white px-5 py-6 text-center shadow-sm sm:rounded-[24px] sm:px-6 sm:py-7" key={label}>

@@ -31,8 +31,8 @@ export type PropertyCaseStudy = {
 
 export const portfolioProof = [
   { label: "Airbnb rating across all listings", value: "4.98 / 5" },
-  { label: "Five-star guest reviews", value: "150+" },
-  { label: "Successful stays delivered", value: "200+" },
+  { label: "Five-star guest reviews", value: "230+" },
+  { label: "Successful stays delivered", value: "300+" },
   { label: "11+ months running", value: "Superhost" },
 ] as const;
 
