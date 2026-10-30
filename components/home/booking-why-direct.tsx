@@ -54,7 +54,7 @@ const directBookingBenefits: DirectBookingBenefit[] = [
   },
   {
     description:
-      "The same team, same property, same 4.98 ★ experience. Just a different door in.",
+      "The same team, same property, same 4.9+ ★ experience. Just a different door in.",
     icon: ShieldCheck,
     title: "Same Superhost service",
   },

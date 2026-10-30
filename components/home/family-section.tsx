@@ -55,7 +55,7 @@ export function FamilySection({ id }: { id?: string } = {}) {
               with long-term value in mind.
             </p>
             <p className="mt-4 text-base font-semibold leading-7 text-[#222222] sm:text-[16.5px] sm:leading-8">
-              It is how we built a 4.98 rating. It is how we plan to scale.
+              It is how we built a 4.9+ rating. It is how we plan to scale.
             </p>
             <div className="mt-7 grid gap-4 sm:grid-cols-3">
               {credentials.map((credential) => {

@@ -352,7 +352,7 @@ function Hero() {
             </ButtonLink>
           </div>
           <div className="mt-[26px] flex flex-wrap gap-x-[22px] gap-y-3 text-[14.5px] font-semibold text-[#484848]">
-            <span className="inline-flex items-center gap-2"><Star className="h-[17px] w-[17px] fill-[#ff5a5f] text-[#ff5a5f]" /> 4.98 / 5 on Airbnb</span>
+            <span className="inline-flex items-center gap-2"><Star className="h-[17px] w-[17px] fill-[#ff5a5f] text-[#ff5a5f]" /> 4.9+ / 5 on Airbnb</span>
             <span className="inline-flex items-center gap-2"><Award className="h-[17px] w-[17px] text-[#ff5a5f]" /> Superhost</span>
             <span className="inline-flex items-center gap-2"><FileCheck2 className="h-[17px] w-[17px] text-[#ff5a5f]" /> Monthly P&L, owner-approved</span>
           </div>
@@ -371,7 +371,7 @@ function Hero() {
           </div>
           <div className="absolute right-3 top-3 rounded-full border border-[#dddddd] bg-white px-3 py-1.5 text-[13px] font-semibold shadow-sm sm:right-[18px] sm:top-[18px] sm:px-[13px]">
             <Star className="mr-1 inline h-4 w-4 fill-[#ff5a5f] text-[#ff5a5f]" />
-            4.98 average
+            4.9+ average
           </div>
         </div>
       </div>
@@ -1068,10 +1068,10 @@ function StatsAndProof() {
       />
       <div className="mt-10 grid gap-4 sm:grid-cols-2 md:mt-12 md:grid-cols-4 md:gap-5">
         {[
-          ["4.98 / 5", "Airbnb rating across all listings"],
+          ["4.9+ / 5", "Airbnb rating across all listings"],
           ["230+", "Five-star guest reviews"],
           ["300+", "Successful stays delivered"],
-          ["Superhost", "11+ months running"],
+          ["Superhost", "15+ months running"],
         ].map(([value, label]) => (
           <div className="rounded-2xl border border-[#ebebeb] bg-white px-5 py-6 text-center shadow-sm sm:rounded-[24px] sm:px-6 sm:py-7" key={label}>
             <div className="text-[34px] font-extrabold leading-none tracking-[-0.02em] text-[#ff5a5f] sm:text-[42px]">{value}</div>
@@ -2177,7 +2177,7 @@ export function AboutPublicPage() {
                 Communication stays direct, operations stay hands-on, and every property is managed with long-term value in mind.
               </p>
               <p className="font-semibold text-[#222222]">
-                It is how we built a 4.98 rating. It is how we plan to scale.
+                It is how we built a 4.9+ rating. It is how we plan to scale.
               </p>
             </div>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">

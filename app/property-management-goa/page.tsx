@@ -8,7 +8,7 @@ const propertyManagementFont = Figtree({ display: "swap", subsets: ["latin"], va
 export const metadata: Metadata = {
   ...buildMarketingMetadata({
     title: "Property Management Company in Goa : Airbnb Villas & Apartments | Curate My Stay",
-    description: "Full-service property management in Goa for Airbnb, villas and holiday homes. We handle guests, dynamic pricing, housekeeping and compliance : with an owner-approved monthly P&L. 4.98★ Superhost.",
+    description: "Full-service property management in Goa for Airbnb, villas and holiday homes. We handle guests, dynamic pricing, housekeeping and compliance : with an owner-approved monthly P&L. 4.9+★ Superhost.",
     canonicalPath: "/property-management-goa",
   }),
   robots: { index: true, follow: true },

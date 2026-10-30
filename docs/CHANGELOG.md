@@ -1,5 +1,9 @@
 # Changelog
 
+## Airbnb Rating and Superhost Tenure Copy
+
+- Changed the Airbnb rating copy from `4.98` to `4.9+` (homepage hero, rating pill and stats row, case-study stats, `/booking` direct-booking line, family section, `/property-management` and the home, about and property-management-goa meta descriptions) and the Superhost tenure from `11+ months running` to `15+ months running`. Copy only; no data, schema or styling changes.
+
 ## Proof-Point Figures Update
 
 - Updated the two proof-point figures sitewide: `200+` successful stays delivered is now `300+` and `150+` five-star guest reviews is now `230+` (homepage hero card and stats row, case-study stats, `/property-management`, `/about` meta description). Copy only; no data, schema or styling changes.

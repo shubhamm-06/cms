@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   ...buildMarketingMetadata({
     title: "About Curate My Stay | Property Management Company in Goa",
     description:
-      "A family-run property management company in Goa managing short-term rentals like an investment portfolio. 20+ years facility management, 4.98\u2605 across 300+ stays.",
+      "A family-run property management company in Goa managing short-term rentals like an investment portfolio. 20+ years facility management, 4.9+\u2605 across 300+ stays.",
     canonicalPath: "/about",
   }),
 };

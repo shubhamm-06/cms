@@ -129,7 +129,7 @@ const values = [
   },
   {
     title: "Proof, not adjectives",
-    body: "4.98★ across all listings, 300+ stays delivered, Airbnb Superhost, occupancy well above the Goa area average.",
+    body: "4.9+★ across all listings, 300+ stays delivered, Airbnb Superhost, occupancy well above the Goa area average.",
     Icon: BadgeCheck,
     accent: "bg-[#edf5ee] text-[#4f7a58] group-hover:bg-[#dcecdf]",
     line: "bg-[#7fa489]",
@@ -256,7 +256,7 @@ export function PropertyManagementPage() {
             </p>
             <HeroCtas />
             <p className="mt-8 max-w-4xl border-t border-[#e6d9d2] pt-5 text-sm font-semibold leading-6 text-[#484848]">
-              4.98★ Airbnb Superhost · 300+ stays delivered · Owner-approved
+              4.9+★ Airbnb Superhost · 300+ stays delivered · Owner-approved
               monthly P&amp;L · No lock-in beyond the initial term
             </p>
           </div>
