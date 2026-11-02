@@ -23,6 +23,7 @@ const updateAltTextSchema = propertyImageTargetSchema.extend({
 const movePropertyImageSchema = propertyImageTargetSchema.extend({
   direction: z.enum(["up", "down"]).optional(),
   toIndex: z.number().int().nonnegative().optional(),
+  excludeImageIds: z.array(z.string().uuid()).max(100).optional(),
 }).refine((value) => (value.direction !== undefined) !== (value.toIndex !== undefined));
 
 function isValidStoragePath(propertyId: string, storagePath: string) {
@@ -287,7 +288,7 @@ export async function setPropertyImageCoverAction(input: { imageId: string; prop
   return { images: images.data ?? [], ok: true };
 }
 
-export async function movePropertyImageAction(input: { direction?: "up" | "down"; toIndex?: number; imageId: string; propertyId: string }) {
+export async function movePropertyImageAction(input: { direction?: "up" | "down"; toIndex?: number; excludeImageIds?: string[]; imageId: string; propertyId: string }) {
   await requireRole("admin");
   const parsed = movePropertyImageSchema.safeParse(input);
   if (!parsed.success) return { message: "Image details are not valid.", ok: false };
@@ -299,7 +300,8 @@ export async function movePropertyImageAction(input: { direction?: "up" | "down"
     return { message: "Image order could not be updated.", ok: false };
   }
 
-  const ordered = images.data ?? [];
+  const excluded = new Set(parsed.data.excludeImageIds ?? []);
+  const ordered = (images.data ?? []).filter((image) => !excluded.has(image.id));
   const currentIndex = ordered.findIndex((image) => image.id === parsed.data.imageId);
   const nextIndex = parsed.data.toIndex ?? currentIndex + (parsed.data.direction === "up" ? -1 : 1);
   if (currentIndex < 0 || nextIndex < 0 || nextIndex >= ordered.length) {

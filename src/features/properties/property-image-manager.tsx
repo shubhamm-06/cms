@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { GripVertical, ImagePlus, Loader2, MoveDown, MoveUp, Save, Star, Tag, Trash2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   createPropertyImageMetadataAction,
@@ -39,7 +39,7 @@ const SUPPORTED_IMAGE_TYPES = {
   "image/png": "png",
   "image/webp": "webp",
 } as const;
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 15 * 1024 * 1024;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function sortImages(images: PropertyImage[]) {
@@ -57,27 +57,18 @@ function getPublicImageUrl(storagePath: string) {
 function DeleteImageDialog({
   image,
   onDeleted,
-  propertyId,
   disabled,
 }: {
   image: PropertyImage;
-  onDeleted: (images: PropertyImage[]) => void;
-  propertyId: string;
+  onDeleted: (image: PropertyImage) => void;
   disabled: boolean;
 }) {
   const [pending, setPending] = useState(false);
 
   async function handleDelete() {
     setPending(true);
-    const result = await deletePropertyImageAction({ imageId: image.id, propertyId });
     setPending(false);
-    if (!result.ok) {
-      toast.error(result.message);
-      return;
-    }
-    if (result.images) onDeleted(result.images);
-    if (result.warning) toast.warning(result.message || "Storage cleanup needs attention.");
-    else toast.success("Image deleted.");
+    onDeleted(image);
   }
 
   return (
@@ -122,9 +113,37 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
     Object.fromEntries(initialImages.map((image) => [image.id, image.alt_text || ""])),
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteSelection, setDeleteSelection] = useState<PropertyImage[] | null>(null);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [deleteProgress, setDeleteProgress] = useState<{ done: number; total: number } | null>(null);
+  const [failedDeletes, setFailedDeletes] = useState<PropertyImage[]>([]);
+  const [dropActive, setDropActive] = useState(false);
+  const dragDepth = useRef(0);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
   const [bulkRoom, setBulkRoom] = useState("");
   const [isBulkSaving, setIsBulkSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!deleteProgress) return;
+    const warnBeforeLeave = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warnBeforeLeave);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeave);
+  }, [deleteProgress]);
+
+  useEffect(() => {
+    const ignoreExternalFileDrop = (event: DragEvent) => {
+      if (!Array.from(event.dataTransfer?.types ?? []).includes("Files")) return;
+      if (dropZoneRef.current?.contains(event.target as Node)) return;
+      event.preventDefault();
+    };
+    window.addEventListener("dragover", ignoreExternalFileDrop);
+    window.addEventListener("drop", ignoreExternalFileDrop);
+    return () => {
+      window.removeEventListener("dragover", ignoreExternalFileDrop);
+      window.removeEventListener("drop", ignoreExternalFileDrop);
+    };
+  }, []);
 
   if (!propertyId) {
     return (
@@ -179,8 +198,8 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
         const prepared = await optimizePropertyImage(file);
         if (prepared.optimizationFailed) warnings.push(`${file.name}: optimization could not be applied; the original was used.`);
 
-        if (prepared.file.size > MAX_FILE_SIZE) {
-          failures.push(`${file.name}: final upload must be 10 MB or smaller.`);
+        if (file.size > MAX_FILE_SIZE || prepared.file.size > MAX_FILE_SIZE) {
+          failures.push(`${file.name}: file must be 15 MB or smaller.`);
         } else {
           const extension = prepared.optimized ? "webp" : originalExtension;
           const storagePath = `${activePropertyId}/${crypto.randomUUID()}.${extension}`;
@@ -217,12 +236,76 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
   }
 
   function toggleSelected(imageId: string) {
+    if (deletingIds.has(imageId)) return;
     setSelectedIds((current) => {
       const next = new Set(current);
       if (next.has(imageId)) next.delete(imageId);
       else next.add(imageId);
       return next;
     });
+  }
+
+  async function runDeleteQueue(items: PropertyImage[]) {
+    if (!items.length) return;
+    const ids = new Set(items.map((image) => image.id));
+    setDeletingIds((current) => new Set([...current, ...ids]));
+    setFailedDeletes([]);
+    setDeleteProgress({ done: 0, total: items.length });
+    const failed: PropertyImage[] = [];
+    let done = 0;
+    // Sequential calls preserve the existing cover-promotion behavior between deletions.
+    for (const image of items) {
+      try {
+        const result = await deletePropertyImageAction({ imageId: image.id, propertyId: activePropertyId });
+        if (!result.ok) failed.push(image);
+        else if (result.warning) toast.warning(result.message || "Image removed, but storage cleanup needs attention.");
+      } catch {
+        failed.push(image);
+      }
+      done += 1;
+      setDeleteProgress({ done, total: items.length });
+    }
+    setDeletingIds((current) => new Set([...current].filter((id) => !ids.has(id))));
+    setDeleteProgress(null);
+    setFailedDeletes(failed);
+    if (failed.length) {
+      setImages((current) => {
+        const restored = sortImages([...current, ...failed]);
+        if (!failed.some((image) => image.is_cover)) return restored;
+        return restored.map((image) => ({ ...image, is_cover: image.id === failed.find((candidate) => candidate.is_cover)?.id }));
+      });
+      toast.error(`${failed.length} failed, retry`);
+    } else toast.success(`${items.length} images deleted`);
+  }
+
+  function startDeleteSelection() {
+    const items = orderedImages.filter((image) => selectedIds.has(image.id) && !deletingIds.has(image.id));
+    if (!items.length) return;
+    setImages((current) => {
+      const remaining = current.filter((image) => !items.some((item) => item.id === image.id));
+      if (items.some((item) => item.is_cover) && remaining.length) {
+        const nextCover = sortImages(remaining)[0];
+        return remaining.map((image) => ({ ...image, is_cover: image.id === nextCover.id }));
+      }
+      return remaining;
+    });
+    setSelectedIds(new Set());
+    setDeleteSelection(null);
+    void runDeleteQueue(items);
+  }
+
+  function deleteOne(image: PropertyImage) {
+    if (deletingIds.has(image.id)) return;
+    setImages((current) => {
+      const remaining = current.filter((candidate) => candidate.id !== image.id);
+      if (image.is_cover && remaining.length) {
+        const nextCover = sortImages(remaining)[0];
+        return remaining.map((candidate) => ({ ...candidate, is_cover: candidate.id === nextCover.id }));
+      }
+      return remaining;
+    });
+    setSelectedIds((current) => { const next = new Set(current); next.delete(image.id); return next; });
+    void runDeleteQueue([image]);
   }
 
   // Writes the `Room | ` prefix into each selected photo's alt text through the
@@ -304,7 +387,7 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
     setImages(reordered.map((candidate, index) => ({ ...candidate, sort_order: index })));
     try {
       const move = typeof destination === "number" ? { toIndex } : { direction: destination };
-      const result = await movePropertyImageAction({ ...move, imageId: image.id, propertyId: activePropertyId });
+      const result = await movePropertyImageAction({ ...move, excludeImageIds: [...deletingIds], imageId: image.id, propertyId: activePropertyId });
       if (!result.ok || !result.images) throw new Error(result.message || "Image order could not be saved.");
       const orders = new Map(result.images.map((candidate) => [candidate.id, candidate.sort_order]));
       setImages((current) => sortImages(current.map((candidate) => ({ ...candidate, sort_order: orders.get(candidate.id) ?? candidate.sort_order }))));
@@ -323,6 +406,7 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
   const orderedImages = sortImages(images);
   const galleryImages = displayImages(images);
   const reorderDisabled = Boolean(movingImageId || isUploading || coverImageId || savingAltId || isBulkSaving);
+  const activeImages = orderedImages.filter((image) => !deletingIds.has(image.id));
   // Live preview of the public tour order: admin photo order plus the alt text as typed, saved or not.
   const tourOrder = tourRoomOrder(orderedImages.map((image) => ({ ...image, alt_text: altValues[image.id] ?? image.alt_text })));
 
@@ -334,9 +418,17 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
             <h3 className="text-sm font-bold text-[var(--foreground)]">Property images</h3>
             <Badge tone="neutral">{images.length} {images.length === 1 ? "image" : "images"}</Badge>
           </div>
-          <p className="mt-1 text-sm leading-6 text-[var(--muted)]">Upload JPEG, PNG, or WebP images up to 10 MB each. The gallery stores Storage paths, not public URLs.</p>
+          <p className="mt-1 text-sm leading-6 text-[var(--muted)]">Upload JPEG, PNG, or WebP images up to 15 MB each. The gallery stores Storage paths, not public URLs.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div
+          ref={dropZoneRef}
+          data-image-dropzone
+          className={`flex flex-wrap gap-2 rounded-lg transition ${dropActive ? "bg-[var(--brand)]/10 ring-2 ring-[var(--brand)] ring-offset-2" : ""}`}
+          onDragEnter={(event) => { if (!event.dataTransfer.types.includes("Files")) return; event.preventDefault(); dragDepth.current += 1; setDropActive(true); }}
+          onDragLeave={(event) => { if (!event.dataTransfer.types.includes("Files")) return; dragDepth.current = Math.max(0, dragDepth.current - 1); if (!dragDepth.current) setDropActive(false); }}
+          onDragOver={(event) => { if (event.dataTransfer.types.includes("Files")) { event.preventDefault(); event.dataTransfer.dropEffect = "copy"; } }}
+          onDrop={(event) => { if (!event.dataTransfer.files.length) return; event.preventDefault(); dragDepth.current = 0; setDropActive(false); void handleUpload(event.dataTransfer.files); }}
+        >
           <input
             accept="image/jpeg,image/png,image/webp"
             aria-label="Upload property images"
@@ -356,6 +448,8 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
         </div>
       </div>
 
+      {deleteProgress ? <p className="mt-3 text-sm font-semibold text-[var(--muted)]" aria-live="polite">Deleting {deleteProgress.total} images... {deleteProgress.done}/{deleteProgress.total}</p> : null}
+      {failedDeletes.length ? <div className="mt-3 flex items-center gap-3 text-sm text-red-700"><span>{failedDeletes.length} failed</span><Button onClick={() => void runDeleteQueue(failedDeletes)} size="sm" type="button" variant="danger">Retry</Button></div> : null}
       {uploadProgress ? (
         <div className="mt-4" aria-live="polite">
           <div className="flex justify-between gap-3 text-xs font-semibold text-[var(--muted)]">
@@ -364,6 +458,9 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
             <div className="h-full bg-[var(--brand)] transition-[width]" style={{ width: `${(uploadProgress.completed / uploadProgress.total) * 100}%` }} />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2" aria-label="Files uploading">
+            {Array.from({ length: uploadProgress.total }, (_, index) => <span className="h-2 w-16 animate-pulse rounded bg-[var(--border)]" key={index} />)}
           </div>
         </div>
       ) : null}
@@ -404,21 +501,22 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
           <div className="flex flex-wrap gap-2">
             <Button
               disabled={isBulkSaving}
-              onClick={() => setSelectedIds(selectedIds.size === orderedImages.length ? new Set() : new Set(orderedImages.map((image) => image.id)))}
+              onClick={() => setSelectedIds(selectedIds.size === activeImages.length ? new Set() : new Set(activeImages.map((image) => image.id)))}
               size="sm"
               type="button"
               variant="secondary"
             >
-              {selectedIds.size === orderedImages.length ? "Clear selection" : "Select all"}
+              {selectedIds.size === activeImages.length ? "Clear selection" : "Select all"}
             </Button>
             <Button disabled={!bulkRoom || selectedIds.size === 0 || isBulkSaving} onClick={() => void applyRoomToSelected()} size="sm" type="button" variant="primary">
               {isBulkSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Tag className="h-4 w-4" />}
               {isBulkSaving ? "Applying..." : `Apply to ${selectedIds.size} selected`}
             </Button>
+            {selectedIds.size ? <Button onClick={() => setDeleteSelection(orderedImages.filter((image) => selectedIds.has(image.id) && !deletingIds.has(image.id)))} size="sm" type="button" variant="danger"><Trash2 className="h-4 w-4" />Delete {selectedIds.size} selected</Button> : null}
           </div>
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {galleryImages.map((image) => {
+          {galleryImages.filter((image) => !deletingIds.has(image.id)).map((image) => {
             const orderIndex = orderedImages.findIndex((orderedImage) => orderedImage.id === image.id);
             const isSavingAlt = savingAltId === image.id;
             const isMoving = movingImageId === image.id;
@@ -464,7 +562,7 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
                     <input
                       checked={selectedIds.has(image.id)}
                       className="h-4 w-4 accent-[var(--brand)]"
-                      disabled={isBulkSaving}
+              disabled={isBulkSaving}
                       onChange={() => toggleSelected(image.id)}
                       type="checkbox"
                     />
@@ -531,7 +629,7 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
                         {isMoving ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoveDown className="h-4 w-4" />}
                       </Button>
                     </div>
-                    <DeleteImageDialog disabled={reorderDisabled} image={image} onDeleted={replaceImages} propertyId={activePropertyId} />
+                    <DeleteImageDialog disabled={reorderDisabled || deletingIds.has(image.id)} image={image} onDeleted={deleteOne} />
                   </div>
                 </div>
               </article>
@@ -540,6 +638,18 @@ export function PropertyImageManager({ images: initialImages, propertyId }: { im
         </div>
         </>
       )}
+      <AlertDialog open={Boolean(deleteSelection)} onOpenChange={(open) => { if (!open) setDeleteSelection(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleteSelection?.length ?? 0} images?</AlertDialogTitle>
+            <AlertDialogDescription> This cannot be undone.{deleteSelection?.some((image) => image.is_cover) ? " The cover image is included; the next remaining image will become the cover." : ""}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button onClick={startDeleteSelection} type="button" variant="danger"><Trash2 className="h-4 w-4" />Confirm delete</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }
