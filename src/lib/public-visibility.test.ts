@@ -90,11 +90,13 @@ test("full feed contains public details, omits withdrawn properties and never se
   assert.ok(!text.includes("withdrawn"));
 });
 
-test("property schema preserves studio zeroes, omits unknown facts and retains fractional bathrooms without inventing a total", () => {
+test("property schema preserves public identifiers and broad types, omits unknown facts and retains fractional bathrooms", () => {
   const { schema } = harness();
-  const row = property({ area: "Bogmalo", bedrooms: 0, bathrooms: 1.5, max_guests: 2, check_in_time: "14:00:00", check_out_time: "25:00:00", amenities: ["Kitchen", "Kitchen", " "] });
+  const row = property({ id: "stable-id", public_property_type: "Studio", area: "Bogmalo", bedrooms: 0, bathrooms: 1.5, max_guests: 2, check_in_time: "14:00:00", check_out_time: "25:00:00", amenities: ["Kitchen", "Kitchen", " "] });
   const data = schema.buildPropertyJsonLd(row, []);
   assert.equal(data["@type"], "VacationRental");
+  assert.equal(data.identifier, "stable-id");
+  assert.equal(data.additionalType, "Apartment");
   assert.equal(data.address.addressRegion, "Goa");
   assert.equal(data.containsPlace["@type"], "Accommodation");
   assert.equal(data.containsPlace.numberOfBedrooms, 0);
@@ -106,8 +108,11 @@ test("property schema preserves studio zeroes, omits unknown facts and retains f
   assert.equal(data.checkoutTime, undefined);
   assert.equal(data.image, undefined);
   assert.equal(schema.buildPropertyJsonLd(property({ bathrooms: 2 }), []).containsPlace.numberOfBathroomsTotal, 2);
+  assert.equal(schema.buildPropertyJsonLd(property({ id: "", slug: "slug-id", public_property_type: "Holiday villa" }), []).identifier, "slug-id");
+  assert.equal(schema.buildPropertyJsonLd(property({ public_property_type: "Villa" }), []).additionalType, "Villa");
+  assert.equal(schema.buildPropertyJsonLd(property({ public_property_type: "Holiday home" }), []).additionalType, "VacationRental");
   const text = JSON.stringify(data);
-  for (const unsupported of ["numberOfBathroomUnits", "aggregateRating", "reviews", "price", "availability"]) assert.ok(!text.includes(unsupported));
+  for (const unsupported of ["numberOfBathroomUnits", "aggregateRating", "review", "latitude", "longitude", "geo", "price", "availability"]) assert.ok(!text.includes(unsupported));
   const escaped = schema.serializeJsonLd({ description: "</script><script>alert(1)</script>" });
   assert.ok(!escaped.includes("<"));
   assert.equal(JSON.parse(escaped).description, "</script><script>alert(1)</script>");

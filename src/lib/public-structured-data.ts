@@ -90,6 +90,14 @@ function validTime(value: string | null) {
 
 export function buildPropertyJsonLd(property: PropertyDetail, gallery: PropertyGalleryImage[], seo?: PropertySeo) {
   const url = `${business.url}/property/${property.slug}`;
+  // Keep the identifier independent of listing content so edits to a title or description do not change it.
+  const identifier = property.id?.trim() || property.slug;
+  const propertyType = property.public_property_type?.trim().toLowerCase() || "";
+  const additionalType = propertyType.includes("villa")
+    ? "Villa"
+    : propertyType.includes("studio") || propertyType.includes("apartment")
+      ? "Apartment"
+      : "VacationRental";
   const name = seo?.h1 || property.public_name?.trim();
   // Use the same curated introduction as the visible About section when an override exists.
   const description = seo?.intro || property.full_description?.trim() || property.short_description?.trim() || property.tagline?.trim();
@@ -99,6 +107,7 @@ export function buildPropertyJsonLd(property: PropertyDetail, gallery: PropertyG
   const checkinTime = validTime(property.check_in_time);
   const checkoutTime = validTime(property.check_out_time);
   const bathrooms = property.bathrooms;
+  // Exact coordinates are intentionally not published, and review data belongs to third parties.
   // TODO(public-facts): A fractional bathroom value does not identify the full/partial bathroom count.
   // schema.org has no numberOfBathroomUnits. numberOfBathroomsTotal expects an integer; preserve fractions as a PropertyValue.
   // TODO(public-facts): Missing locality, capacity, amenities, photos or times must be supplied in public listing data; do not infer them.
@@ -107,10 +116,11 @@ export function buildPropertyJsonLd(property: PropertyDetail, gallery: PropertyG
     "@type": "VacationRental",
     "@id": url,
     url,
+    identifier,
+    additionalType,
     ...(name ? { name } : {}),
     ...(description ? { description } : {}),
     ...(images.length ? { image: images } : {}),
-    ...(seo?.schema.registrationId ? { identifier: seo.schema.registrationId } : {}),
     address: {
       "@type": "PostalAddress",
       ...(area ? { addressLocality: area } : {}),
