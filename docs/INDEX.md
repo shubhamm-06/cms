@@ -19,6 +19,7 @@ This is the starting point for developers and AI agents working on CurateMyStay.
    - [Admin Operations Guide](./ADMIN_OPERATIONS_GUIDE.md)
    - [Public Property Catalogue and Booking Enquiries](./PUBLIC_PROPERTY_CATALOGUE_AND_BOOKING_ENQUIRIES.md)
    - [UI Conventions](./UI_CONVENTIONS.md)
+   - [Public Visibility and Content Feeds](./PUBLIC_VISIBILITY.md)
    - [Deployment Runbook](./DEPLOYMENT_RUNBOOK.md)
 8. [Changelog](./CHANGELOG.md) only for implementation history
 

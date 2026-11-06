@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { buildMarketingMetadata, siteOrigin } from "@/app/seo";
 import { faqs, PropertyManagementPage } from "@/components/property-management/property-management-page";
+import { buildFaqJsonLd, buildServiceJsonLd, serializeJsonLd } from "@/src/lib/public-structured-data";
 
 const propertyManagementFont = Figtree({ display: "swap", subsets: ["latin"], variable: "--font-homepage" });
 
@@ -16,9 +17,10 @@ export const metadata: Metadata = {
 
 const jsonLd = [
   { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: siteOrigin }, { "@type": "ListItem", position: 2, name: "Property Management in Goa", item: `${siteOrigin}/property-management-goa` }] },
-  { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([question, answer]) => ({ "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } })) },
+  buildServiceJsonLd(),
+  buildFaqJsonLd(faqs.map(([question, answer]) => ({ question, answer }))),
 ];
 
 export default function PropertyManagementGoaPage() {
-  return <div className={`${propertyManagementFont.variable} cms-homepage`}><script dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} type="application/ld+json" /><PropertyManagementPage /></div>;
+  return <div className={`${propertyManagementFont.variable} cms-homepage`}><script dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} type="application/ld+json" /><PropertyManagementPage /></div>;
 }

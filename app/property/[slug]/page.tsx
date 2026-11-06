@@ -10,6 +10,7 @@ import { PropertyEnquiryProvider } from "@/src/features/catalogue/property-enqui
 import { loadPublicPropertyDetail } from "@/src/features/catalogue/public-property-detail-data";
 import { getPropertySeo } from "@/src/lib/property-seo";
 import { getPropertyImageUrl } from "@/src/lib/utils/property-image-url";
+import { buildBreadcrumbJsonLd, buildPropertyJsonLd, serializeJsonLd } from "@/src/lib/public-structured-data";
 
 /**
  * Public property detail route.
@@ -82,80 +83,20 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
   const seo = result.status === "found" ? getPropertySeo(slug) : undefined;
   const canonicalUrl = new URL(`/property/${slug}`, siteOrigin).href;
-  const jsonLd = result.status !== "found"
-    ? null
-    : seo
-      ? {
-          "@context": "https://schema.org",
-          "@type": "VacationRental",
-          "@id": canonicalUrl,
-          url: canonicalUrl,
-          name: seo.h1,
-          description: seo.metaDescription,
-          image: result.gallery
-            .map((image) => getPropertyImageUrl(image.storage_path))
-            .filter((url): url is string => Boolean(url))
-            .map((url) => new URL(url, siteOrigin).href),
-          ...(seo.schema.registrationId ? { identifier: seo.schema.registrationId } : {}),
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: seo.schema.locality,
-            addressRegion: `${seo.schema.region}, Goa`,
-            addressCountry: "IN",
-          },
-          checkinTime: "14:00",
-          checkoutTime: "11:00",
-          brand: { "@type": "Organization", name: "CurateMyStay", url: siteOrigin },
-          containsPlace: {
-            "@type": "Accommodation",
-            additionalType: `https://schema.org/${seo.schema.type}`,
-            occupancy: { "@type": "QuantitativeValue", value: seo.schema.guests },
-            numberOfBedrooms: seo.schema.bedrooms,
-            numberOfBathroomsTotal: seo.schema.bathrooms,
-            petsAllowed: seo.schema.petsAllowed,
-            amenityFeature: seo.schema.amenities.map((name) => ({
-              "@type": "LocationFeatureSpecification", name, value: true,
-            })),
-          },
-        }
-      : (() => {
-          const { property, gallery } = result;
-          const name = property.public_name?.trim();
-          const description = property.full_description?.trim()
-            || property.short_description?.trim()
-            || property.tagline?.trim();
-          const locality = property.area?.trim() || property.short_location_line?.trim() || property.public_location_text?.trim();
-          const region = property.region?.trim();
-          const images = gallery
-            .map((image) => getPropertyImageUrl(image.storage_path))
-            .filter((url): url is string => Boolean(url))
-            .map((url) => new URL(url, siteOrigin).href);
-
-          return {
-            "@context": "https://schema.org",
-            "@type": "VacationRental",
-            "@id": canonicalUrl,
-            url: canonicalUrl,
-            ...(name ? { name } : {}),
-            ...(description ? { description } : {}),
-            ...(images.length > 0 ? { image: images } : {}),
-            ...(locality || region
-              ? {
-                  address: {
-                    "@type": "PostalAddress",
-                    ...(locality ? { addressLocality: locality } : {}),
-                    ...(region ? { addressRegion: region } : {}),
-                  },
-                }
-              : {}),
-          };
-        })();
+  const jsonLd = result.status === "found" ? [
+    buildPropertyJsonLd(result.property, result.gallery, seo),
+    buildBreadcrumbJsonLd([
+      { name: "Home", url: siteOrigin },
+      { name: "Stays", url: `${siteOrigin}/booking` },
+      { name: seo?.h1 || result.property.public_name || "Property", url: canonicalUrl },
+    ]),
+  ] : null;
 
   return (
     <div className={`${propertyFont.variable} cms-homepage`}>
       {jsonLd ? (
         <script
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
           type="application/ld+json"
         />
       ) : null}

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { business } from "@/src/lib/business";
 
-export const siteName = "CurateMyStay";
+export const siteName = business.name;
 export const siteTitle = "CurateMyStay";
 export const siteDescription =
   "Full-service Airbnb and short-term rental management in Goa with owner-approved monthly P&L visibility.";
-export const siteOrigin = "https://www.curatemystay.net";
+export const siteOrigin = business.url;
 
 export const metadataBase = new URL(siteOrigin);
 
@@ -68,14 +69,4 @@ export const noIndexMetadata: Metadata = {
       follow: false,
     },
   },
-};
-
-export const homeJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  name: siteName,
-  url: siteOrigin,
-  description: siteDescription,
-  areaServed: "Goa",
-  serviceType: "Vacation rental property management",
 };

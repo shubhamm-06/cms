@@ -1,3 +1,5 @@
+import { business } from "@/src/lib/business";
+
 const DEFAULT_PUBLIC_WHATSAPP_MESSAGE =
   "Hi CMS - I am interested in property management for my property in Goa.";
 
@@ -7,12 +9,7 @@ const DEFAULT_PUBLIC_WHATSAPP_MESSAGE =
  * caller never has to read the environment variable again.
  */
 export function getPublicContactNumber(): string | null {
-  const number = (process.env.NEXT_PUBLIC_CMS_WHATSAPP_NUMBER || "").replace(
-    /\D/g,
-    "",
-  );
-
-  return number || null;
+  return business.contactNumber || null;
 }
 
 /** `tel:` link for the public contact number, or null when it is not configured. */

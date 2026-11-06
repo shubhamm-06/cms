@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Globe, Mail, MapPin, MessageCircle, Star } from "lucide-react";
 import { trackDataLayerEvent, trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
+import { business } from "@/src/lib/business";
 
 type PublicFooterProps = {
   analyticsLocation?: string;
@@ -68,13 +69,13 @@ export function PublicFooter({
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <span className="inline-flex min-w-0 items-center gap-3 sm:gap-3.5">
-              <Image alt="Curate My Stay" className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" height={56} src="/logo.png" width={56} />
-              <span className="min-w-0 whitespace-nowrap text-lg font-extrabold leading-none tracking-[-0.02em] text-white sm:text-[22px]">Curate My Stay</span>
+              <Image alt={business.name} className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" height={56} src="/logo.png" width={56} />
+              <span className="min-w-0 whitespace-nowrap text-lg font-extrabold leading-none tracking-[-0.02em] text-white sm:text-[22px]">{business.name}</span>
             </span>
             <p className="mt-4 text-sm italic text-[#e9aa4b]">&quot;Wealth managers for property.&quot;</p>
             <div className="mt-5 grid gap-3 text-sm">
-              <span className="inline-flex items-center gap-2"><MapPin aria-hidden="true" className="h-4 w-4 text-white/50" /> Goa, India</span>
-              <a className="inline-flex min-w-0 items-center gap-2 break-all" href="mailto:curatemystay@gmail.com"><Mail aria-hidden="true" className="h-4 w-4 shrink-0 text-white/50" /> curatemystay@gmail.com</a>
+              <span className="inline-flex items-center gap-2"><MapPin aria-hidden="true" className="h-4 w-4 text-white/50" /> {business.serviceArea}</span>
+              <a className="inline-flex min-w-0 items-center gap-2 break-all" href={`mailto:${business.email}`}><Mail aria-hidden="true" className="h-4 w-4 shrink-0 text-white/50" /> {business.email}</a>
               <a className="inline-flex items-center gap-2" href={whatsappUrl} onClick={() => trackWhatsAppClick(analyticsLocation || "footer")} rel="noreferrer" target="_blank"><MessageCircle aria-hidden="true" className="h-4 w-4 text-white/50" /> WhatsApp us</a>
             </div>
           </div>

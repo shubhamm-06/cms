@@ -15,6 +15,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { siteOrigin } from "@/app/seo";
+import { business } from "@/src/lib/business";
+import { buildPropertyGlance } from "@/src/lib/public-property-copy";
 import { ShowMoreDialog } from "@/components/ui/show-more-dialog";
 import { amenityCategory, amenityIcon, groupAmenities } from "@/src/features/catalogue/amenity-categories";
 import { PropertyAbout } from "@/src/features/catalogue/property-about";
@@ -57,8 +59,7 @@ const mobileAmenityCount = 6;
 const highlightRowCount = 4;
 
 /** Company-level enquiry line: the same for every listing, never property-specific. */
-const enquiryPolicyLine =
-  "An enquiry is not a booking. Our team confirms availability, the final rate and the house rules with you before anything is booked or paid.";
+const enquiryPolicyLine = business.guests.enquiryPolicy;
 
 /**
  * Admins store either "Private" or "Private pool", so only append the noun when
@@ -194,7 +195,6 @@ export function PropertyDetailPage({
   const seo = getPropertySeo(property.slug);
   const name = property.public_name || "Curated stay";
   const pool = poolLabel(property.pool_type);
-  const place = property.short_location_line || [property.area, property.region].filter(Boolean).join(", ");
   const highlights = cleanList(property.property_highlights);
   const highlightRows = highlights.slice(0, highlightRowCount);
   // Highlights beyond the rows are never dropped: they join the amenities.
@@ -205,20 +205,7 @@ export function PropertyDetailPage({
   const showPrice = property.show_price && property.starting_price != null;
   const propertyUrl = `${siteOrigin}/property/${property.slug}`;
 
-  // "Villa in Varca, South Goa · 8 guests · 3 bedrooms · 3 beds · 3.5 bathrooms".
-  const summaryParts = [
-    property.public_property_type && place
-      ? `${property.public_property_type} in ${place}`
-      : property.public_property_type || place || null,
-    property.max_guests != null ? plural(property.max_guests, "guest") : null,
-    property.bedrooms != null ? plural(property.bedrooms, "bedroom") : null,
-    property.beds != null ? plural(property.beds, "bed") : null,
-    property.bathrooms != null ? plural(property.bathrooms, "bathroom") : null,
-  ].filter((part): part is string => Boolean(part));
-
-  // Below md the summary reads as two centred lines: the place, then the capacity.
-  const placeSummary = property.public_property_type && place ? `${property.public_property_type} in ${place}` : property.public_property_type || place || null;
-  const capacitySummary = summaryParts.filter((part) => part !== placeSummary).join(" · ");
+  const atAGlance = buildPropertyGlance(property);
 
   const capacityTiles = [
     property.max_guests != null ? { icon: Users, label: plural(property.max_guests, "guest") } : null,
@@ -305,16 +292,10 @@ export function PropertyDetailPage({
             <ShareButton className="-mr-3 shrink-0 sm:mt-0.5" title={name} url={propertyUrl} />
           </div>
         </div>
-        {summaryParts.length > 0 ? (
-          <p className="mt-2 hidden text-[15px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[16px] md:block">
-            {summaryParts.join(" · ")}
+        {atAGlance ? (
+          <p className="mt-2 text-[15px] leading-6 text-public-body [overflow-wrap:anywhere] sm:text-[16px]">
+            <span className="font-semibold">At a glance: </span>{atAGlance}
           </p>
-        ) : null}
-        {placeSummary ? (
-          <p className="mt-2 text-[15px] leading-6 text-public-muted [overflow-wrap:anywhere] md:hidden">{placeSummary}</p>
-        ) : null}
-        {capacitySummary ? (
-          <p className="mt-0.5 text-[15px] leading-6 text-public-body [overflow-wrap:anywhere] md:hidden">{capacitySummary}</p>
         ) : null}
         {property.promotional_badge ? (
           <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2 md:justify-start">

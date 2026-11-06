@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { buildOrganizationJsonLd, serializeJsonLd } from "@/src/lib/public-structured-data";
 import { FloatingWhatsApp } from "@/components/home/floating-whatsapp";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -61,6 +62,7 @@ export default function RootLayout({
         </Script>
       ) : null}
       <body className="min-h-full flex flex-col">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildOrganizationJsonLd()) }} />
         {gtmId ? (
           <noscript>
             <iframe

@@ -16,6 +16,7 @@ import { PricingCards } from "@/components/home/pricing-cards";
 import { PublicFooter } from "@/components/home/public-footer";
 import { PublicHeader } from "@/components/home/public-header";
 import { FaqAccordion } from "@/components/home/faq-accordion";
+import { business } from "@/src/lib/business";
 import {
   ClosingCtas,
   HeroCtas,
@@ -249,10 +250,7 @@ export function PropertyManagementPage() {
               Full-Service Property Management in Goa
             </h1>
             <p className="mt-5 max-w-3xl text-[17px] leading-7 text-[#484848] sm:text-xl sm:leading-8">
-              Airbnb, villa, apartment and holiday-home management, handled end
-              to end. Dynamic pricing, guest operations, housekeeping and legal
-              compliance, with a transparent monthly P&amp;L you approve before
-              any payout.
+              {business.owners.summary} {business.owners.start}
             </p>
             <HeroCtas />
             <p className="mt-8 max-w-4xl border-t border-[#e6d9d2] pt-5 text-sm font-semibold leading-6 text-[#484848]">
@@ -275,8 +273,16 @@ export function PropertyManagementPage() {
       </Section> */}
       <Section className="border-t border-[#eadfd8] bg-[#fffdf9]">
         <SectionHeading lead="One team, the whole operation. You stay informed; we handle execution.">
-          What full-service property management includes
+          What&apos;s included
         </SectionHeading>
+        <ul className="mt-6 grid gap-x-8 gap-y-3 text-[15px] leading-6 text-[#484848] sm:grid-cols-2">
+          {business.owners.included.map((item) => (
+            <li className="flex items-start gap-2" key={item}>
+              <Check aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-[#ff5a5f]" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
         <div className="mt-9 overflow-hidden rounded-[24px] border border-[#e6d9d2] bg-[#fffdf9] shadow-[0_8px_24px_rgba(70,45,31,0.07)]">
           <div className="grid lg:grid-cols-3">
           {inclusions.map((group) => (

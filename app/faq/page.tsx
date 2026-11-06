@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { buildMarketingMetadata } from "@/app/seo";
 import { FaqPublicPage } from "@/components/home/reference-home";
+import { buildFaqJsonLd, serializeJsonLd } from "@/src/lib/public-structured-data";
 
+// TODO(public-faq): Obtain approved answers about guest booking, online payment, check-in/out and the Goa areas served.
+// Keep these as unpublished suggestions; payout handling and management scope are already answered below.
 const faqItems = [
   {
     question: "What does CurateMyStay do?",
@@ -66,18 +69,7 @@ const faqItems = [
   },
 ];
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqItems.map((faq) => ({
-    "@type": "Question",
-    name: faq.question,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: faq.answer,
-    },
-  })),
-};
+const faqJsonLd = buildFaqJsonLd(faqItems);
 
 const faqFont = Figtree({
   display: "swap",
@@ -99,7 +91,7 @@ export default function FaqPage() {
     <div className={`${faqFont.variable} cms-homepage`}>
       <script
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c"),
+          __html: serializeJsonLd(faqJsonLd),
         }}
         type="application/ld+json"
       />
