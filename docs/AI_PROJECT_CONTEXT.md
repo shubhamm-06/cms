@@ -70,7 +70,7 @@ For the upcoming public property catalogue, checked-in `supabase/schema.sql` and
 
 | Area | Active routes |
 | --- | --- |
-| Public | `/`, `/about`, `/booking`, `/property/[slug]`, `/case-studies`, `/property-management-goa`, `/property-management-proposal`, `/faq`, `/demo`, `/login`, `/signup`, `/auth/callback`, `/pending-approval`, `/account-disabled` |
+| Public | `/`, `/about`, `/booking`, `/goa-villa-stays` (guest SEO page: hero, a "Find your stay" picker, then catalogue cards from `loadPublicCatalogue()` grouped by `public_property_type` into Villa, Apartment, Studio and More stays, anchored at `#villas`, `#apartments`, `#studios` and `#more-stays` inside `#stays`; copy in `src/features/goa-stays/goa-stays-copy.ts`, grouping in `goa-stays-groups.ts`), `/property/[slug]`, `/case-studies`, `/property-management-goa`, `/property-management-proposal`, `/faq`, `/demo`, `/login`, `/signup`, `/auth/callback`, `/pending-approval`, `/account-disabled` |
 | Public API | `/api/contact`, `/api/auth/send-email-hook`, `/api/owner-forecast`, `/api/owner-forecast/proposal` |
 | Admin | `/dashboard`, `/dashboard/users`, `/dashboard/properties`, `/dashboard/bookings`, `/dashboard/expenses`, `/dashboard/pnl`, `/dashboard/payouts`, `/dashboard/queries`, `/dashboard/settings`, `/dashboard/profile` |
 | Owner | `/owner`, `/owner/property`, `/owner/bookings`, `/owner/expenses`, `/owner/payout`, `/owner/queries`, `/owner/profile` |
@@ -389,3 +389,5 @@ Core smoke checks:
 As of 2026-06-22, the current application includes the full Phase 1 public/auth/admin/owner scope described above. The owner payout page uses an unchanged shared current-month live panel followed by one complete latest-first payout history table with eligible review actions. The public forecast remains server-authoritative and asynchronous with respect to pitch-deck generation.
 
 The most recent documentation audit verified source, schema, routes, validators, environment usage, and active workflows. Run lint/build again after any subsequent code change rather than relying on this date.
+
+

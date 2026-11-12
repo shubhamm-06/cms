@@ -80,6 +80,35 @@ function PillField({
   );
 }
 
+/** Catalogue read failed. Shared with `/goa-villa-stays` so both pages show the same state. */
+export function CatalogueErrorNotice() {
+  return (
+    <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-[#e2d5cd] bg-[#fbf7f1] px-6 py-12 text-center">
+      <h2 className="text-[19px] font-bold tracking-[-0.01em] text-[#222222]">
+        We could not load our stays just now
+      </h2>
+      <p className="mx-auto mt-2.5 max-w-md text-[15px] leading-7 text-[#484848]">
+        Please refresh the page in a moment. If it keeps happening, message us and we will
+        share the homes that suit you.
+      </p>
+    </div>
+  );
+}
+
+/** Catalogue read succeeded with no published stays. Shared with `/goa-villa-stays`. */
+export function CatalogueEmptyNotice() {
+  return (
+    <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-[#e2d5cd] bg-[#fbf7f1] px-6 py-12 text-center">
+      <h2 className="text-[19px] font-bold tracking-[-0.01em] text-[#222222]">
+        Our Goa stays are being prepared
+      </h2>
+      <p className="mx-auto mt-2.5 max-w-md text-[15px] leading-7 text-[#484848]">
+        We are finishing the first property listings. Please check back shortly.
+      </p>
+    </div>
+  );
+}
+
 export function PropertyCatalogue({
   failed = false,
   properties,
@@ -109,15 +138,7 @@ export function PropertyCatalogue({
       {failed ? (
         <section className="scroll-mt-20 bg-white lg:scroll-mt-24" id={bookingStaysSectionId}>
           <div className="mx-auto max-w-[1180px] px-4 py-14 sm:px-6 sm:py-16 md:px-8">
-            <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-[#e2d5cd] bg-[#fbf7f1] px-6 py-12 text-center">
-              <h2 className="text-[19px] font-bold tracking-[-0.01em] text-[#222222]">
-                We could not load our stays just now
-              </h2>
-              <p className="mx-auto mt-2.5 max-w-md text-[15px] leading-7 text-[#484848]">
-                Please refresh the page in a moment. If it keeps happening, message us and we will
-                share the homes that suit you.
-              </p>
-            </div>
+            <CatalogueErrorNotice />
           </div>
         </section>
       ) : (
@@ -186,14 +207,7 @@ export function PropertyCatalogue({
             )}
             </>
           ) : (
-            <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-[#e2d5cd] bg-[#fbf7f1] px-6 py-12 text-center">
-              <h2 className="text-[19px] font-bold tracking-[-0.01em] text-[#222222]">
-                Our Goa stays are being prepared
-              </h2>
-              <p className="mx-auto mt-2.5 max-w-md text-[15px] leading-7 text-[#484848]">
-                We are finishing the first property listings. Please check back shortly.
-              </p>
-            </div>
+            <CatalogueEmptyNotice />
           )}
         </div>
       )}

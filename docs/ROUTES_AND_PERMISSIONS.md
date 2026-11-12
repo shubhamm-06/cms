@@ -11,6 +11,7 @@ Route layouts and server actions enforce application roles. Supabase RLS must in
 | `/` | Reference-style homepage and owner forecast funnel | Public | Skips proxy session refresh; forecast calculations still run server-side through APIs |
 | `/about` | Company and family-run approach | Public | Public marketing page; no authentication required |
 | `/case-studies` | CurateMyStay-managed Goa property case studies | Public | Server-rendered Panjim and Varca performance, review, and Airbnb-link content |
+| `/goa-villa-stays` | Guest SEO page: hero, stay picker and stay cards grouped by type, read from the public catalogue (`loadPublicCatalogue()`, anon client, 60-second cache) | Public | Public SEO page; no authentication required |
 | `/booking` | Public property catalogue | Public | Server-rendered catalogue of published, operationally active properties. Reads only a public-safe source with the anon key, never service role, and never selects private operational columns. Does not check availability or create booking requests |
 | `/property/[slug]` | Public property detail page | Public | Server-rendered detail for one published, operationally active property. Reads only `public_property_details` and `public_property_gallery` with the anon key, never service role, and never selects private operational columns. Missing, unpublished and inactive slugs all return the same not-found result, so the route never reveals that a private property exists. Does not check availability or create booking requests |
 | `/property-management-goa` | Goa property-management landing page | Public | Public SEO/acquisition page; no authentication required |
@@ -88,3 +89,5 @@ All `/owner/*` routes require an authenticated profile with `role = owner` and `
 | Read CMS expenses | No | No | Yes |
 | Approve/query eligible owner payout | No | Own only | No |
 | Resolve query / mark payout paid | No | No | Yes |
+
+

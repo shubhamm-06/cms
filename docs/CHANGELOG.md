@@ -1,4 +1,42 @@
+## Goa Guest SEO Page (Step 6a)
+
+- Added the closing WhatsApp CTA band (`cta_location: goa_stays_page_closing`) to /goa-villa-stays, listed the page in the sitemap, and added it to the Key pages list in /llms.txt and /llms-full.txt.
+
+## Goa Guest SEO Page (Step 5)
+
+- Added the FAQ accordion and FAQPage, BreadcrumbList and stay ItemList JSON-LD to /goa-villa-stays; the FAQ text and its structured data come from one copy-module array.
+
+## Goa Guest SEO Page (Step 4)
+
+- Added the "Villa or hotel for your group?" cards and a "Choosing an area" guide to /goa-villa-stays; the area cards are built from the catalogue the page already loads, with descriptions from the copy module.
+
+## Goa Guest SEO How-It-Works Motion Graphic
+
+- The "How direct booking works" section on /goa-villa-stays now embeds the WhatsApp booking animation once, beside a single-column step list from lg and centred below the steps on smaller screens.
+
+## Goa Guest SEO Page (Step 3)
+
+- Added the "How direct booking works" steps and the Hotel / Airbnb / Booking with us comparison table to /goa-villa-stays, with all copy in the copy module.
+
+## Goa Guest SEO Picker Photos
+
+- Each "Find your stay" card on /goa-villa-stays now shows the first available cover photo from its group, falling back to text only.
+
+## Goa Guest SEO Page (Step 2)
+
+- /goa-villa-stays now reads the public catalogue through `loadPublicCatalogue()` and adds a "Find your stay" picker plus the existing catalogue cards grouped by `public_property_type` (Villa, Apartment, Studio, then More stays), with anchors `#villas`, `#apartments`, `#studios` and `#more-stays`. The hero's "See villas" button falls back to `#stays` when there is no Villa group. The `/booking` error and empty notices are now exported from `property-catalogue.tsx` so both pages share them; `/booking` renders the same markup.
+
+## Goa Guest SEO Page (Step 1)
+
+- Added /goa-villa-stays with shared SEO metadata, guest header and footer, and a copy-module-driven hero with WhatsApp tracking; later page sections remain for the next step.
+
 # Changelog
+
+- Restyled the `/goa-villa-stays` booking steps as compact cards with numbered badges.
+
+## Goa Guest SEO Hero Follow-up
+
+- Replaced the responsive device mockups with one unframed living-room hero photo and shortened the guest introduction.
 
 ## Airbnb Rating and Superhost Tenure Copy
 
@@ -878,3 +916,5 @@
 - `/booking` hero: the existing photograph is blurred 2px on its own layer, the supporting copy is shortened to `Hand-picked villas and apartments, personally managed by our team.`, and the hero is shorter on phones (400px).
 - Search panel: a compact 2 x 2 field grid with a full-width `Search` button below `lg`; the desktop pill is unchanged. Fields, filtering and reset behaviour are unchanged.
 - Property grid: one column on phones, two from `sm` (previously three on desktop), 3:2 image area. Each card with several photos has a swipe/arrow carousel (`CardImageCarousel`) fed by one batched `public_property_gallery` read; the card still opens its property. No schema, package or navbar change.
+
+- Reworked the Goa villa stays area guide with richer cards and first-property cover photos.

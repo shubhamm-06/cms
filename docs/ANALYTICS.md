@@ -261,6 +261,7 @@ property_page_enquiry_card
 property_page_managed_by
 property_page_mobile_bar
 booking_hero
+goa_stays_page
 ```
 
 ### Example Event Payload
@@ -661,3 +662,8 @@ G-27JT5KQX4C
 Documentation:
 docs/ANALYTICS.md
 ```
+
+
+
+
+

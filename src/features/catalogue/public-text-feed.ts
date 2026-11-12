@@ -63,7 +63,7 @@ export function renderPublicTextFeed(properties: CatalogueProperty[] = [], detai
     "What's included:\n" + business.owners.included.map((item) => `- ${item}`).join("\n"),
     "## Key pages",
     [
-      ["Home", ""], ["Stays", "/booking"], ["Property management", "/property-management-goa"],
+      ["Home", ""], ["Stays", "/booking"], ["Goa villa stays", "/goa-villa-stays"], ["Property management", "/property-management-goa"],
       ["Property management proposal", "/property-management-proposal"], ["Case studies", "/case-studies"],
       ["About", "/about"], ["FAQ", "/faq"],
     ].map(([name, path]) => `- [${name}](${business.url}${path})`).join("\n"),
