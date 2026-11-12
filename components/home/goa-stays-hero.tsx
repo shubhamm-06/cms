@@ -71,7 +71,7 @@ export function GoaStaysHero({ staysTargetId }: { staysTargetId: "villas" | "sta
             preload
             quality={85}
             sizes="(min-width: 1024px) 50vw, 100vw"
-            src="/homepage/goa-stays-hero.jpg"
+            src="/homepage/goa-stays-hero-v2.jpg"
           />
         </div>
       </div>
