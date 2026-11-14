@@ -83,7 +83,11 @@ export function PublicFooter({
           <FooterLinks items={resourceLinks} title="Resources" />
         </div>
         <div className="mt-10 flex flex-col items-start gap-4 border-t border-white/10 pt-6 text-xs leading-5 text-white/45 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <span>Copyright Curate My Stay 2026 - Privacy - Terms - Cookies</span>
+          <nav aria-label="Legal links" className="flex flex-wrap gap-x-2">
+            <span>Copyright Curate My Stay 2026 -</span>
+            <a className="hover:text-white" href="/privacy-policy">Privacy</a>
+            <span>- Terms - Cookies</span>
+          </nav>
           <div className="flex gap-4">
             <Globe aria-hidden="true" className="h-5 w-5" />
             <MessageCircle aria-hidden="true" className="h-5 w-5" />
