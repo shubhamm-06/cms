@@ -1,13 +1,13 @@
 "use client";
 
 import { Check } from "lucide-react";
-import Image from "next/image";
 import type { MouseEvent } from "react";
 import { FaWhatsapp } from "react-icons/fa6";
 import { goaStaysCopy } from "@/src/features/goa-stays/goa-stays-copy";
 import { buildGuestHeaderWhatsAppMessage } from "@/src/features/catalogue/guest-whatsapp-message";
 import { trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
+import { HeroCarousel } from "@/components/shared/hero-carousel";
 
 /** `staysTargetId` is `villas`, or `stays` when the catalogue has no Villa group. */
 export function GoaStaysHero({ staysTargetId }: { staysTargetId: "villas" | "stays" }) {
@@ -63,17 +63,19 @@ export function GoaStaysHero({ staysTargetId }: { staysTargetId: "villas" | "sta
             {goaStaysCopy.hero.trustLine}
           </p>
         </div>
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl lg:rounded-3xl">
-          <Image
-            alt="Sunlit living room with a cream sofa and large windows"
-            className="object-cover"
-            fill
-            preload
-            quality={85}
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            src="/homepage/goa-stays-hero-v2.jpg"
-          />
-        </div>
+        <HeroCarousel
+          ariaLabel="Goa villa stays"
+          className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl lg:rounded-3xl"
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          slides={[
+            { alt: "Sunlit living room with a cream sofa and large windows", src: "/homepage/goa-stays-hero-v2.jpg" },
+            { alt: "Cream-colored Goa villa with a covered veranda and garden", src: "/homepage/varca-1.jpg" },
+            { alt: "Holiday home with a landscaped garden and swimming pool", src: "/homepage/varca-2.jpg" },
+            { alt: "Bright living room with blue sofas, wide windows and a wooden coffee table", src: "/homepage/varca-3.jpg" },
+            { alt: "Resort-style swimming pool surrounded by tropical gardens", src: "/homepage/IMG_0524.jpg" },
+            { alt: "Spacious villa living room with blue sofas and a large window", src: "/homepage/IMG_1541.jpg" },
+          ]}
+        />
       </div>
     </section>
   );

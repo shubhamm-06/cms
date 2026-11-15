@@ -109,7 +109,7 @@ export const goaStaysCopy = {
       { question: "Is booking direct cheaper than Airbnb?", answer: "Direct rates are typically 10 to 15% lower because you skip the platform fee. Send us your dates and we will quote the direct price so you can compare." },
       { question: "How do I pay?", answer: "You pay by UPI. Nothing is booked or charged until we confirm your dates and rate on WhatsApp." },
       { question: "Which villas do you have in Goa?", answer: "Our villas are listed on this page with photos, guest capacity and beach distance. Open any stay to see its full details, amenities and house rules." },
-      { question: "Do the villas have a pool?", answer: "Several of our stays have a shared pool. The pool type is shown on each stay page." },
+      { question: "Do the villas have a pool?", answer: "Yes, we have stays with a pool. The pool type is shown on each stay page." },
       { question: "Is a villa or a hotel better for a group?", answer: "A villa keeps your group together with shared living space and one rate for the whole stay, instead of paying for several separate rooms." },
       { question: "Which area of Goa should I choose?", answer: "Our stays are in the areas shown in the area guide on this page. Quieter beach areas suit families and groups, while the city suits guests who want cafes and restaurants close by." },
       { question: "Are pets allowed?", answer: "It depends on the stay. Each stay page lists whether pets are welcome." },

@@ -43,6 +43,7 @@ import { trackDataLayerEvent, trackWhatsAppClick } from "@/src/lib/analytics";
 import type { ForecastResult as ServerForecastResult } from "@/src/features/owner-forecast/forecast-calculator";
 import { FamilySection } from "@/components/home/family-section";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
+import { HeroCarousel as SharedHeroCarousel } from "@/components/shared/hero-carousel";
 
 const photo = (name: string) => `/homepage/${name}`;
 const WHATSAPP_URL = getPublicWhatsAppUrl() || "#";
@@ -292,42 +293,15 @@ function Heading({
 }
 
 function HeroCarousel() {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setIndex((current) => (current + 1) % carouselPhotos.length);
-    }, 4000);
-
-    return () => window.clearInterval(timer);
-  }, []);
-
   return (
-    <div className="relative h-80 overflow-hidden rounded-[20px] bg-[#f7f7f7] shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:h-[min(70vh,540px)] sm:min-h-[380px] sm:rounded-[24px]">
-      {carouselPhotos.map((src, photoIndex) => (
-        <Image
-          alt={`Curate My Stay property ${photoIndex + 1}`}
-          className={`object-cover [filter:saturate(1.06)_contrast(1.03)_brightness(1.02)] transition-opacity duration-[1200ms] ease-in-out ${photoIndex === index ? "opacity-100" : "opacity-0"}`}
-          fill
-          key={src}
-          priority={photoIndex === 0}
-          sizes="(min-width: 1024px) 540px, 100vw"
-          src={photo(src)}
-        />
-      ))}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-      <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
-        {carouselPhotos.map((src, photoIndex) => (
-          <button
-            aria-label={`Show property photo ${photoIndex + 1}`}
-            className={`h-2 rounded-full border-0 bg-white p-0 transition-all duration-300 ${photoIndex === index ? "w-5 opacity-100" : "w-2 opacity-50"}`}
-            key={src}
-            onClick={() => setIndex(photoIndex)}
-            type="button"
-          />
-        ))}
-      </div>
-    </div>
+    <SharedHeroCarousel
+      ariaLabel="Goa property photos"
+      className="relative h-80 overflow-hidden rounded-[20px] bg-[#f7f7f7] shadow-[0_12px_32px_rgba(0,0,0,0.16)] sm:h-[min(70vh,540px)] sm:min-h-[380px] sm:rounded-[24px]"
+      imageClassName="[filter:saturate(1.06)_contrast(1.03)_brightness(1.02)]"
+      overlay
+      sizes="(min-width: 1024px) 540px, 100vw"
+      slides={carouselPhotos.map((src) => ({ alt: "Goa holiday rental property", src: photo(src) }))}
+    />
   );
 }
 
