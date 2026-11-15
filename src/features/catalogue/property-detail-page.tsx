@@ -260,6 +260,7 @@ export function PropertyDetailPage({
   const enquiryCard = (
     <PropertyEnquiryCard
       acceptBookingRequests={property.accept_booking_requests}
+      airbnbListingUrl={property.airbnb_listing_url}
       bookingEnquiryNote={property.booking_enquiry_note}
       checkInLabel={checkIn}
       checkOutLabel={checkOut}

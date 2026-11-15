@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAirbnbListingUrl } from "@/src/lib/airbnb-url";
 import { extractIframeSrc, isAllowedMapHost, safeHttpUrl } from "@/src/lib/maps";
 import { normalizePropertySlug } from "@/src/lib/utils/property-slug";
 
@@ -43,24 +44,7 @@ const slug = z.preprocess(
   z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and hyphens only.").nullable().optional(),
 );
 
-/**
- * An HTTPS Airbnb listing link, for example https://www.airbnb.co.in/rooms/12345678.
- * Any Airbnb country domain is accepted; the path must be a listing (`/rooms/...`).
- */
-export function isAirbnbListingUrl(value: string | null | undefined) {
-  try {
-    const url = new URL(value?.trim() ?? "");
-    return (
-      url.protocol === "https:" &&
-      !url.username &&
-      !url.password &&
-      /^(?:[a-z]+\.)?airbnb\.(?:[a-z]{2,3}|co\.[a-z]{2}|com\.[a-z]{2})$/i.test(url.hostname) &&
-      /^\/rooms\/(plus\/)?\d+/.test(url.pathname)
-    );
-  } catch {
-    return false;
-  }
-}
+export { isAirbnbListingUrl };
 
 export const propertySchema = z
   .object({

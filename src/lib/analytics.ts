@@ -27,3 +27,10 @@ export function trackWhatsAppClick(ctaLocation: string) {
     destination_type: "whatsapp",
   });
 }
+
+export function trackAirbnbClick(ctaLocation: string) {
+  trackDataLayerEvent("airbnb_click", {
+    cta_location: ctaLocation,
+    destination_type: "airbnb",
+  });
+}

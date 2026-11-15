@@ -2,9 +2,11 @@
 
 import { ChevronDown, Phone } from "lucide-react";
 import { useId } from "react";
-import { FaWhatsapp } from "react-icons/fa6";
+import { FaAirbnb, FaWhatsapp } from "react-icons/fa6";
 import { usePropertyEnquiry } from "@/src/features/catalogue/property-enquiry-context";
+import { getPropertyEnquiryCtas } from "@/src/features/catalogue/property-enquiry-cta";
 import { addOneDay, parseDateInputValue, toDateInputValue } from "@/src/features/catalogue/property-enquiry-message";
+import { trackAirbnbClick } from "@/src/lib/analytics";
 import { getPublicPhoneUrl } from "@/src/lib/public-whatsapp";
 
 /**
@@ -23,6 +25,7 @@ import { getPublicPhoneUrl } from "@/src/lib/public-whatsapp";
 
 type PropertyEnquiryCardProps = {
   acceptBookingRequests: boolean;
+  airbnbListingUrl: string | null;
   bookingEnquiryNote: string | null;
   checkInLabel: string | null;
   checkOutLabel: string | null;
@@ -139,6 +142,7 @@ export function StayGuestSelect({ className = "", maxGuests }: { className?: str
 
 export function PropertyEnquiryCard({
   acceptBookingRequests,
+  airbnbListingUrl,
   bookingEnquiryNote,
   checkInLabel,
   checkOutLabel,
@@ -151,6 +155,7 @@ export function PropertyEnquiryCard({
   const today = toDateInputValue(new Date());
   const warningId = useId();
   const phoneHref = getPublicPhoneUrl();
+  const { airbnbUrl } = getPropertyEnquiryCtas(acceptBookingRequests, airbnbListingUrl);
 
   const stayTimeRows = [
     checkInLabel ? { label: "Check-in", value: checkInLabel } : null,
@@ -225,23 +230,58 @@ export function PropertyEnquiryCard({
           <div className="mt-3.5 flex flex-col gap-2.5">
             {/*
               `app/globals.css` sets an unlayered `a { color: inherit }`, which
-              outranks Tailwind's layered `text-*` utilities, so both CTAs carry
-              their colour on an inner span. The icons follow via `currentColor`.
+              outranks Tailwind's layered `text-*` utilities, so every CTA carries
+              its colour on an inner span. The icons follow via `currentColor`.
             */}
-            <a
-              aria-describedby={error ? warningId : undefined}
-              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-whatsapp px-6 py-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition duration-150 hover:bg-whatsapp-hover focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2 active:scale-[0.99]"
-              href={whatsappUrl}
-              onClick={(event) => handleWhatsAppClick(event, "property_page_enquiry_card")}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <span className="inline-flex items-center gap-2 text-[17px] font-semibold leading-6 text-white">
-                <FaWhatsapp aria-hidden="true" className="h-[19px] w-[19px] shrink-0" />
-                Ask about this stay
-              </span>
-            </a>
-            {phoneHref ? (
+            {airbnbUrl ? (
+              <div className="relative mt-2.5">
+                <span className="pointer-events-none absolute -top-2.5 right-3 z-10 rounded-full border border-whatsapp bg-public-cream px-2.5 py-0.5 text-[11px] font-bold uppercase leading-4 tracking-[0.06em] text-whatsapp-ink shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
+                  Best price
+                </span>
+                <a
+                  aria-describedby={error ? warningId : undefined}
+                  className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-whatsapp px-6 py-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition duration-150 hover:bg-whatsapp-hover focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2 active:scale-[0.99]"
+                  href={whatsappUrl}
+                  onClick={(event) => handleWhatsAppClick(event, "property_page_enquiry_card")}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <span className="inline-flex items-center gap-2 text-[17px] font-semibold leading-6 text-white">
+                    <FaWhatsapp aria-hidden="true" className="h-[19px] w-[19px] shrink-0" />
+                    Book directly on WhatsApp
+                  </span>
+                </a>
+              </div>
+            ) : (
+              <a
+                aria-describedby={error ? warningId : undefined}
+                className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-whatsapp px-6 py-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition duration-150 hover:bg-whatsapp-hover focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2 active:scale-[0.99]"
+                href={whatsappUrl}
+                onClick={(event) => handleWhatsAppClick(event, "property_page_enquiry_card")}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span className="inline-flex items-center gap-2 text-[17px] font-semibold leading-6 text-white">
+                  <FaWhatsapp aria-hidden="true" className="h-[19px] w-[19px] shrink-0" />
+                  Ask about this stay
+                </span>
+              </a>
+            )}
+            {airbnbUrl ? (
+              <a
+                className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-linear-to-r from-airbnb-rausch-start via-airbnb-rausch-mid to-airbnb-rausch-end px-6 py-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition duration-150 hover:brightness-90 focus-visible:ring-2 focus-visible:ring-airbnb-rausch-mid focus-visible:ring-offset-2 active:scale-[0.99]"
+                href={airbnbUrl}
+                onClick={() => trackAirbnbClick("property_page_enquiry_card")}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span className="inline-flex items-center gap-2 text-[17px] font-bold leading-6 text-white">
+                  <FaAirbnb aria-hidden="true" className="h-[20px] w-[20px] shrink-0" />
+                  Book on Airbnb
+                  <span className="sr-only">(opens in a new tab)</span>
+                </span>
+              </a>
+            ) : phoneHref ? (
               <a
                 className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl border border-public-control bg-white px-6 py-3 text-center outline-none transition duration-150 hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 active:scale-[0.99]"
                 href={phoneHref}

@@ -222,6 +222,7 @@ Analytics measures anonymous behavior only.
 | ----------------------- | ------------------------------------------------------------------- | ---------------------------------- | ----------------------------- |
 | `calendar_click`        | Visitor clicks a Calendly booking CTA                               | `cta_location`, `destination_type` | Appointment intent            |
 | `whatsapp_click`        | Visitor clicks a public WhatsApp CTA, including the shared floating icon | `cta_location`, `destination_type` | Conversation intent           |
+| `airbnb_click`          | Visitor clicks `Book on Airbnb` / `Airbnb` on a property page that has a valid Airbnb listing link | `cta_location`, `destination_type` | Outbound booking-intent (a guest choosing Airbnb over direct WhatsApp) |
 | `forecast_form_open`    | Visitor clicks an existing CTA that takes them to the forecast form | `cta_location`, `form_name`        | Forecast interest             |
 | `forecast_form_started` | First forecast form interaction per page view                       | `form_name`, `form_step`           | Serious form engagement       |
 | `generate_lead`         | Valid forecast request succeeds and result is displayed             | `form_name`, `lead_type`           | **Primary lead conversion**   |
@@ -233,7 +234,7 @@ Analytics measures anonymous behavior only.
 ### Current Shared Parameter Values
 
 ```txt
-destination_type = calendly | whatsapp
+destination_type = calendly | whatsapp | airbnb
 form_name = owner_forecast
 lead_type = pitch_deck_forecast
 asset_type = pitch_deck_pdf
@@ -263,6 +264,12 @@ property_page_mobile_bar
 booking_hero
 goa_stays_page
 ```
+
+### `airbnb_click`
+
+Fired by `trackAirbnbClick(ctaLocation)` in `src/lib/analytics.ts` when a visitor clicks the secondary Airbnb CTA on `/property/[slug]`. It appears only for a property with `accept_booking_requests` true and a valid `airbnb_listing_url` (`isAirbnbListingUrl`), decided by `getPropertyEnquiryCtas()` in `src/features/catalogue/property-enquiry-cta.ts`. Parameters are exactly `cta_location` (`property_page_enquiry_card` on the stay card from `lg`, `property_page_mobile_bar` on the sticky bar below `lg`) and `destination_type: "airbnb"`. No listing URL, property name, dates or guest count is sent. The link opens in a new tab and needs no dates, so the event fires on every click, unlike `whatsapp_click`, which fires only after valid dates.
+
+**GTM action required:** the trigger `TR - CMS - Public Funnel Events` matches events by regex, so `airbnb_click` is ignored until it is added to the regex shown in section 2 (it is already in the regex above). The GA4 event tag already forwards `{{Event}}`, and `cta_location` / `destination_type` already have data layer variables, so no new variable is needed. Verify in GTM Preview before publishing.
 
 ### Example Event Payload
 
@@ -307,7 +314,7 @@ Trigger firing condition: All Custom Events
 Event regex:
 
 ```txt
-^(calendar_click|whatsapp_click|forecast_form_open|forecast_form_started|generate_lead|pitch_deck_ready|pitch_deck_download|login_cta_click|signup_cta_click)$
+^(calendar_click|whatsapp_click|airbnb_click|forecast_form_open|forecast_form_started|generate_lead|pitch_deck_ready|pitch_deck_download|login_cta_click|signup_cta_click)$
 ```
 
 ---
@@ -329,6 +336,7 @@ Examples:
 ```txt
 calendar_click
 whatsapp_click
+airbnb_click
 generate_lead
 pitch_deck_download
 ```
@@ -409,6 +417,7 @@ https://curatemystay.net
 ```txt
 Calendar CTA → calendar_click
 WhatsApp CTA → whatsapp_click
+Property page "Book on Airbnb" (property with a valid Airbnb link) → airbnb_click
 Forecast CTA → forecast_form_open
 First forecast input interaction → forecast_form_started
 Valid forecast submission → generate_lead
@@ -463,6 +472,7 @@ These are useful for diagnosing campaign performance but should not initially be
 ```txt
 calendar_click
 whatsapp_click
+airbnb_click
 forecast_form_open
 forecast_form_started
 pitch_deck_ready

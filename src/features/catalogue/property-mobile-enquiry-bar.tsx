@@ -1,10 +1,12 @@
 "use client";
 
 import { Phone } from "lucide-react";
-import { FaWhatsapp } from "react-icons/fa6";
+import { FaAirbnb, FaWhatsapp } from "react-icons/fa6";
+import { getPropertyEnquiryCtas } from "@/src/features/catalogue/property-enquiry-cta";
 import { usePropertyEnquiry } from "@/src/features/catalogue/property-enquiry-context";
 import { formatStayRange } from "@/src/features/catalogue/property-enquiry-message";
 import { STAY_DATES_SECTION_ID } from "@/src/features/catalogue/property-mobile-date-picker";
+import { trackAirbnbClick } from "@/src/lib/analytics";
 import { getPublicPhoneUrl } from "@/src/lib/public-whatsapp";
 
 /**
@@ -15,12 +17,16 @@ import { getPublicPhoneUrl } from "@/src/lib/public-whatsapp";
  */
 export function PropertyMobileEnquiryBar({
   acceptBookingRequests,
+  airbnbListingUrl,
 }: {
   acceptBookingRequests: boolean;
+  airbnbListingUrl: string | null;
 }) {
   const enquiry = usePropertyEnquiry();
   const whatsappUrl = acceptBookingRequests ? enquiry.whatsappUrl : null;
   const phoneHref = getPublicPhoneUrl();
+  const { airbnbUrl } = getPropertyEnquiryCtas(acceptBookingRequests, airbnbListingUrl);
+  const showAirbnb = Boolean(whatsappUrl && airbnbUrl);
   const range = formatStayRange(enquiry.checkIn, enquiry.checkOut);
 
   if (!whatsappUrl && !phoneHref) return null;
@@ -43,7 +49,7 @@ export function PropertyMobileEnquiryBar({
         <div className="mx-auto flex max-w-[640px] items-center gap-3">
           {/* Below md: the chosen dates (or a prompt), which jump to the inline calendar. */}
           {whatsappUrl ? (
-            <button className="min-w-0 flex-1 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-public-coral md:hidden" onClick={scrollToDates} type="button">
+            <button className={`min-w-0 flex-1 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-public-coral md:hidden ${showAirbnb ? "max-[359px]:hidden" : ""}`} onClick={scrollToDates} type="button">
               {range ? (
                 <>
                   <span className="block truncate text-[15px] font-semibold text-public-ink underline underline-offset-4">{range}</span>
@@ -61,22 +67,52 @@ export function PropertyMobileEnquiryBar({
           ) : null}
           {whatsappUrl ? (
             // The colour sits on the inner span: globals.css sets `a { color: inherit }` unlayered.
-            <a
-              className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-whatsapp px-3.5 py-2.5 md:flex-1 md:shrink md:px-4 outline-none transition-colors hover:bg-whatsapp-hover focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2"
-              href={whatsappUrl}
-              onClick={(event) => enquiry.handleWhatsAppClick(event, "property_page_mobile_bar")}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <span className="inline-flex items-center gap-2 whitespace-nowrap text-[15px] font-semibold text-white md:text-[16px]">
-                <FaWhatsapp aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
-                Ask about this stay
-              </span>
-            </a>
+            <div className={`relative ${showAirbnb ? "max-[359px]:flex-1 md:flex-1" : "md:flex-1"} shrink-0 md:shrink`}>
+              {showAirbnb ? (
+                <span className="pointer-events-none absolute -top-2.5 right-1.5 z-10 rounded-full border border-whatsapp bg-public-cream px-1.5 py-px text-[9.5px] font-bold uppercase leading-[14px] tracking-[0.05em] text-whatsapp-ink shadow-[0_1px_3px_rgba(0,0,0,0.15)]">
+                  Best price
+                </span>
+              ) : null}
+              <a
+                aria-label={showAirbnb ? "Book directly on WhatsApp" : undefined}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-whatsapp px-3.5 py-2.5 md:px-4 outline-none transition-colors hover:bg-whatsapp-hover focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2"
+                href={whatsappUrl}
+                onClick={(event) => enquiry.handleWhatsAppClick(event, "property_page_mobile_bar")}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span className="inline-flex items-center gap-2 whitespace-nowrap text-[15px] font-semibold text-white md:text-[16px]">
+                  <FaWhatsapp aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                  {showAirbnb ? (
+                    <>
+                      <span className="md:hidden">WhatsApp</span>
+                      <span className="hidden md:inline">Book directly on WhatsApp</span>
+                    </>
+                  ) : (
+                    "Ask about this stay"
+                  )}
+                </span>
+              </a>
+            </div>
           ) : (
             <p className="flex-1 text-[14px] leading-5 text-public-body">Enquiries for this stay are currently paused.</p>
           )}
-          {phoneHref ? (
+          {showAirbnb && airbnbUrl ? (
+            <a
+              aria-label="Book on Airbnb (opens in a new tab)"
+              className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-r from-airbnb-rausch-start via-airbnb-rausch-mid to-airbnb-rausch-end px-3 outline-none transition duration-150 hover:brightness-90 focus-visible:ring-2 focus-visible:ring-airbnb-rausch-mid focus-visible:ring-offset-2 md:px-4"
+              href={airbnbUrl}
+              onClick={() => trackAirbnbClick("property_page_mobile_bar")}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[14px] font-bold text-white md:text-[15px]">
+                <FaAirbnb aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                <span className="md:hidden">Airbnb</span>
+                <span className="hidden md:inline">Book on Airbnb</span>
+              </span>
+            </a>
+          ) : phoneHref ? (
             <a
               aria-label="Call us"
               className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-public-control bg-white outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2"

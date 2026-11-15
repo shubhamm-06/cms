@@ -922,3 +922,14 @@
 - Property grid: one column on phones, two from `sm` (previously three on desktop), 3:2 image area. Each card with several photos has a swipe/arrow carousel (`CardImageCarousel`) fed by one batched `public_property_gallery` read; the card still opens its property. No schema, package or navbar change.
 
 - Reworked the Goa villa stays area guide with richer cards and first-property cover photos.
+
+## Airbnb Booking CTA on Property Pages (2026-11-15)
+
+- `/property/[slug]` with a valid `airbnb_listing_url` and `accept_booking_requests` true now shows `Book directly on WhatsApp` (green, with a `Best price` badge and the line `Book direct on WhatsApp for a better rate than Airbnb`) and an outlined `Book on Airbnb` new-tab link instead of `Call us`; the sticky mobile bar swaps its Call icon for a compact `Airbnb` button. WhatsApp keeps the shared dates, validation, message and `whatsapp_click`. No discount number or price is claimed, and the nothing-is-booked line stays. Properties without a valid link, and paused properties, are unchanged.
+- Added `airbnb_click` (`cta_location` plus `destination_type: airbnb`, no PII or URLs) via `trackAirbnbClick()`; the GTM trigger regex must include `airbnb_click`.
+- Moved `isAirbnbListingUrl` to `src/lib/airbnb-url.ts` (re-exported from the validators) so the CTA decision helper can be unit-tested; added `property-enquiry-cta.test.ts` to `npm test`. No SQL, schema, view or package change.
+
+## Airbnb CTA Styling and Best Price Ribbon (2026-11-15)
+
+- `Book on Airbnb` (stay card) and the compact mobile `Airbnb` button now use Airbnb's pink-red gradient (named `airbnb-rausch-*` tokens in `app/globals.css`), a white bold label and the `FaAirbnb` mark from the already-installed `react-icons/fa6`, replacing the outlined style and the external-link icon. Link behaviour, `airbnb_click` and sizes are unchanged.
+- Removed the standalone `Best price` pill and the `Book direct on WhatsApp for a better rate than Airbnb` line; `Best price` is now a small ribbon straddling the top-right of the WhatsApp button (card and mobile bar), using a new `whatsapp-ink` token. CTA decision logic, analytics, dates, validation and the WhatsApp message are unchanged. No SQL, schema or package change.

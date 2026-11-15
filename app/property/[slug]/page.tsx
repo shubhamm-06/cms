@@ -124,7 +124,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           >
             <PropertyDetailPage gallery={result.gallery} property={result.property} />
             <PublicFooter analyticsLocation="property_page" homeAnchorPrefix="/" />
-            <PropertyMobileEnquiryBar acceptBookingRequests={result.property.accept_booking_requests} />
+            <PropertyMobileEnquiryBar acceptBookingRequests={result.property.accept_booking_requests} airbnbListingUrl={result.property.airbnb_listing_url} />
           </PropertyEnquiryProvider>
         )}
 
