@@ -1,3 +1,7 @@
+## Image Delivery
+
+- Disabled Next.js image optimization (`images.unoptimized`) due to Vercel Hobby transformation quota.
+
 ## Goa Guest SEO Page (Step 6a)
 
 - Added the closing WhatsApp CTA band (`cta_location: goa_stays_page_closing`) to /goa-villa-stays, listed the page in the sitemap, and added it to the Key pages list in /llms.txt and /llms-full.txt.

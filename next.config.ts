@@ -27,6 +27,7 @@ function supabaseImagePatterns() {
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true,
     /**
      * Next.js 16 allowlists optimizer qualities and defaults to `[75]` alone.
      * 85 is allowed as well so the large photographic `/booking` hero keeps
