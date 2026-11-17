@@ -933,3 +933,9 @@
 
 - `Book on Airbnb` (stay card) and the compact mobile `Airbnb` button now use Airbnb's pink-red gradient (named `airbnb-rausch-*` tokens in `app/globals.css`), a white bold label and the `FaAirbnb` mark from the already-installed `react-icons/fa6`, replacing the outlined style and the external-link icon. Link behaviour, `airbnb_click` and sizes are unchanged.
 - Removed the standalone `Best price` pill and the `Book direct on WhatsApp for a better rate than Airbnb` line; `Best price` is now a small ribbon straddling the top-right of the WhatsApp button (card and mobile bar), using a new `whatsapp-ink` token. CTA decision logic, analytics, dates, validation and the WhatsApp message are unchanged. No SQL, schema or package change.
+
+## Airbnb Link Becomes a Reviews Link (2026-11-17)
+
+- The Airbnb button on `/property/[slug]` is now a credibility link, not a booking action: `See Airbnb reviews` on the stay card and `Airbnb reviews` on the mobile bar, with the accessible name `See our Airbnb reviews (opens in a new tab)`. WhatsApp is the only booking CTA.
+- Restyled from the Airbnb gradient to an outlined secondary button (white, `public-hairline` border, medium-weight dark text, 44px high on the card against WhatsApp's 52px) with the `FaAirbnb` mark in a new `airbnb-red` token (`#ff385c`). Removed the `airbnb-rausch-*` gradient tokens. On the mobile bar the date summary now hides below 480px so both buttons fit.
+- CTA logic, `airbnb_click` (name and `cta_location` values), the WhatsApp button and its ribbon, dates, validation and messages are unchanged. No SQL, schema or package change.

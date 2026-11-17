@@ -269,16 +269,18 @@ export function PropertyEnquiryCard({
             )}
             {airbnbUrl ? (
               <a
-                className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-linear-to-r from-airbnb-rausch-start via-airbnb-rausch-mid to-airbnb-rausch-end px-6 py-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition duration-150 hover:brightness-90 focus-visible:ring-2 focus-visible:ring-airbnb-rausch-mid focus-visible:ring-offset-2 active:scale-[0.99]"
+                aria-label="See our Airbnb reviews (opens in a new tab)"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-public-hairline bg-white px-6 py-2.5 text-center outline-none transition duration-150 hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 active:scale-[0.99]"
                 href={airbnbUrl}
                 onClick={() => trackAirbnbClick("property_page_enquiry_card")}
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                <span className="inline-flex items-center gap-2 text-[17px] font-bold leading-6 text-white">
-                  <FaAirbnb aria-hidden="true" className="h-[20px] w-[20px] shrink-0" />
-                  Book on Airbnb
-                  <span className="sr-only">(opens in a new tab)</span>
+                <span className="inline-flex items-center gap-2 text-[15px] font-medium leading-6 text-public-ink">
+                  <span className="inline-flex text-airbnb-red">
+                    <FaAirbnb aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                  </span>
+                  See Airbnb reviews
                 </span>
               </a>
             ) : phoneHref ? (

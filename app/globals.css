@@ -85,9 +85,7 @@
   --color-whatsapp: #25d366;
   --color-whatsapp-hover: #20bd5a;
   --color-whatsapp-ink: #0b6b35;
-  --color-airbnb-rausch-start: #e61e4d;
-  --color-airbnb-rausch-mid: #e31c5f;
-  --color-airbnb-rausch-end: #d70466;
+  --color-airbnb-red: #ff385c;
 }
 
 @theme inline {

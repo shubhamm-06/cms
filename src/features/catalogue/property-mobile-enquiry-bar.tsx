@@ -49,7 +49,7 @@ export function PropertyMobileEnquiryBar({
         <div className="mx-auto flex max-w-[640px] items-center gap-3">
           {/* Below md: the chosen dates (or a prompt), which jump to the inline calendar. */}
           {whatsappUrl ? (
-            <button className={`min-w-0 flex-1 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-public-coral md:hidden ${showAirbnb ? "max-[359px]:hidden" : ""}`} onClick={scrollToDates} type="button">
+            <button className={`min-w-0 flex-1 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-public-coral md:hidden ${showAirbnb ? "max-[479px]:hidden" : ""}`} onClick={scrollToDates} type="button">
               {range ? (
                 <>
                   <span className="block truncate text-[15px] font-semibold text-public-ink underline underline-offset-4">{range}</span>
@@ -67,7 +67,7 @@ export function PropertyMobileEnquiryBar({
           ) : null}
           {whatsappUrl ? (
             // The colour sits on the inner span: globals.css sets `a { color: inherit }` unlayered.
-            <div className={`relative ${showAirbnb ? "max-[359px]:flex-1 md:flex-1" : "md:flex-1"} shrink-0 md:shrink`}>
+            <div className={`relative ${showAirbnb ? "max-[479px]:flex-1 md:flex-1" : "md:flex-1"} shrink-0 md:shrink`}>
               {showAirbnb ? (
                 <span className="pointer-events-none absolute -top-2.5 right-1.5 z-10 rounded-full border border-whatsapp bg-public-cream px-1.5 py-px text-[9.5px] font-bold uppercase leading-[14px] tracking-[0.05em] text-whatsapp-ink shadow-[0_1px_3px_rgba(0,0,0,0.15)]">
                   Best price
@@ -99,17 +99,19 @@ export function PropertyMobileEnquiryBar({
           )}
           {showAirbnb && airbnbUrl ? (
             <a
-              aria-label="Book on Airbnb (opens in a new tab)"
-              className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-r from-airbnb-rausch-start via-airbnb-rausch-mid to-airbnb-rausch-end px-3 outline-none transition duration-150 hover:brightness-90 focus-visible:ring-2 focus-visible:ring-airbnb-rausch-mid focus-visible:ring-offset-2 md:px-4"
+              aria-label="See our Airbnb reviews (opens in a new tab)"
+              className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl border border-public-hairline bg-white px-3 outline-none transition-colors hover:bg-public-hover focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 md:px-4"
               href={airbnbUrl}
               onClick={() => trackAirbnbClick("property_page_mobile_bar")}
               rel="noopener noreferrer"
               target="_blank"
             >
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[14px] font-bold text-white md:text-[15px]">
-                <FaAirbnb aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
-                <span className="md:hidden">Airbnb</span>
-                <span className="hidden md:inline">Book on Airbnb</span>
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[14px] font-medium text-public-ink md:text-[15px]">
+                <span className="inline-flex text-airbnb-red">
+                  <FaAirbnb aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
+                </span>
+                <span className="md:hidden">Airbnb reviews</span>
+                <span className="hidden md:inline">See Airbnb reviews</span>
               </span>
             </a>
           ) : phoneHref ? (
