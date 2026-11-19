@@ -48,9 +48,9 @@ export function PublicFooter({
     { href: `${homeAnchorPrefix}#top`, label: "For Owners" },
     { href: `${homeAnchorPrefix}#top`, label: "For Guests / Book a Stay" },
     { href: "/about", label: "About" },
+    { href: "/blog", label: "Blog" },
     { href: "/property-management-goa", label: "Property Management" },
     { href: "/case-studies", label: "Case Studies" },
-    { href: `${homeAnchorPrefix}#top`, label: "Blog (soon)" },
   ];
   const resourceLinks: FooterLink[] = [
     { href: `${homeAnchorPrefix}#extras`, label: "Sample P&L Statement" },

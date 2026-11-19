@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { siteOrigin } from "@/app/seo";
 import { propertySeo } from "@/src/lib/property-seo";
 import { loadPublicCatalogue } from "@/src/features/catalogue/public-catalogue-data";
+import { getAllSlugs, getArticle } from "@/content/blog";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const catalogue = await loadPublicCatalogue();
@@ -11,6 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const uniquePropertySlugs = [...new Set(propertySlugs.filter(Boolean))];
 
   return [
+    { url: `${siteOrigin}/blog`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
     {
       url: siteOrigin,
       lastModified: new Date(),
@@ -68,6 +70,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...uniquePropertySlugs.map((slug) => ({
       url: new URL(`/property/${slug}`, siteOrigin).href,
       changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+    ...getAllSlugs().map((slug) => ({
+      url: new URL(`/blog/${slug}`, siteOrigin).href,
+      lastModified: getArticle(slug)?.updatedAt,
+      changeFrequency: "yearly" as const,
       priority: 0.7,
     })),
   ];
