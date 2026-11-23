@@ -7,7 +7,7 @@ import { FaWhatsapp } from "react-icons/fa6";
 import { HeaderLogo } from "@/components/home/public-header";
 import { ShowMoreDialog } from "@/components/ui/show-more-dialog";
 import { buildGuestHeaderWhatsAppMessage } from "@/src/features/catalogue/guest-whatsapp-message";
-import { trackWhatsAppClick } from "@/src/lib/analytics";
+import { trackBookingEnquiry, trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicPhoneDisplay, getPublicPhoneUrl, getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
 /**
@@ -25,7 +25,7 @@ import { getPublicPhoneDisplay, getPublicPhoneUrl, getPublicWhatsAppUrl } from "
  */
 
 type GuestHeaderProps = {
-  page: "booking" | "property";
+  page: "booking" | "property" | "goa_villa_stays";
   propertyName?: string | null;
 };
 
@@ -38,6 +38,7 @@ const navLink = `inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-
 export function GuestHeader({ page, propertyName }: GuestHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const onProperty = page === "property";
+  const onGoaStays = page === "goa_villa_stays";
   const whatsappUrl = getPublicWhatsAppUrl(buildGuestHeaderWhatsAppMessage(propertyName));
   // `/booking` is the page the Explore Stays link points to, so only there is it the current page.
   const stays = (
@@ -80,7 +81,7 @@ export function GuestHeader({ page, propertyName }: GuestHeaderProps) {
             <a
               className={`hidden h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-public-control px-4 text-sm font-medium transition-colors hover:bg-public-hover lg:inline-flex ${focusRing}`}
               href={whatsappUrl}
-              onClick={() => trackWhatsAppClick("guest_header")}
+              onClick={() => { trackWhatsAppClick("guest_header"); if (onGoaStays) trackBookingEnquiry("header", "goa_villa_stays"); }}
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -130,6 +131,7 @@ export function GuestHeader({ page, propertyName }: GuestHeaderProps) {
                     href={whatsappUrl}
                     onClick={() => {
                       trackWhatsAppClick("guest_header");
+                      if (onGoaStays) trackBookingEnquiry("header", "goa_villa_stays");
                       setMenuOpen(false);
                     }}
                     rel="noopener noreferrer"

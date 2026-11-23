@@ -3,7 +3,7 @@
 import { FaWhatsapp } from "react-icons/fa6";
 import { buildGuestHeaderWhatsAppMessage } from "@/src/features/catalogue/guest-whatsapp-message";
 import { goaStaysCopy } from "@/src/features/goa-stays/goa-stays-copy";
-import { trackWhatsAppClick } from "@/src/lib/analytics";
+import { trackBookingEnquiry, trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
 export function GoaStaysClosingCta() {
@@ -18,7 +18,7 @@ export function GoaStaysClosingCta() {
           <a
             className="mt-7 inline-flex h-[52px] w-full items-center justify-center rounded-xl bg-public-coral px-6 transition-colors hover:bg-public-coral-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-public-ink sm:w-auto"
             href={whatsappUrl}
-            onClick={() => trackWhatsAppClick("goa_stays_page_closing")}
+            onClick={() => { trackWhatsAppClick("goa_stays_page_closing"); trackBookingEnquiry("closing_cta", "goa_villa_stays"); }}
             rel="noopener noreferrer"
             target="_blank"
           >

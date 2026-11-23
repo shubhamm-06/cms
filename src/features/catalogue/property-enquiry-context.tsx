@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, type MouseEvent, type ReactNode } from "react";
 import { buildStayEnquiryMessage, toDateInputValue, validateStayDates } from "@/src/features/catalogue/property-enquiry-message";
-import { trackWhatsAppClick } from "@/src/lib/analytics";
+import { trackBookingEnquiry, trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
 type StayEnquiry = {
@@ -19,11 +19,12 @@ type StayEnquiry = {
 
 const EnquiryContext = createContext<StayEnquiry | null>(null);
 
-export function PropertyEnquiryProvider({ children, maxGuests, propertyName, propertyUrl }: {
+export function PropertyEnquiryProvider({ children, maxGuests, propertyName, propertyUrl, propertySlug }: {
   children: ReactNode;
   maxGuests: number | null;
   propertyName: string;
   propertyUrl: string;
+  propertySlug: string;
 }) {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -33,6 +34,9 @@ export function PropertyEnquiryProvider({ children, maxGuests, propertyName, pro
   const whatsappUrl = getPublicWhatsAppUrl(buildStayEnquiryMessage({ checkIn, checkOut, guestCount, propertyName, propertyUrl }));
 
   function handleWhatsAppClick(event: MouseEvent<HTMLAnchorElement>, location: string) {
+    const ctaLocation = location === "property_page_enquiry_card" ? "stay_card" : location === "property_page_mobile_bar" ? "sticky_bar" : location === "property_page_direct_booking" ? "better_rate_cta" : null;
+    if (ctaLocation) trackBookingEnquiry(ctaLocation, "property", propertySlug);
+
     const validation = validateStayDates(checkIn, checkOut, toDateInputValue(new Date()));
     if (validation) {
       event.preventDefault();

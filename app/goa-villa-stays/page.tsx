@@ -75,7 +75,7 @@ export default async function GoaVillaStaysPage() {
         <script dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }} key={data["@type"]} type="application/ld+json" />
       ))}
       <main className="min-h-screen bg-white font-sans text-public-ink antialiased">
-        <GuestHeader page="booking" />
+        <GuestHeader page="goa_villa_stays" />
         <GoaStaysHero staysTargetId={groupIds.includes("villas") ? "villas" : "stays"} />
         <GoaStaysPicker groups={pickerGroups} />
         <GoaStaysListing failed={catalogue.failed} groups={groups} />

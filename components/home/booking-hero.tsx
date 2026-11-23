@@ -5,7 +5,7 @@ import { useSyncExternalStore, type MouseEvent } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 import { buildGuestHeaderWhatsAppMessage } from "@/src/features/catalogue/guest-whatsapp-message";
-import { trackWhatsAppClick } from "@/src/lib/analytics";
+import { trackBookingEnquiry, trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
 /**
@@ -146,7 +146,7 @@ export function BookingHero({
               <a
                 className={`${ctaButton} bg-white hover:bg-[#f7f7f7]`}
                 href={whatsappUrl}
-                onClick={() => trackWhatsAppClick("booking_hero")}
+                onClick={() => { trackWhatsAppClick("booking_hero"); trackBookingEnquiry("hero", "booking"); }}
                 rel="noopener noreferrer"
                 target="_blank"
               >

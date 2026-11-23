@@ -28,6 +28,18 @@ export function trackWhatsAppClick(ctaLocation: string) {
   });
 }
 
+export function trackBookingEnquiry(
+  ctaLocation: string,
+  pageType: "booking" | "goa_villa_stays" | "property",
+  propertySlug?: string,
+) {
+  trackDataLayerEvent("booking_enquiry", {
+    cta_location: ctaLocation,
+    property_slug: pageType === "property" ? propertySlug : "none",
+    page_type: pageType,
+  });
+}
+
 export function trackAirbnbClick(ctaLocation: string) {
   trackDataLayerEvent("airbnb_click", {
     cta_location: ctaLocation,

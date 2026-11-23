@@ -120,6 +120,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             key={result.property.slug}
             maxGuests={result.property.max_guests}
             propertyName={result.property.public_name || "Curated stay"}
+            propertySlug={result.property.slug}
             propertyUrl={`${siteOrigin}/property/${result.property.slug}`}
           >
             <PropertyDetailPage gallery={result.gallery} property={result.property} />

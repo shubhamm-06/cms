@@ -5,7 +5,7 @@ import type { MouseEvent } from "react";
 import { FaWhatsapp } from "react-icons/fa6";
 import { goaStaysCopy } from "@/src/features/goa-stays/goa-stays-copy";
 import { buildGuestHeaderWhatsAppMessage } from "@/src/features/catalogue/guest-whatsapp-message";
-import { trackWhatsAppClick } from "@/src/lib/analytics";
+import { trackBookingEnquiry, trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 import { HeroCarousel } from "@/components/shared/hero-carousel";
 
@@ -38,7 +38,7 @@ export function GoaStaysHero({ staysTargetId }: { staysTargetId: "villas" | "sta
               <a
                 className="inline-flex h-[52px] w-full items-center justify-center rounded-xl bg-public-coral px-6 transition-colors hover:bg-public-coral-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2 sm:w-auto"
                 href={whatsappUrl}
-                onClick={() => trackWhatsAppClick("goa_stays_page")}
+                onClick={() => { trackWhatsAppClick("goa_stays_page"); trackBookingEnquiry("hero", "goa_villa_stays"); }}
                 rel="noopener noreferrer"
                 target="_blank"
               >
