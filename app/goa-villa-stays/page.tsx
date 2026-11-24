@@ -85,7 +85,7 @@ export default async function GoaVillaStaysPage() {
         <GoaStaysAreas areas={[...areas.values()]} />
         <GoaStaysFaq />
         <GoaStaysClosingCta />
-        <PublicFooter analyticsLocation="goa_stays_page" />
+        <PublicFooter analyticsLocation="goa_stays_page" guestPage="goa_villa_stays" />
       </main>
     </div>
   );
