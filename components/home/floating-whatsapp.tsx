@@ -3,7 +3,8 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa6";
-import { trackWhatsAppClick } from "@/src/lib/analytics";
+import { buildGuestHeaderWhatsAppMessage } from "@/src/features/catalogue/guest-whatsapp-message";
+import { trackBookingEnquiry, trackWhatsAppClick } from "@/src/lib/analytics";
 import { getPublicWhatsAppUrl } from "@/src/lib/public-whatsapp";
 
 const publicMarketingPaths = new Set([
@@ -33,7 +34,9 @@ export function FloatingWhatsApp() {
   const pathname = usePathname();
   const normalizedPath =
     pathname === "/" ? "/" : pathname.replace(/\/$/, "");
-  const whatsappUrl = getPublicWhatsAppUrl();
+  // `/booking` is the guest page here; every other path this button shows on is owner-facing.
+  const isGuestBooking = normalizedPath === "/booking";
+  const whatsappUrl = getPublicWhatsAppUrl(isGuestBooking ? buildGuestHeaderWhatsAppMessage() : undefined);
   const isPublicMarketingPath = publicMarketingPaths.has(normalizedPath);
   const [observedHero, setObservedHero] = useState<{ inView: boolean; path: string } | null>(null);
   const heroInView =
@@ -64,7 +67,7 @@ export function FloatingWhatsApp() {
       aria-label="Chat with CurateMyStay on WhatsApp"
       className={`fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-5 z-[70] inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_22px_rgba(9,81,45,0.32)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.03] hover:bg-[#128C7E] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#25D366]/40 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:bottom-6 sm:right-6 sm:h-18 sm:w-18 ${heroInView ? "max-md:pointer-events-none max-md:invisible max-md:opacity-0" : ""}`}
       href={whatsappUrl}
-      onClick={() => trackWhatsAppClick("floating_whatsapp")}
+      onClick={() => { trackWhatsAppClick("floating_whatsapp"); if (isGuestBooking) trackBookingEnquiry("floating_button", "booking"); }}
       rel="noopener noreferrer"
       target="_blank"
     >

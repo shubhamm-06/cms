@@ -25,8 +25,9 @@ import { getPublicPhoneDisplay, getPublicPhoneUrl, getPublicWhatsAppUrl } from "
  */
 
 type GuestHeaderProps = {
-  page: "booking" | "property" | "goa_villa_stays";
+  page: "booking" | "property" | "goa_villa_stays" | "blog";
   propertyName?: string | null;
+  propertySlug?: string | null;
 };
 
 const phoneHref = getPublicPhoneUrl();
@@ -35,10 +36,15 @@ const displayPhoneNumber = getPublicPhoneDisplay();
 const focusRing = "outline-none focus-visible:ring-2 focus-visible:ring-public-coral focus-visible:ring-offset-2";
 const navLink = `inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[14.5px] tracking-[-0.01em] transition-colors hover:bg-public-hover ${focusRing}`;
 
-export function GuestHeader({ page, propertyName }: GuestHeaderProps) {
+export function GuestHeader({ page, propertyName, propertySlug }: GuestHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const onProperty = page === "property";
-  const onGoaStays = page === "goa_villa_stays";
+  // Blog pages reuse this header but are not part of the booking funnel, so they keep whatsapp_click only.
+  const enquiryPage = page === "blog" ? null : page;
+  function trackHeaderWhatsApp() {
+    trackWhatsAppClick("guest_header");
+    if (enquiryPage) trackBookingEnquiry("header", enquiryPage, propertySlug ?? undefined);
+  }
   const whatsappUrl = getPublicWhatsAppUrl(buildGuestHeaderWhatsAppMessage(propertyName));
   // `/booking` is the page the Explore Stays link points to, so only there is it the current page.
   const stays = (
@@ -81,7 +87,7 @@ export function GuestHeader({ page, propertyName }: GuestHeaderProps) {
             <a
               className={`hidden h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-public-control px-4 text-sm font-medium transition-colors hover:bg-public-hover lg:inline-flex ${focusRing}`}
               href={whatsappUrl}
-              onClick={() => { trackWhatsAppClick("guest_header"); if (onGoaStays) trackBookingEnquiry("header", "goa_villa_stays"); }}
+              onClick={trackHeaderWhatsApp}
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -130,8 +136,7 @@ export function GuestHeader({ page, propertyName }: GuestHeaderProps) {
                     className={`flex min-h-12 items-center gap-2 rounded-xl px-3 text-[16px] font-medium hover:bg-public-hover ${focusRing}`}
                     href={whatsappUrl}
                     onClick={() => {
-                      trackWhatsAppClick("guest_header");
-                      if (onGoaStays) trackBookingEnquiry("header", "goa_villa_stays");
+                      trackHeaderWhatsApp();
                       setMenuOpen(false);
                     }}
                     rel="noopener noreferrer"
