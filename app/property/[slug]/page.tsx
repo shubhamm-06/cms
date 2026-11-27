@@ -101,7 +101,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         />
       ) : null}
       <main className="min-h-screen bg-white font-sans text-public-ink antialiased">
-        <GuestHeader page="property" propertyName={result.status === "found" ? result.property.public_name : null} />
+        <GuestHeader page="property" propertyName={result.status === "found" ? result.property.public_name : null} propertySlug={result.status === "found" ? result.property.slug : null} />
 
         {result.status === "failed" ? (
           <div className="mx-auto max-w-[1180px] px-4 py-14 sm:px-6 sm:py-16 md:px-8">
@@ -124,12 +124,12 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             propertyUrl={`${siteOrigin}/property/${result.property.slug}`}
           >
             <PropertyDetailPage gallery={result.gallery} property={result.property} />
-            <PublicFooter analyticsLocation="property_page" homeAnchorPrefix="/" />
+            <PublicFooter analyticsLocation="property_page" guestPage="property" homeAnchorPrefix="/" propertySlug={result.property.slug} />
             <PropertyMobileEnquiryBar acceptBookingRequests={result.property.accept_booking_requests} airbnbListingUrl={result.property.airbnb_listing_url} />
           </PropertyEnquiryProvider>
         )}
 
-        {result.status === "failed" ? <PublicFooter analyticsLocation="property_page" homeAnchorPrefix="/" /> : null}
+        {result.status === "failed" ? <PublicFooter analyticsLocation="property_page" guestPage="property" homeAnchorPrefix="/" /> : null}
       </main>
     </div>
   );

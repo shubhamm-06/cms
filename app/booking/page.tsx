@@ -61,7 +61,7 @@ export default async function BookingPage() {
         <BookingGuestServices />
         <FamilySection />
 
-        <PublicFooter analyticsLocation="booking_page" homeAnchorPrefix="/" />
+        <PublicFooter analyticsLocation="booking_page" guestPage="booking" homeAnchorPrefix="/" />
       </main>
     </div>
   );

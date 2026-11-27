@@ -75,7 +75,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
     <ReadingProgress />
     {jsonLd.map((data) => <script dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }} key={data["@type"]} type="application/ld+json" />)}
     <main className="min-h-screen bg-white font-sans text-neutral-900 antialiased">
-      <GuestHeader page="booking" />
+      <GuestHeader page="blog" />
       <article className="mx-auto w-full max-w-[680px] px-5 pb-24 sm:px-6">
         <header className="pt-10 sm:pt-16">
           <Link className="mb-5 inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900" href="/blog"><span aria-hidden="true">←</span>All articles</Link>
