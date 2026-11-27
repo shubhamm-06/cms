@@ -30,13 +30,15 @@ export function trackWhatsAppClick(ctaLocation: string) {
 
 export function trackBookingEnquiry(
   ctaLocation: string,
-  pageType: "booking" | "goa_villa_stays" | "property",
+  pageType: "booking" | "goa_villa_stays" | "corporate_offsite" | "property",
   propertySlug?: string,
+  optionId?: string,
 ) {
   trackDataLayerEvent("booking_enquiry", {
     cta_location: ctaLocation,
     property_slug: pageType === "property" ? propertySlug : "none",
     page_type: pageType,
+    option_id: optionId,
   });
 }
 

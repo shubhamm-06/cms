@@ -263,7 +263,10 @@ property_page_managed_by
 property_page_mobile_bar
 booking_hero
 goa_stays_page
+corporate_offsite_option
 ```
+
+`corporate_offsite_option` is the `Ask about this stay` button on a stay option card of `/corporate-offsite-villas-goa`. It fires `whatsapp_click` and `booking_enquiry` (`page_type: corporate_offsite`); only that `booking_enquiry` also carries `option_id` (`bogmalo`, `panjim` or `villas`). The `Get a quote on WhatsApp` button under `How to book` reuses the hero button's values (`cta_location: corporate_offsite_hero_direct` on `whatsapp_click`, `hero_whatsapp` on `booking_enquiry`) and adds `option_id: how-to-book` to `booking_enquiry`, so only `option_id` separates it from the hero button. GTM action required: add a data layer variable for `option_id` to report on it, and read it only for this `cta_location`, because the data layer keeps the last value.
 
 ### `airbnb_click`
 

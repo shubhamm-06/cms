@@ -67,6 +67,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    {
+      url: `${siteOrigin}/corporate-offsite-villas-goa`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     ...uniquePropertySlugs.map((slug) => ({
       url: new URL(`/property/${slug}`, siteOrigin).href,
       changeFrequency: "weekly" as const,

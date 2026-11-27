@@ -82,6 +82,8 @@
   --color-public-taupe: #9a7770;
   --color-public-taupe-soft: #c9a79a;
   --color-public-error: #c13515;
+  /* The homepage's accent on dark backgrounds. */
+  --color-public-amber: #e9aa4b;
   --color-whatsapp: #25d366;
   --color-whatsapp-hover: #20bd5a;
   --color-whatsapp-ink: #0b6b35;

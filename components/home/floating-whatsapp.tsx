@@ -10,6 +10,7 @@ const publicMarketingPaths = new Set([
   "/",
   "/about",
   "/booking",
+  "/corporate-offsite-villas-goa",
   "/case-studies",
   "/faq",
   "/property-management-proposal",
@@ -27,7 +28,7 @@ const publicMarketingPaths = new Set([
  * `/booking`: the hero and the WhatsApp demo card). Listing the path lets the first paint start hidden instead of
  * flashing in before the observer reports.
  */
-const heroWhatsAppPaths = new Set(["/booking"]);
+const heroWhatsAppPaths = new Set(["/booking", "/corporate-offsite-villas-goa"]);
 
 export function FloatingWhatsApp() {
   const pathname = usePathname();
